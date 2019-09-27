@@ -349,31 +349,42 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice UNUSED) 
 {
-  /* Not yet implemented. */
+	struct thread *t = thread_current();
+	float rec = t->recCpu;
+
+	t->niceV = nice;
+	t->priority = PRI_MAX - (int)(rec / 4) - (nice * 2);
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+	return thread_current()->niceV;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+	float load_avg;
+	float prev_avg = thread_current()->loadAvg;
+
+	size_t readyT = list_size(ready_list) + 1; //number of ready thread and one running thread
+	load_avg = (59.0f / 60.0f) * prev_avg + (1.0f / 60.0f) * readyT;
+	thread_current()->loadAvg = load_avg;
+	return (int)(100 * load_avg);
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+	//recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
+	int nice = thread_current()->niceV;
+	float prev_cpu = thread_current()->recCpu;
+	float load_avg = thread_current()->loadAvg;
+	return (int)(100 * (2 * load_avg / (2 * load_avg + 1)) * prev_cpu + (float)nice);
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
