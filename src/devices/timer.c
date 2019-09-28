@@ -7,6 +7,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+#include "lib/kernel/list.h"
   
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -19,6 +20,7 @@
 
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
+static struct list sleep_list;
 
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
@@ -90,10 +92,23 @@ void
 timer_sleep (int64_t ticks) 
 {
   int64_t start = timer_ticks ();
+  struct thread *current;
 
   ASSERT (intr_get_level () == INTR_ON);
+
+  current = thread_current();
+  list_push_back(&sleep_list, &current->elem);
+  current->sleep_time = start + ticks;
+  intr_disable();
+  thread_block();
+  intr_enable();
+  
+//intr_off and block current thread
+
+  /*
   while (timer_elapsed (start) < ticks) 
     thread_yield ();
+	*/
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -170,8 +185,26 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+  int64_t start = timer_ticks();
+  size_t size = list_size(&sleep_list);
+  struct list_elem *temp;
+  struct thread *target;
   ticks++;
-  thread_tick ();
+  thread_tick();
+  if (!list_empty(&sleep_list))
+  {
+	  temp = list_front(&sleep_list);
+	  for (size_t i = 0; i < size; i++)
+	  {
+		  target = list_entry(temp, struct thread, elem);
+		  if (target->sleep_time < start)
+		  {
+			  thread_unblock(target);
+		  }
+		  temp = temp->next;
+	  }
+  }
+//check sleep list and if one thread is out-of-time, then yield and unblock
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
