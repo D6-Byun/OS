@@ -187,23 +187,18 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
   int64_t start = timer_ticks();
-  size_t size = list_size(&sleep_list);
-  struct list_elem *temp;
-  struct thread *target;
+  struct list_elem *e;
   ticks++;
   thread_tick();
   if (!list_empty(&sleep_list))
   {
-	  temp = list_front(&sleep_list);
-	  for (size_t i = 0; i < size; i++)
+	  for (e = list_begin (&sleep_list); e != list_end(&sleep_list); e=list_next(e))
 	  {
-		  target = list_entry(temp, struct thread, elem);
-		  ASSERT(is_thread(target));
-		  if (target->sleep_time < start)
+		  struct thread *t = (list_entry(e, struct thread, elem));
+		  if (t->sleep_time < start)
 		  {
-			  thread_unblock(target);
+		  	thread_unblock(t);
 		  }
-		  temp = temp->next;
 	  }
   }
 //check sleep list and if one thread is out-of-time, then yield and unblock
