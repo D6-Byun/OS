@@ -87,16 +87,12 @@ struct thread
     enum thread_status status;          /* Thread state. */
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
-    int priority;                       /* Priority = PRI_MAX - (recent_cpu / 4) - (nice * 2) */
+    int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
-
-	int64_t sleep_time;					/* sleeping time declaration*/
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-	int niceV;							// -20<= nice <= 20 initial value = 0
-	float loadAvg;						// initial value = 0
-	float recCpu;						// initial value = 0
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
