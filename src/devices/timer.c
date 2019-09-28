@@ -198,6 +198,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
 	  for (size_t i = 0; i < size; i++)
 	  {
 		  target = list_entry(temp, struct thread, elem);
+		  ASSERT(is_thread(target));
 		  if (target->sleep_time < start)
 		  {
 			  thread_unblock(target);
