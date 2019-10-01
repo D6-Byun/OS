@@ -28,6 +28,8 @@ static struct list ready_list;
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
 
+static struct list sleep_list;
+
 /* Idle thread. */
 static struct thread *idle_thread;
 
@@ -65,11 +67,12 @@ static void idle (void *aux UNUSED);
 static struct thread *running_thread (void);
 static struct thread *next_thread_to_run (void);
 static void init_thread (struct thread *, const char *name, int priority);
-bool is_thread (struct thread *) UNUSED;
+static bool is_thread (struct thread *) UNUSED;
 static void *alloc_frame (struct thread *, size_t size);
 static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
+static void timer_awake_thread(int64_t ticks)
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -92,6 +95,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  list_init (&sleep_list)
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -202,6 +206,51 @@ thread_create (const char *name, int priority,
   thread_unblock (t);
 
   return tid;
+}
+
+void thread_sleep(int64_t ticks)
+{
+	struct thread *current;
+	struct thread *check;
+	enum intr_level old_level;
+	old_level = intr_disable();
+
+	current = thread_current();
+	ASSERT(is_thread(current));
+
+	current->sleep_time = start + ticks;
+	update_min_tick(start + ticks);
+
+	list_push_back(&sleep_list, &current->elem);
+
+	check = list_entry(&current->elem, struct thread, elem);
+	ASSERT(is_thread(check));
+
+	thread_block();
+	intr_set_level(old_level);
+}
+
+static void timer_awake_thread(int64_t ticks)
+{
+	struct list_elem *e;
+	min_tick = INT64_MAX;
+
+	if (!list_empty(&sleep_list))
+	{
+		for (e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e))
+		{
+			struct thread *t = (list_entry(e, struct thread, elem));
+			ASSERT(is_thread(t));
+			if (t->sleep_time < ticks)
+			{
+				list_remove(&t->elem);
+				thread_unblock(t);
+			}
+			else {
+				update_min_tick(t->sleep_time);
+			}
+		}
+	}
 }
 
 /* Puts the current thread to sleep.  It will not be scheduled
@@ -440,7 +489,7 @@ running_thread (void)
 }
 
 /* Returns true if T appears to point to a valid thread. */
-bool
+static bool
 is_thread (struct thread *t)
 {
   return t != NULL && t->magic == THREAD_MAGIC;
