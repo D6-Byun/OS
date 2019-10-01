@@ -105,13 +105,12 @@ timer_sleep (int64_t ticks)
   ASSERT(is_thread(current));
 
   current->sleep_time =start + ticks;
+  update_min_tick(start + ticks);
 
   list_push_back(&sleep_list, &current->elem);
 
   check = list_entry(&current->elem, struct thread, elem);
   ASSERT(is_thread(check));
-
-
 
   thread_block();
   intr_set_level(old_level);
@@ -119,7 +118,10 @@ timer_sleep (int64_t ticks)
 
 void
 update_min_tick(int64_t ticks){
-  
+  if (ticks < min_tick)
+  {
+	  min_tick = ticks;
+  }
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -197,23 +199,36 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
   int64_t start = timer_ticks();
-  struct list_elem *e;
   ticks++;
   thread_tick();
-  if (!list_empty(&sleep_list))
-  {
-	  for (e = list_begin (&sleep_list); e != list_end(&sleep_list); e=list_next(e))
-	  {
-		  struct thread *t = (list_entry(e, struct thread, elem));
-		  ASSERT(is_thread(t));
-		  if (t->sleep_time < start)
-		  {
-		  	thread_unblock(t);
-			list_remove(&t->elem);
-		  }
-	  }
+  if (start >= min_tick) {
+	  timer_awake_thread(start);
   }
+  
 //check sleep list and if one thread is out-of-time, then yield and unblock
+}
+
+static void timer_awake_thread(int64_t ticks)
+{
+	struct list_elem *e;
+	min_tick = INT64_MAX;
+
+	if (!list_empty(&sleep_list))
+	{
+		for (e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e))
+		{
+			struct thread *t = (list_entry(e, struct thread, elem));
+			ASSERT(is_thread(t));
+			if (t->sleep_time < ticks)
+			{
+				list_remove(&t->elem);
+				thread_unblock(t);
+			}
+			else {
+				update_min_tick(t->sleep_time);
+			}
+		}
+	}
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
