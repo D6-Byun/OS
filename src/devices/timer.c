@@ -19,7 +19,6 @@
 
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
-static int64_t min_tick;
 
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
@@ -94,14 +93,6 @@ timer_sleep (int64_t ticks)
 
   ASSERT (intr_get_level () == INTR_ON);
   thread_sleep(start);
-}
-
-void
-update_min_tick(int64_t ticks){
-  if (ticks < min_tick)
-  {
-	  min_tick = ticks;
-  }
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be

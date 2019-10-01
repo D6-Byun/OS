@@ -39,6 +39,8 @@ static struct thread *initial_thread;
 /* Lock used by allocate_tid(). */
 static struct lock tid_lock;
 
+static int64_t min_tick;
+
 /* Stack frame for kernel_thread(). */
 struct kernel_thread_frame 
   {
@@ -95,7 +97,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
-  list_init (&sleep_list)
+  list_init(&sleep_list);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -218,8 +220,8 @@ void thread_sleep(int64_t ticks)
 	current = thread_current();
 	ASSERT(is_thread(current));
 
-	current->sleep_time = start + ticks;
-	update_min_tick(start + ticks);
+	current->sleep_time = ticks + ticks;
+	update_min_tick(ticks + ticks);
 
 	list_push_back(&sleep_list, &current->elem);
 
@@ -233,7 +235,7 @@ void thread_sleep(int64_t ticks)
 static void timer_awake_thread(int64_t ticks)
 {
 	struct list_elem *e;
-	min_tick = INT64_MAX;
+	int64_t min_tick = INT64_MAX;
 
 	if (!list_empty(&sleep_list))
 	{
@@ -250,6 +252,14 @@ static void timer_awake_thread(int64_t ticks)
 				update_min_tick(t->sleep_time);
 			}
 		}
+	}
+}
+
+void
+update_min_tick(int64_t ticks) {
+	if (ticks < min_tick)
+	{
+		min_tick = ticks;
 	}
 }
 
