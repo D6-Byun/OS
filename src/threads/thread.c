@@ -246,7 +246,7 @@ void timer_awake_thread(int64_t ticks)
 		struct thread *t = list_entry(e, struct thread, elem);
 		if (t->sleep_time < ticks)
 		{
-			list_remove(&t->elem);
+			e = list_remove(&t->elem);
 			thread_unblock(t);
 		}
 		else {
