@@ -92,7 +92,7 @@ timer_sleep (int64_t ticks)
   int64_t start = timer_ticks();
 
   ASSERT (intr_get_level () == INTR_ON);
-  thread_sleep(start);
+  thread_sleep(start+ticks);
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -172,7 +172,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
   int64_t start = timer_ticks();
   ticks++;
   thread_tick();
-  if (start >= min_tick) {
+  if (start >= get_min_tick()) {
 	  timer_awake_thread(start);
   }
   

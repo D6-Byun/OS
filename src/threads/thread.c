@@ -74,7 +74,6 @@ static void *alloc_frame (struct thread *, size_t size);
 static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
-static void timer_awake_thread(int64_t ticks);
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -220,8 +219,8 @@ void thread_sleep(int64_t ticks)
 	current = thread_current();
 	ASSERT(is_thread(current));
 
-	current->sleep_time = ticks + ticks;
-	update_min_tick(ticks + ticks);
+	current->sleep_time = ticks;
+	update_min_tick(ticks);
 
 	list_push_back(&sleep_list, &current->elem);
 
@@ -232,7 +231,12 @@ void thread_sleep(int64_t ticks)
 	intr_set_level(old_level);
 }
 
-static void timer_awake_thread(int64_t ticks)
+int64_t get_min_tick(void)
+{
+	return min_tick;
+}
+
+void timer_awake_thread(int64_t ticks)
 {
 	struct list_elem *e;
 	int64_t min_tick = INT64_MAX;

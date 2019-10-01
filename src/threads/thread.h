@@ -117,6 +117,8 @@ void thread_print_stats (void);
 
 void thread_sleep(int64_t ticks);
 void update_min_tick(int64_t ticks);
+int64_t get_min_tick(void);
+void timer_awake_thread(int64_t ticks);
 
 typedef void thread_func (void *aux);
 tid_t thread_create (const char *name, int priority, thread_func *, void *);
