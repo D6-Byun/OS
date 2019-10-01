@@ -203,6 +203,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
   thread_tick();
   if (start >= min_tick) {
 	  timer_awake_thread(start);
+
   }
   
 //check sleep list and if one thread is out-of-time, then yield and unblock
