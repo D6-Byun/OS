@@ -21,6 +21,7 @@
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 static struct list sleep_list;
+static int64_t min_tick;
 
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
@@ -94,19 +95,31 @@ timer_sleep (int64_t ticks)
 {
   int64_t start = timer_ticks();
   struct thread *current;
+  struct thread *check;
 
   ASSERT (intr_get_level () == INTR_ON);
   enum intr_level old_level;
   old_level = intr_disable();
 
   current = thread_current();
+  ASSERT(is_thread(current));
 
   current->sleep_time =start + ticks;
 
   list_push_back(&sleep_list, &current->elem);
 
+  check = list_entry(&current->elem, struct thread, elem);
+  ASSERT(is_thread(check));
+
+
+
   thread_block();
   intr_set_level(old_level);
+}
+
+void
+update_min_tick(int64_t ticks){
+  
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -192,6 +205,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
 	  for (e = list_begin (&sleep_list); e != list_end(&sleep_list); e=list_next(e))
 	  {
 		  struct thread *t = (list_entry(e, struct thread, elem));
+		  ASSERT(is_thread(t));
 		  if (t->sleep_time < start)
 		  {
 		  	thread_unblock(t);
