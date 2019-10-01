@@ -104,8 +104,8 @@ timer_sleep (int64_t ticks)
   current = thread_current();
   ASSERT(is_thread(current));
 
-  current->sleep_time =start + ticks;
-  update_min_tick(start + ticks);
+  current->sleep_time =ticks+start;
+  update_min_tick(ticks+start);
 
   list_push_back(&sleep_list, &current->elem);
 
@@ -198,13 +198,14 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
-  int64_t start = timer_ticks();
+  int64_t start;
   ticks++;
-  thread_tick();
+  start = timer_ticks();
   if (start >= min_tick) {
 	  timer_awake_thread(start);
 
   }
+  thread_tick();
   
 //check sleep list and if one thread is out-of-time, then yield and unblock
 }
@@ -213,21 +214,17 @@ static void timer_awake_thread(int64_t ticks)
 {
 	struct list_elem *e;
 	min_tick = INT64_MAX;
+	e = list_begin(&sleep_list);
+	while (e != list_end(&sleep_list)) {
+		struct thread *t = list_entry(e, struct thread, elem);
+		if (t->sleep_time <= ticks){
+			e = list_remove(&t->elem);
+			thread_unblock(t);
+		}
+		else {
+			e = list_next(e);
+			update_min_tick(t->sleep_time);
 
-	if (!list_empty(&sleep_list))
-	{
-		for (e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e))
-		{
-			struct thread *t = (list_entry(e, struct thread, elem));
-			ASSERT(is_thread(t));
-			if (t->sleep_time < ticks)
-			{
-				list_remove(&t->elem);
-				thread_unblock(t);
-			}
-			else {
-				update_min_tick(t->sleep_time);
-			}
 		}
 	}
 }
