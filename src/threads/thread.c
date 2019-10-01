@@ -218,6 +218,7 @@ void thread_sleep(int64_t ticks)
 
 	current = thread_current();
 	ASSERT(is_thread(current));
+	ASSERT(current != idle_thread);
 
 	current->sleep_time = ticks;
 	update_min_tick(ticks);
