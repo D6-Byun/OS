@@ -239,7 +239,7 @@ int64_t get_min_tick(void)
 void timer_awake_thread(int64_t ticks)
 {
 	struct list_elem *e;
-	int64_t min_tick = INT64_MAX;
+	min_tick = INT64_MAX;
 
 	if (!list_empty(&sleep_list))
 	{
