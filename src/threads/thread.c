@@ -241,7 +241,20 @@ void timer_awake_thread(int64_t ticks)
 {
 	struct list_elem *e;
 	min_tick = INT64_MAX;
-
+	e = list_begin(&sleep_list);
+	while (e != list_end(&sleep_list)) {
+		struct thread *t = list_entry(e, struct thread, elem);
+		if (t->sleep_time < ticks)
+		{
+			list_remove(&t->elem);
+			thread_unblock(t);
+		}
+		else {
+			e = list_next(e);
+			update_min_tick(t->sleep_time);
+		}
+	}
+	/*
 	if (!list_empty(&sleep_list))
 	{
 		for (e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e))
@@ -258,6 +271,7 @@ void timer_awake_thread(int64_t ticks)
 			}
 		}
 	}
+	*/
 }
 
 void
