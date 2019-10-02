@@ -3,6 +3,7 @@
 
 #include <round.h>
 #include <stdint.h>
+#include <list.h>
 
 /* Number of timer interrupts per second. */
 #define TIMER_FREQ 100
@@ -12,6 +13,7 @@ void timer_calibrate (void);
 
 int64_t timer_ticks (void);
 int64_t timer_elapsed (int64_t);
+void update_min_tick(int64_t ticks);
 
 /* Sleep and yield the CPU to other threads. */
 void timer_sleep (int64_t ticks);

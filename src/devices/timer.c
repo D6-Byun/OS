@@ -7,7 +7,6 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
-#include "lib/kernel/list.h"
   
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -21,6 +20,7 @@
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 static struct list sleep_list;
+static int64_t min_tick;
 
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
@@ -31,6 +31,7 @@ static bool too_many_loops (unsigned loops);
 static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
+static void timer_awake_thread(int64_t ticks);
 
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
@@ -39,6 +40,7 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+  list_init(&sleep_list);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -91,24 +93,35 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
+  int64_t start = timer_ticks();
   struct thread *current;
+  struct thread *check;
 
   ASSERT (intr_get_level () == INTR_ON);
+  enum intr_level old_level;
+  old_level = intr_disable();
 
   current = thread_current();
-  list_push_back(&sleep_list, &current->elem);
-  current->sleep_time = start + ticks;
-  intr_disable();
-  thread_block();
-  intr_enable();
-  
-//intr_off and block current thread
+  ASSERT(is_thread(current));
 
-  /*
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
-	*/
+  current->sleep_time =ticks+start;
+  update_min_tick(ticks+start);
+
+  list_push_back(&sleep_list, &current->elem);
+
+  check = list_entry(&current->elem, struct thread, elem);
+  ASSERT(is_thread(check));
+
+  thread_block();
+  intr_set_level(old_level);
+}
+
+void
+update_min_tick(int64_t ticks){
+  if (ticks < min_tick)
+  {
+	  min_tick = ticks;
+  }
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -185,26 +198,35 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
-  int64_t start = timer_ticks();
-  size_t size = list_size(&sleep_list);
-  struct list_elem *temp;
-  struct thread *target;
+  int64_t start;
   ticks++;
-  thread_tick();
-  if (!list_empty(&sleep_list))
-  {
-	  temp = list_front(&sleep_list);
-	  for (size_t i = 0; i < size; i++)
-	  {
-		  target = list_entry(temp, struct thread, elem);
-		  if (target->sleep_time < start)
-		  {
-			  thread_unblock(target);
-		  }
-		  temp = temp->next;
-	  }
+  start = timer_ticks();
+  if (start >= min_tick) {
+	  timer_awake_thread(start);
+
   }
+  thread_tick();
+  
 //check sleep list and if one thread is out-of-time, then yield and unblock
+}
+
+static void timer_awake_thread(int64_t ticks)
+{
+	struct list_elem *e;
+	min_tick = INT64_MAX;
+	e = list_begin(&sleep_list);
+	while (e != list_end(&sleep_list)) {
+		struct thread *t = list_entry(e, struct thread, elem);
+		if (t->sleep_time <= ticks){
+			e = list_remove(&t->elem);
+			thread_unblock(t);
+		}
+		else {
+			e = list_next(e);
+			update_min_tick(t->sleep_time);
+
+		}
+	}
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
