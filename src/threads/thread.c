@@ -37,6 +37,8 @@ static struct thread *initial_thread;
 /* Lock used by allocate_tid(). */
 static struct lock tid_lock;
 
+/* Lock used by Thread lock*/
+static struct lock T_lock;
 /* Stack frame for kernel_thread(). */
 struct kernel_thread_frame 
   {
@@ -64,6 +66,7 @@ static void kernel_thread (thread_func *, void *aux);
 static void idle (void *aux UNUSED);
 static struct thread *running_thread (void);
 static struct thread *next_thread_to_run (void);
+static struct thread *next_thread(void);
 static void init_thread (struct thread *, const char *name, int priority);
 bool is_thread (struct thread *) UNUSED;
 static void *alloc_frame (struct thread *, size_t size);
@@ -314,6 +317,24 @@ thread_yield (void)
   intr_set_level (old_level);
 }
 
+/* check ready_list and change if there is higher priority than running thread, change the running thread  
+ if lock is BUSY, call donate */
+void thread_update(void)
+{
+	struct thread *high;
+	struct thread *cur = thread_current();
+	high = next_thread();
+	if (high->priority < cur->priority) {
+		return;
+	}
+	else {
+		if (lock_held_by_current_thread(T_lock))
+			return;
+			//thread_donate(a, b);
+		else thread_yield();
+	}
+}
+
 /* Invoke function 'func' on all threads, passing along 'aux'.
    This function must be called with interrupts off. */
 void
@@ -347,7 +368,7 @@ thread_get_priority (void)
 
 /* Sets the current thread's nice value to NICE. */
 void
-thread_set_nice (int nice UNUSED) 
+thread_set_nice (int nice) 
 {
 	struct thread *t = thread_current();
 	float rec = t->recCpu;
