@@ -507,6 +507,29 @@ next_thread_to_run (void)
     return list_entry (list_pop_front (&ready_list), struct thread, elem);
 }
 
+static bool
+priority_less(const struct list_elem *a_, const struct list_elem *b_,
+	void *aux UNUSED)
+{
+	const struct thread *a = list_entry(a_, struct thread, elem);
+	const struct thread *b = list_entry(b_, struct thread, elem);
+
+	return a->priority < b->priority;
+}
+
+static struct thread *
+next_thread(void)
+{
+	struct list_elem *max;
+	struct list_elem *head;
+	
+	if (list_empty(&ready_list))
+		return idle_thread;
+	else
+		return list_entry(list_max(&ready_list,priority_less, NULL), struct thread, elem);
+}
+
+
 /* Completes a thread switch by activating the new thread's page
    tables, and, if the previous thread is dying, destroying it.
 
