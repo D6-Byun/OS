@@ -365,19 +365,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED)
   ASSERT (lock_held_by_current_thread (lock));
 
 
-  if (!list_empty(&cond->waiters)) {
- 	/*cur = list_begin(&cond->waiters);
-        max = list_begin(&cond->waiters);
-        max_thread = list_entry(max, struct thread, elem);
-        while(cur != list_end(&cond->waiters)){
-                cur_thread = list_entry(cur ,struct thread, elem);
-                if(cur_thread->priority > max_thread -> priority){
-                        max_thread = cur_thread;
-                        max = cur;
-                }
-                cur = list_next(cur);
-
-        }*/
+  if (!list_empty(&cond->waiters)) {	
         list_sort(&cond-> waiters, *sema_priority, NULL);
         sema_up(&list_entry(list_pop_front(&cond->waiters),struct semaphore_elem,elem)->semaphore);
 
