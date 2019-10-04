@@ -243,7 +243,8 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
+  //list_push_back (&ready_list, &t->elem);
+  list_insert_ordered(&ready_list, &t->elem, priority_less, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -313,8 +314,9 @@ thread_yield (void)
   ASSERT (!intr_context ());
 
   old_level = intr_disable ();
-  if (cur != idle_thread) 
-    list_push_back (&ready_list, &cur->elem);
+  if (cur != idle_thread)
+	  //list_push_back (&ready_list, &cur->elem);
+	  list_insert_ordered(&ready_list, &cur->elem, priority_less, NULL);
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -326,7 +328,7 @@ void thread_update(void)
 {
 	struct thread *high = next_thread();
 	struct thread *cur = thread_current();
-	if (!list_empty (&ready_list) && high->priority > cur->priority) {
+	if (high->priority > cur->priority) {
 		thread_yield();
 	}
 }
@@ -367,44 +369,31 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice UNUSED) 
 {
-	struct thread *t = thread_current();
-	float rec = t->recCpu;
-
-	t->niceV = nice;
-	//t->priority = PRI_MAX - (int)(rec / 4) - (nice * 2);
+	//will not implemented
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-	return thread_current()->niceV;
+	//will not implemented
+	return 0;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) 
 {
-	float load_avg;
-	float prev_avg = thread_current()->loadAvg;
-
-	//int readyT = (int)list_size(&ready_list) + 1; //number of ready thread and one running thread
-	//load_avg = (59.0f / 60.0f) * prev_avg + (1.0f / 60.0f) * readyT;
-	thread_current()->loadAvg = load_avg;
+	//will not implemented
 	return 0;
-	//return (int)(100 * load_avg);
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-	//recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
-	int nice = thread_current()->niceV;
-	float prev_cpu = thread_current()->recCpu;
-	float load_avg = thread_current()->loadAvg;
+	//will not implemented
 	return 0;
-	//return (int)(100 * ((2 * load_avg / (2 * load_avg + 1)) * prev_cpu + nice));
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -537,7 +526,7 @@ priority_less(const struct list_elem *a_, const struct list_elem *b_,
 	const struct thread *a = list_entry(a_, struct thread, elem);
 	const struct thread *b = list_entry(b_, struct thread, elem);
 
-	return a->priority < b->priority;
+	return a->priority > b->priority;
 }
 
 static struct thread *
@@ -607,7 +596,7 @@ static void
 schedule (void) 
 {
   struct thread *cur = running_thread ();
-  struct thread *next = next_thread ();
+  struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
 
   ASSERT (intr_get_level () == INTR_OFF);
