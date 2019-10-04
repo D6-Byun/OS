@@ -247,10 +247,9 @@ thread_unblock (struct thread *t)
 	//list_push_back (&ready_list, &t->elem);
 	list_insert_ordered(&ready_list, &t->elem, (list_less_func*)&priority_less, NULL);
 	t->status = THREAD_READY;
-	if (t->priority > thread_current()->priority) {
+	if (thread_current() != idle_thread &&  t->priority > thread_current()->priority) {
 		thread_yield();
 	}
-	//thread_update();
 	intr_set_level (old_level);
 }
 
@@ -325,27 +324,15 @@ thread_yield (void)
   schedule ();
   intr_set_level (old_level);
 }
-
-/* check ready_list and change if there is higher priority than running thread, change the running thread  
- if lock is BUSY, call donate */
-void thread_update(void)
-{
-	struct thread *high = next_thread_to_run();
-	struct thread *cur = thread_current();
-	if(list_empty(&ready_list))
-		return;
-	if (high->priority > cur->priority) {
-		thread_yield();
-	}
-}
-
+/* donate new_priority to t, if t is thread_current
+check if highest priority is. */
 void thread_donate(struct thread* t, int new_priority) {
 	t -> priority = new_priority;
 
 	//If current is not the highest priority anymore, yield.
 	if (t == thread_current() && !list_empty(&ready_list)) {
 		struct thread *next = list_entry(list_begin(&ready_list), struct thread, elem);
-		if (next->priority > t->priority) {
+		if (next != NULL && next->priority > t->priority) {
 			thread_yield();
 		}
 	}
@@ -385,7 +372,7 @@ thread_set_priority (int new_priority)
 	//If it is not the highest priority anymore, yield.
 	if (!list_empty(&ready_list)) {
 		struct thread *next = list_entry(list_begin(&ready_list), struct thread, elem);
-		if (next->priority > cur->priority) {
+		if (next != NULL && next->priority > cur->priority) {
 			thread_yield();
 		}
 	}
