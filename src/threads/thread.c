@@ -337,6 +337,11 @@ void thread_update(void)
 	}
 }
 
+void thread_donate(int new_priority){
+	struct thread *cur = thread_current();
+	cur->priority = new_priority;
+}
+
 /* Invoke function 'func' on all threads, passing along 'aux'.
    This function must be called with interrupts off. */
 void
@@ -490,6 +495,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->niceV = 0;
   t->loadAvg = 0;
   t->recCpu = 0;
+  t->original_prior = priority;
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
