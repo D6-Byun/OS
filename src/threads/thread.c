@@ -37,7 +37,7 @@ static struct thread *initial_thread;
 /* Lock used by allocate_tid(). */
 static struct lock tid_lock;
 
-/* Lock used by Thread lock*/
+/* Lock used by Thread lock     */
 static struct lock T_lock;
 /* Stack frame for kernel_thread(). */
 struct kernel_thread_frame 
@@ -333,8 +333,13 @@ void thread_update(void)
 	if(list_empty(&ready_list))
 		return;
 	if (high->priority > cur->priority) {
+		if(cur-> == high ->lock_list)
 		thread_yield();
 	}
+}
+
+void thread_donate(struct thread* t, int new_priority) {
+	t -> priority = new_priority;
 }
 
 /* Invoke function 'func' on all threads, passing along 'aux'.

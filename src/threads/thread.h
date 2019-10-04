@@ -94,9 +94,8 @@ struct thread
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-	int niceV;							// -20<= nice <= 20 initial value = 0
-	float loadAvg;						// initial value = 0
-	float recCpu;						// initial value = 0
+	int original_prior;
+	struct list lock_list;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -131,6 +130,7 @@ const char *thread_name (void);
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
 void thread_update (void);
+void thread_donate (struct thread *t,int new_priority);
 
 bool is_thread (struct thread *t);
 

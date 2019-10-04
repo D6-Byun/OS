@@ -32,6 +32,9 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+/* List of all locks*/
+static struct list lock_list;
+
 static bool
 priority_less(const struct list_elem *a_, const struct list_elem *b_,
 	void *aux UNUSED)
@@ -222,12 +225,20 @@ lock_init (struct lock *lock)
 void
 lock_acquire (struct lock *lock)
 {
-  ASSERT (lock != NULL);
-  ASSERT (!intr_context ());
-  ASSERT (!lock_held_by_current_thread (lock));
+	struct thread *cur = thread_current();
+	struct thread *hold_t = lock->holder;
+	ASSERT (lock != NULL);
+	ASSERT (!intr_context ());
+	ASSERT (!lock_held_by_current_thread (lock));
 
-  sema_down (&lock->semaphore);
-  lock->holder = thread_current ();
+	if (lock->holder = NULL) {
+		lock->holder = cur;
+	}
+	if (lock->holder != NULL && hold_t->priority < cur->priority) {
+		thread_donate(hold_t, cur->priority);
+	}
+	list_push_back(hold_t->lock_list, lock->elem);
+	sema_down(&lock->semaphore);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
