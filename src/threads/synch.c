@@ -216,12 +216,12 @@ lock_acquire (struct lock *lock)
 	ASSERT (!lock_held_by_current_thread (lock));
 
 	if (lock->holder = NULL) {
-		lock->holder = cur;
+		lock->holder = cur;	
 	}
 	if (lock->holder != NULL && hold_t->priority < cur->priority) {
 		thread_donate(hold_t, cur->priority);
 	}
-	list_push_back(hold_t->lock_list, lock->elem);
+	list_push_back(&hold_t->lock_list, &lock->elem);
 	sema_down(&lock->semaphore);
 }
 
@@ -253,11 +253,13 @@ lock_try_acquire (struct lock *lock)
 void
 lock_release (struct lock *lock) 
 {
-  ASSERT (lock != NULL);
-  ASSERT (lock_held_by_current_thread (lock));
-
-  lock->holder = NULL;
-  sema_up (&lock->semaphore);
+	ASSERT (lock != NULL);
+	ASSERT (lock_held_by_current_thread (lock));
+	struct thread *cur = thread_current();
+	if(!list_empty(&cur->lock_list);
+		thread_donate(lock->holder, lock->holder->original_prior);
+	lock->holder = NULL;
+	sema_up (&lock->semaphore);
 }
 
 /* Returns true if the current thread holds LOCK, false
@@ -266,17 +268,17 @@ lock_release (struct lock *lock)
 bool
 lock_held_by_current_thread (const struct lock *lock) 
 {
-  ASSERT (lock != NULL);
+	ASSERT (lock != NULL);
 
-  return lock->holder == thread_current ();
+	return lock->holder == thread_current ();
 }
 
 /* One semaphore in a list. */
 struct semaphore_elem 
-  {
-    struct list_elem elem;              /* List element. */
-    struct semaphore semaphore;         /* This semaphore. */
-  };
+	{
+		struct list_elem elem;              /* List element. */
+		struct semaphore semaphore;         /* This semaphore. */
+	};
 
 /* Initializes condition variable COND.  A condition variable
    allows one piece of code to signal a condition and cooperating

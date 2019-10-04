@@ -102,9 +102,6 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
-  initial_thread->niceV = 0;
-  initial_thread->loadAvg = 0;
-  initial_thread->recCpu = 0;
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -173,42 +170,45 @@ tid_t
 thread_create (const char *name, int priority,
                thread_func *function, void *aux) 
 {
-  struct thread *t;
-  struct kernel_thread_frame *kf;
-  struct switch_entry_frame *ef;
-  struct switch_threads_frame *sf;
-  tid_t tid;
+	struct thread *t;
+	struct kernel_thread_frame *kf;
+	struct switch_entry_frame *ef;
+	struct switch_threads_frame *sf;
+	tid_t tid;
 
-  ASSERT (function != NULL);
+	ASSERT (function != NULL);
 
   /* Allocate thread. */
-  t = palloc_get_page (PAL_ZERO);
-  if (t == NULL)
-    return TID_ERROR;
+	t = palloc_get_page (PAL_ZERO);
+	if (t == NULL)
+		return TID_ERROR;
 
   /* Initialize thread. */
-  init_thread (t, name, priority);
-  tid = t->tid = allocate_tid ();
+	init_thread (t, name, priority);
+	tid = t->tid = allocate_tid ();
 
   /* Stack frame for kernel_thread(). */
-  kf = alloc_frame (t, sizeof *kf);
-  kf->eip = NULL;
-  kf->function = function;
-  kf->aux = aux;
+	kf = alloc_frame (t, sizeof *kf);
+	kf->eip = NULL;
+	kf->function = function;
+	kf->aux = aux;
 
-  /* Stack frame for switch_entry(). */
-  ef = alloc_frame (t, sizeof *ef);
-  ef->eip = (void (*) (void)) kernel_thread;
+	/* Stack frame for switch_entry(). */
+	ef = alloc_frame (t, sizeof *ef);
+	ef->eip = (void (*) (void)) kernel_thread;
 
-  /* Stack frame for switch_threads(). */
-  sf = alloc_frame (t, sizeof *sf);
-  sf->eip = switch_entry;
-  sf->ebp = 0;
+	/* Stack frame for switch_threads(). */
+	sf = alloc_frame (t, sizeof *sf);
+	sf->eip = switch_entry;
+	sf->ebp = 0;
 
-  /* Add to run queue. */
-  thread_unblock (t);
-  thread_update ();
-  return tid;
+	/* Add to run queue. */
+	thread_unblock (t);
+	if (priority > thread_current()->priority) {
+		thread_yield();
+	}
+	//thread_update ();
+	return tid;
 }
 
 /* Puts the current thread to sleep.  It will not be scheduled
@@ -238,17 +238,20 @@ thread_block (void)
 void
 thread_unblock (struct thread *t) 
 {
-  enum intr_level old_level;
+	enum intr_level old_level;
 
-  ASSERT (is_thread (t));
+	ASSERT (is_thread (t));
 
-  old_level = intr_disable ();
-  ASSERT (t->status == THREAD_BLOCKED);
-  //list_push_back (&ready_list, &t->elem);
-  list_insert_ordered(&ready_list, &t->elem, (list_less_func*)&priority_less, NULL);
-  t->status = THREAD_READY;
-  //thread_update();
-  intr_set_level (old_level);
+	old_level = intr_disable ();
+	ASSERT (t->status == THREAD_BLOCKED);
+	//list_push_back (&ready_list, &t->elem);
+	list_insert_ordered(&ready_list, &t->elem, (list_less_func*)&priority_less, NULL);
+	t->status = THREAD_READY;
+	if (t->priority > thread_current()->priority) {
+		thread_yield();
+	}
+	//thread_update();
+	intr_set_level (old_level);
 }
 
 /* Returns the name of the running thread. */
@@ -327,18 +330,25 @@ thread_yield (void)
  if lock is BUSY, call donate */
 void thread_update(void)
 {
-	struct thread *high = next_thread();
+	struct thread *high = next_thread_to_run();
 	struct thread *cur = thread_current();
 	if(list_empty(&ready_list))
 		return;
 	if (high->priority > cur->priority) {
-		if(cur-> == high ->lock_list)
 		thread_yield();
 	}
 }
 
 void thread_donate(struct thread* t, int new_priority) {
 	t -> priority = new_priority;
+
+	//If current is not the highest priority anymore, yield.
+	if (t == thread_current() && !list_empty(&ready_list)) {
+		struct thread *next = list_entry(list_begin(&ready_list), struct thread, elem);
+		if (next->priority > t->priority) {
+			thread_yield();
+		}
+	}
 }
 
 /* Invoke function 'func' on all threads, passing along 'aux'.
@@ -362,8 +372,23 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
-  thread_update();
+	struct thread *cur = thread_current();
+	//Donating NOT exists
+	if (cur->priority == cur->original_prior) {
+		cur->priority = new_priority;
+		cur->original_prior = new_priority;
+	}
+	//Donating exists, no need to change priority but original_prior need to change.
+	else {
+		cur->original_prior = new_priority;
+	}
+	//If it is not the highest priority anymore, yield.
+	if (!list_empty(&ready_list)) {
+		struct thread *next = list_entry(list_begin(&ready_list), struct thread, elem);
+		if (next->priority > cur->priority) {
+			thread_yield();
+		}
+	}
 }
 
 /* Returns the current thread's priority. */
@@ -491,9 +516,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-  t->niceV = 0;
-  t->loadAvg = 0;
-  t->recCpu = 0;
+  t->original_prior = priority;
+  list_init(&t->lock_list);
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
