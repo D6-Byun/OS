@@ -146,7 +146,8 @@ sema_up (struct semaphore *sema)
 	//thread_unblock(max_thread);
   }
   sema->value++;
-  thread_update();
+  //thread_yield();
+  //thread_update();
   intr_set_level (old_level);
 }
 
@@ -274,10 +275,12 @@ lock_release (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
-  //thread_donate(lock->holder, lock->holder->original_prior);
+  //`thread_donate(thread_current(), thread_current()->original_prior);
 
   lock->holder = NULL;
   sema_up (&lock->semaphore);
+  thread_yield();
+  //thread_update();
 }
 
 /* Returns true if the current thread holds LOCK, false

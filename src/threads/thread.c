@@ -300,7 +300,9 @@ thread_exit (void)
      when it calls thread_schedule_tail(). */
   intr_disable ();
   list_remove (&thread_current()->allelem);
+  //thread_donate(thread_current(), thread_current()->original_prior);
   thread_current ()->status = THREAD_DYING;
+  //thread_donate(thread_current(), thread_current()->original_prior);
   schedule ();
   NOT_REACHED ();
 }
@@ -452,7 +454,7 @@ kernel_thread (thread_func *function, void *aux)
   function (aux);       /* Execute the thread function. */
   thread_exit ();       /* If function() returns, kill the thread. */
 }
-
+
 /* Returns the running thread. */
 struct thread *
 running_thread (void) 
