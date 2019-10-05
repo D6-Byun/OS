@@ -224,9 +224,9 @@ lock_acquire (struct lock *lock)
 	cur->wait = lock;
 	//if lock->holder is NULL there is no holder for wait
 	//do sema_down();
-	if (lock->holder == NULL){
+	/*if (lock->holder == NULL){
 		hold_t->priority = cur-> priority;
-	}
+	}*/
 	while (hold_t != NULL && hold_t-> priority < cur-> priority) {
 		thread_donate(hold_t, cur-> priority);
 
@@ -241,7 +241,6 @@ lock_acquire (struct lock *lock)
 	lock-> holder-> wait = NULL;
 
 	list_push_back(&(lock->holder->lock_list),&(lock->elem));
-        struct thread *hold_t = lock->holder;_
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
