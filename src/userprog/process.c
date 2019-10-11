@@ -476,11 +476,10 @@ setup_stack (void **esp, struct arg *arg_struct)
 		  for (int i = argc_value - 1; i >= 0; i--)
 		  {
 			  size = strlen(arg_struct->argv[i]);
-			  *esp = *esp - size;
+			  *esp = *esp - (size+1);
 			  memcpy(*esp, arg_struct->argv[i], size);
-			  argv_address[i] = *esp;
+			  argv_address[i] =  *esp;
 		  }
-		  *prev_ptr = *esp;
 
 		  ptr_loop = *esp;
 
