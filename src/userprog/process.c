@@ -67,17 +67,17 @@ process_execute (const char *file_name)
 static void
 start_process (void *arg_struct_)
 {
-	struct arg *arg_struct = arg_struct_;
+	struct arg arg_struct = *arg_struct_;
   struct intr_frame if_;
   bool success;
-  char *file_name = (arg_struct->argv)[0];
+  char *file_name = (arg_struct.argv)[0];
 
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (arg_struct, &if_.eip, &if_.esp);
+  success = load (&arg_struct, &if_.eip, &if_.esp);
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
@@ -228,15 +228,16 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
 bool
-load (struct arg *arg_struct, void (**eip) (void), void **esp) 
+load (struct arg *arg_struct_, void (**eip) (void), void **esp) 
 {
+	struct arg arg_struct = *arg_struct_;
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
   struct file *file = NULL;
   off_t file_ofs;
   bool success = false;
   int i;
-  char *file_name = (arg_struct->argv)[0];
+  char *file_name = (arg_struct.argv)[0];
 
 
   /* Allocate and activate page directory. */
@@ -326,7 +327,7 @@ load (struct arg *arg_struct, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
-  if (!setup_stack (esp,arg_struct))
+  if (!setup_stack (esp,&arg_struct))
     goto done;
 
   /* Start address. */
@@ -451,12 +452,13 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp, struct arg *arg_struct)
+setup_stack (void **esp, struct arg *arg_struct_)
 {
+	struct arg arg_struct = *arg_struct_;
   uint8_t *kpage;
   bool success = false;
   size_t size;
-  int argc_value = arg_struct->argc;
+  int argc_value = arg_struct.argc;
   char *argv_address[32];
   int *nullPtr = NULL;
   char **prev_ptr;
@@ -472,9 +474,9 @@ setup_stack (void **esp, struct arg *arg_struct)
 		  *esp = PHYS_BASE;
 		  for (int i = argc_value - 1; i >= 0; i--)
 		  {
-			  size = strlen(arg_struct->argv[i]);
+			  size = strlen(arg_struct.argv[i]);
 			  *esp = *esp - size;
-			  memcpy(*esp, arg_struct->argv[i], size);
+			  memcpy(*esp, arg_struct.argv[i], size);
 			  argv_address[i] = *esp;
 		  }
 		  *prev_ptr = *esp;
