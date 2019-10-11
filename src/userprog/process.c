@@ -28,8 +28,11 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy;
+  char *fn_copy, *token, *save_ptr;
   tid_t tid;
+  char *argv[32];
+  int argc=0;
+  struct arg *arg_struct;
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -38,28 +41,41 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
+  for (token = strtok_r(fn_copy, " ", &save_ptr); token != NULL;
+	  token = strtok_r(NULL, " ", &save_ptr))
+  {
+	  argv[argc] = &token;
+	  argc++;
+	  printf("'%s'\n", token);
+  }
+  
+  arg_struct->argc = argc;
+  arg_struct->argv = argv;
+
+
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, &arg_struct);
   if (tid == TID_ERROR)
-    palloc_free_page (fn_copy); 
+    palloc_free_page (((arg_struct->argv)[0]);
   return tid;
 }
 
 /* A thread function that loads a user process and starts it
    running. */
 static void
-start_process (void *file_name_)
+start_process (struct arg *arg_struct)
 {
-  char *file_name = file_name_;
+  char *arg_struct = arg_struct;
   struct intr_frame if_;
   bool success;
+  char *file_name = (arg_struct->argv)[0];
 
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (file_name, &if_.eip, &if_.esp);
+  success = load (arg_struct, &if_.eip, &if_.esp);
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
@@ -88,6 +104,10 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+	while (true)
+	{
+		
+	}
   return -1;
 }
 
@@ -437,7 +457,7 @@ setup_stack (void **esp)
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
       if (success)
-        *esp = PHYS_BASE - 12;
+        *esp = PHYS_BASE - 128;
       else
         palloc_free_page (kpage);
     }
