@@ -45,12 +45,12 @@ process_execute (const char *file_name)
   for (token = strtok_r(fn_copy, " ", &save_ptr); token != NULL;
 	  token = strtok_r(NULL, " ", &save_ptr))
   {
-	  arg_struct->argv[argc] = &token;
-	  argv[argc] = &token;
+	  (&arg_struct->argv)[argc] = &token;
+	  argv[argc] = token;
 	  argc++;
 	  printf("'%s'\n", token);
   }
-  
+  ASSERT(-1);
   arg_struct->argc = argc;
 
 
