@@ -222,6 +222,14 @@ load (const char *file_name, void (**eip) (void), void **esp)
     bool success = false;
     int i, argc;
 
+	
+  /* Allocate and activate page directory. */
+  t->pagedir = pagedir_create ();
+  if (t->pagedir == NULL) 
+    goto done;
+  process_activate ();
+
+  /*parsing the arguments*/
 	while(1) {
 		argv[argc] = strtok_r(file_name," ",&save_ptr);
 		if(argv[argc] == NULL)
@@ -229,13 +237,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
 		argc++;
 	}
 	printf("file name is %s\n",argv[0]);
-  /* Allocate and activate page directory. */
-  t->pagedir = pagedir_create ();
-  if (t->pagedir == NULL) 
-    goto done;
-  process_activate ();
-
   /* Open executable file. */
+
   file = filesys_open (argv[0]);
   if (file == NULL) 
     {
@@ -456,7 +459,7 @@ setup_stack (void **esp, int argc, char *argv)
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 	  if (success) {
 		  //*esp = PHYS_BASE - 12; 
-
+		  *esp = PHYS_BASE;
 		  /*argv[argc - 1] ~ argv[0]*/
 		  for (int i = argc - 1; i >= 0; i--) {
 			  *esp -= (strlen(argv[i]) + 1);
