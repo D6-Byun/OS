@@ -32,11 +32,11 @@ process_execute (const char *file_name)
   tid_t tid;
   int argc=0;
   struct arg *arg_struct;
-  /*
+  
   arg_struct = palloc_get_page(0);
   if (arg_struct == NULL)
-	  return 0;
-  */
+	  return TID_ERROR;
+  
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -53,8 +53,7 @@ process_execute (const char *file_name)
   }
   arg_struct->argc = argc;
   printf("progress_execude\n");
-  printf(arg_struct->argc);
-  printf("\n");
+  printf("%d\n",arg_struct->argc);
   printf("%s\n",arg_struct->argv[0]);
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, arg_struct);
