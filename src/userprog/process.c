@@ -31,12 +31,12 @@ process_execute (const char *file_name)
   char *fn_copy, *token, *save_ptr;
   tid_t tid;
   int argc=0;
-  struct arg arg_struct;
-  /*
+  struct arg *arg_struct;
+  
   arg_struct = palloc_get_page(0);
   if (arg_struct == NULL)
 	  return 0;
-  */
+  
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -48,17 +48,18 @@ process_execute (const char *file_name)
   for (token = strtok_r(fn_copy, " ", &save_ptr); token != NULL;
 	  token = strtok_r(NULL, " ", &save_ptr))
   {
-	  (arg_struct.argv)[argc] = token;
+	  (arg_struct->argv)[argc] = token;
 	  argc++;
   }
-  ASSERT(-1);
-  arg_struct.argc = argc;
-
-
+  arg_struct->argc = argc;
+  printf("progress_execude\n");
+  printf(arg_struct->argc);
+  printf(arg_struct->argv[0]);
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (((arg_struct.argv)[0]), PRI_DEFAULT, start_process, &arg_struct);
+  tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, arg_struct);
+  printf("thread_Created\n");
   if (tid == TID_ERROR)
-    palloc_free_page ((arg_struct.argv)[0]);
+    palloc_free_page ((arg_struct->argv)[0]);
   return tid;
 }
 
@@ -67,10 +68,12 @@ process_execute (const char *file_name)
 static void
 start_process (void *arg_struct_)
 {
-	struct arg arg_struct = (struct arg *)*arg_struct_;
+ASSERT(0);
+	struct arg arg_struct = *(struct arg *)arg_struct_;
   struct intr_frame if_;
   bool success;
   char *file_name = (arg_struct.argv)[0];
+  printf("start process start\n"); 
 
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
