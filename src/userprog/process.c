@@ -31,7 +31,7 @@ process_execute (const char *file_name)
   char *fn_copy, *token, *save_ptr;
   tid_t tid;
 
-  token = strtok_r(file_name, "", &save_ptr);
+  token = strtok_r(file_name," ", &save_ptr);
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -39,6 +39,7 @@ process_execute (const char *file_name)
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
+  printf("Process_Execute: file name is %s\n",token);
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (token, PRI_DEFAULT, start_process, fn_copy);
@@ -55,7 +56,8 @@ start_process (void *file_name_)
   char *file_name = file_name_;
   struct intr_frame if_;
   bool success;
-
+  
+  printf("start_processing");
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -90,7 +92,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-	for(int i = 0; i < 1000000000; i++);
+	while(1);
 	return -1;
 }
 
@@ -211,21 +213,22 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
 bool
 load (const char *file_name, void (**eip) (void), void **esp) 
 {
-  struct thread *t = thread_current ();
-  struct Elf32_Ehdr ehdr;
-  struct file *file = NULL;
-  char *token, *save_ptr;
-  char *argv[32];
-  off_t file_ofs;
-  bool success = false;
-  int i, argc;
+    struct thread *t = thread_current ();
+    struct Elf32_Ehdr ehdr;
+    struct file *file = NULL;
+    char *token, *save_ptr;
+    char *argv[32];
+    off_t file_ofs;
+    bool success = false;
+    int i, argc;
 
-	for (token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
-		argv[argc] = token;
+	while(1) {
+		argv[argc] = strtok_r(file_name," ",&save_ptr);
+		if(argv[argc] == NULL)
+			break;
 		argc++;
 	}
-		printf("'%s'\n", token);
-
+	printf("file name is %s\n",argv[0]);
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -313,6 +316,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
+	printf("stack is setting");
 	if (!setup_stack (esp,argc,argv))
 		goto done;
 
@@ -369,6 +373,7 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
      it then user code that passed a null pointer to system calls
      could quite likely panic the kernel by way of null pointer
      assertions in memcpy(), etc. */
+  //if(phdr->p_offset < PGSIZE)
   if (phdr->p_vaddr < PGSIZE)
     return false;
 
@@ -444,6 +449,7 @@ setup_stack (void **esp, int argc, char *argv)
   bool success = false;
   uintptr_t* addr[10];
 
+    printf("stack start");
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
     {
