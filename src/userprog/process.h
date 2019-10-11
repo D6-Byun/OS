@@ -5,7 +5,7 @@
 
 struct arg
 {
-	char *argv[32];
+	char * argv[32];
 	int argc;
 };
 
