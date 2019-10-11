@@ -64,8 +64,9 @@ process_execute (const char *file_name)
 /* A thread function that loads a user process and starts it
    running. */
 static void
-start_process (struct arg *arg_struct)
+start_process (void *arg_struct_)
 {
+	struct arg *arg_struct = arg_struct_;
   struct intr_frame if_;
   bool success;
   char *file_name = (arg_struct->argv)[0];
@@ -460,6 +461,7 @@ setup_stack (void **esp, struct arg *arg_struct)
   char **prev_ptr;
   uint8_t zero = 0;
   int dump_size = 0;
+  intptr_t ptr_loop;
   
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
@@ -475,11 +477,14 @@ setup_stack (void **esp, struct arg *arg_struct)
 			  argv_address[i] = *esp;
 		  }
 		  *prev_ptr = *esp;
-		  while (*prev_ptr % 4 != 0) {
+
+		  ptr_loop = *esp;
+
+		  while (ptr_loop % 4 != 0) {
 			  size = sizeof(zero);
 			  *esp = *esp - size;
 			  memcpy(*esp, &zero, size);
-			  *prev_ptr = *esp;
+			  ptr_loop = *esp;
 		  }
 
 		  size = sizeof(nullPtr);
