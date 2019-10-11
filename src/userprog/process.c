@@ -56,9 +56,9 @@ process_execute (const char *file_name)
 
 
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, &arg_struct);
+  tid = thread_create (((arg_struct.argv)[0]), PRI_DEFAULT, start_process, &arg_struct);
   if (tid == TID_ERROR)
-    palloc_free_page ((arg_struct->argv)[0]);
+    palloc_free_page ((arg_struct.argv)[0]);
   return tid;
 }
 
