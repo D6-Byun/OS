@@ -467,7 +467,7 @@ setup_stack (void **esp, struct arg *arg_struct)
   char **prev_ptr;
   uint8_t zero = 0;
   int dump_size = 0;
-  intptr_t ptr_loop;
+  intptr_t * ptr_loop;
   
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
@@ -480,7 +480,7 @@ setup_stack (void **esp, struct arg *arg_struct)
 		  for (int i = argc_value - 1; i >= 0; i--)   /* argv[argc-1][...] ~ argv[0][...]  */
 		  {
 			  size = strlen(arg_struct->argv[i]);
-			  *esp = *esp - (size+1);
+			  *esp = *esp - (size+(size_t)1);
 			  memcpy(*esp, arg_struct->argv[i], size);
 			  argv_address[i] =  *esp;
 		  }
