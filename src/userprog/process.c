@@ -19,7 +19,7 @@
 #include "threads/vaddr.h"
 
 static thread_func start_process NO_RETURN;
-static bool load (const char *cmdline, void (**eip) (void), void **esp);
+static bool load (struct arg *arg_struct, void (**eip) (void), void **esp);
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
@@ -33,6 +33,7 @@ process_execute (const char *file_name)
   char *argv[32];
   int argc=0;
   struct arg *arg_struct;
+  int i = 0;
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -44,19 +45,19 @@ process_execute (const char *file_name)
   for (token = strtok_r(fn_copy, " ", &save_ptr); token != NULL;
 	  token = strtok_r(NULL, " ", &save_ptr))
   {
+	  arg_struct->argv[argc] = &token;
 	  argv[argc] = &token;
 	  argc++;
 	  printf("'%s'\n", token);
   }
   
   arg_struct->argc = argc;
-  arg_struct->argv = argv;
 
 
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, &arg_struct);
+  tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, arg_struct);
   if (tid == TID_ERROR)
-    palloc_free_page (((arg_struct->argv)[0]);
+    palloc_free_page ((arg_struct->argv)[0]);
   return tid;
 }
 
