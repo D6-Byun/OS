@@ -31,11 +31,12 @@ process_execute (const char *file_name)
   char *fn_copy, *token, *save_ptr;
   tid_t tid;
   int argc=0;
-  struct arg *arg_struct;
-
+  struct arg arg_struct;
+  /*
   arg_struct = palloc_get_page(0);
   if (arg_struct == NULL)
 	  return 0;
+  */
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -47,15 +48,15 @@ process_execute (const char *file_name)
   for (token = strtok_r(fn_copy, " ", &save_ptr); token != NULL;
 	  token = strtok_r(NULL, " ", &save_ptr))
   {
-	  (arg_struct->argv)[argc] = token;
+	  (arg_struct.argv)[argc] = token;
 	  argc++;
   }
   ASSERT(-1);
-  arg_struct->argc = argc;
+  arg_struct.argc = argc;
 
 
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, arg_struct);
+  tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, &arg_struct);
   if (tid == TID_ERROR)
     palloc_free_page ((arg_struct->argv)[0]);
   return tid;
