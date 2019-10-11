@@ -90,7 +90,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-	while (1);
+	for(int i = 0; i < 1000000000; i++);
 	return -1;
 }
 
@@ -214,13 +214,14 @@ load (const char *file_name, void (**eip) (void), void **esp)
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
   struct file *file = NULL;
-  char *token, *save_ptr, *argv;
+  char *token, *save_ptr;
+  char *argv[32];
   off_t file_ofs;
   bool success = false;
   int i, argc;
 
 	for (token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
-		argv[argv] = token;
+		argv[argc] = token;
 		argc++;
 	}
 		printf("'%s'\n", token);
@@ -441,7 +442,7 @@ setup_stack (void **esp, int argc, char *argv)
 {
   uint8_t *kpage;
   bool success = false;
-  char* addr[10];
+  uintptr_t* addr[10];
 
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
@@ -454,12 +455,12 @@ setup_stack (void **esp, int argc, char *argv)
 		  for (int i = argc - 1; i >= 0; i--) {
 			  *esp -= (strlen(argv[i]) + 1);
 			  addr[i] = *esp;
-			  memcpy(*esp, argv[i], strlen(argv[i]) + 1)
+			  memcpy(*esp, argv[i], strlen(argv[i]) + 1);
 		  }
 		  /* word align */
-		  while(*esp % 4 != 0){
+		  while((uintptr_t)*esp % 4 != 0){
 			  *esp -= 1;
-			  **esp = (uint8_t)0;
+			  *(uint8_t *)*esp = (uint8_t)0;
 		  }
 		  
 		  /* argv[argc] */
@@ -469,11 +470,11 @@ setup_stack (void **esp, int argc, char *argv)
 		  /* addr of argv[] */
 		  for (int i = argc - 1; i >= 0; i--) {
 			  *esp -= 4;
-			  **esp = addr[i];
+			  *(uintptr_t *)*esp = addr[i];
 		  }
 		  /* argv */
 		  *esp -= 4;
-		  **esp = *esp + 4;
+		  *(uintptr_t *)*esp = *esp + 4;
 		  
 		  /* argc */
 		  *esp -= 4;
@@ -481,7 +482,7 @@ setup_stack (void **esp, int argc, char *argv)
 		  
 		  /* ret addr */
 		  *esp -= 4;
-		  *(void *)*esp = 0;
+		  *(int *)*esp = 0;
 
 	  }else
         palloc_free_page (kpage);
