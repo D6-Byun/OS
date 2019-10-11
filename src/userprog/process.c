@@ -69,7 +69,6 @@ process_execute (const char *file_name)
 static void
 start_process (void *arg_struct_)
 {
-ASSERT(0);
 	struct arg *arg_struct = arg_struct_;
   struct intr_frame if_;
   bool success;
