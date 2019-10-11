@@ -474,15 +474,17 @@ setup_stack (void **esp, struct arg *arg_struct)
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 	  if (success) {
+		  /*0xc0000000*/
 		  *esp = PHYS_BASE;
-		  for (int i = argc_value - 1; i >= 0; i--)
+		  /* argv[argc-1][...] ~ argv[0][...]  */
+		  for (int i = argc_value - 1; i >= 0; i--)   /* argv[argc-1][...] ~ argv[0][...]  */
 		  {
 			  size = strlen(arg_struct->argv[i]);
 			  *esp = *esp - (size+1);
 			  memcpy(*esp, arg_struct->argv[i], size);
 			  argv_address[i] =  *esp;
 		  }
-
+		  /* word-align */
 		  ptr_loop = (intptr_t)*esp;
 
 		  while (ptr_loop % 4 != 0) {
@@ -492,25 +494,34 @@ setup_stack (void **esp, struct arg *arg_struct)
 			  ptr_loop = (intptr_t)*esp;
 		  }
 
+		  /* argv[argc] */
 		  size = sizeof(nullPtr);
 		  *esp = *esp - size;
 		  memcpy(*esp, nullPtr, size);
+
+		  /* argv[argc-1] ~ argv[0] */
 		  for (int j = argc_value - 1; j >= 0; j--)
 		  {
 			  size = sizeof(argv_address[j]);
 			  *esp = *esp - size;
 			  memcpy(*esp, argv_address[j], size);
 		  }
+		  /* argv */
 		  size = sizeof(*esp);
 		  *prev_ptr = *esp;
 		  *esp = *esp - size;
 		  memcpy(*esp, *prev_ptr, size);
+
+		  /* argc */
 		  size = sizeof(argc_value);
 		  *esp = *esp - size;
 		  memcpy(*esp, &argc_value, size);
+
+		  /* return address */
 		  size = sizeof(nullPtr);
 		  *esp = *esp - size;
 		  memcpy(*esp, nullPtr, size);
+
 		  dump_size = PHYS_BASE - *esp;
 		  hex_dump(*esp, *esp, dump_size, true);
 	  }
