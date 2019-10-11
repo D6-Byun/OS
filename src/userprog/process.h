@@ -7,6 +7,7 @@ struct arg
 {
 	char * argv[32];
 	int argc;
+	char * filename;
 };
 
 tid_t process_execute (const char *file_name);

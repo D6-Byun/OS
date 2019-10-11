@@ -44,7 +44,7 @@ process_execute (const char *file_name)
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
-
+  arg_struct->filename = fn_copy;
   for (token = strtok_r(fn_copy, " ", &save_ptr); token != NULL;
 	  token = strtok_r(NULL, " ", &save_ptr))
   {
@@ -59,7 +59,10 @@ process_execute (const char *file_name)
   tid = thread_create (((arg_struct->argv)[0]), PRI_DEFAULT, start_process, arg_struct);
   printf("thread_Created\n");
   if (tid == TID_ERROR)
-    palloc_free_page ((arg_struct->argv)[0]);
+  {
+	  palloc_free_page(fn_copy);
+	  palloc_free_page(arg_struct);
+  }
   return tid;
 }
 
@@ -82,7 +85,8 @@ start_process (void *arg_struct_)
   success = load (arg_struct, &if_.eip, &if_.esp);
 
   /* If load failed, quit. */
-  palloc_free_page (file_name);
+  palloc_free_page (arg_struct->filename);
+  palloc_free_page(arg_struct);
   if (!success) 
     thread_exit ();
 
