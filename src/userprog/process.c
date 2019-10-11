@@ -74,7 +74,6 @@ start_process (void *arg_struct_)
 	struct arg *arg_struct = arg_struct_;
   struct intr_frame if_;
   bool success;
-  char *file_name = (arg_struct->argv)[0];
   printf("start process start\n"); 
 
   /* Initialize interrupt frame and load executable. */
@@ -484,13 +483,13 @@ setup_stack (void **esp, struct arg *arg_struct)
 			  argv_address[i] =  *esp;
 		  }
 
-		  ptr_loop = *esp;
+		  ptr_loop = (intptr_t)*esp;
 
 		  while (ptr_loop % 4 != 0) {
 			  size = sizeof(zero);
 			  *esp = *esp - size;
 			  memcpy(*esp, &zero, size);
-			  ptr_loop = *esp;
+			  ptr_loop = (intptr_t)*esp;
 		  }
 
 		  size = sizeof(nullPtr);
