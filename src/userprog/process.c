@@ -65,7 +65,6 @@ process_execute (const char *file_name)
 static void
 start_process (struct arg *arg_struct)
 {
-  char *arg_struct = arg_struct;
   struct intr_frame if_;
   bool success;
   char *file_name = (arg_struct->argv)[0];
@@ -215,7 +214,7 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp);
+static bool setup_stack (void **esp, struct arg *arg_struct);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
@@ -226,7 +225,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
 bool
-load (const char *file_name, void (**eip) (void), void **esp) 
+load (struct arg *arg_struct, void (**eip) (void), void **esp) 
 {
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
@@ -234,6 +233,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
   off_t file_ofs;
   bool success = false;
   int i;
+  char *file_name = (arg_struct->argv)[0];
+
 
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
@@ -322,7 +323,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
-  if (!setup_stack (esp))
+  if (!setup_stack (esp,arg_struct))
     goto done;
 
   /* Start address. */
@@ -447,19 +448,64 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp) 
+setup_stack (void **esp, struct arg *arg_struct)
 {
   uint8_t *kpage;
   bool success = false;
-
+  size_t size;
+  int argc_value = arg_struct->argc;
+  char *argv_address[32];
+  int *nullPtr = NULL;
+  char **prev_ptr;
+  uint8_t zero = 0;
+  int dump_size = 0;
+  
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success)
-        *esp = PHYS_BASE - 128;
+	  if (success) {
+		  *esp = PHYS_BASE;
+		  for (int i = argc_value - 1; i >= 0; i--)
+		  {
+			  size = strlen(arg_struct->argv[i]);
+			  *esp = *esp - size;
+			  memcpy(*esp, arg_struct->argv[i], size);
+			  argv_address[i] = *esp;
+		  }
+		  *prev_ptr = *esp;
+		  while (*prev_ptr % 4 != 0) {
+			  size = sizeof(zero);
+			  *esp = *esp - size;
+			  memcpy(*esp, &zero, size);
+			  *prev_ptr = *esp;
+		  }
+
+		  size = sizeof(nullPtr);
+		  *esp = *esp - size;
+		  memcpy(*esp, nullPtr, size);
+		  for (int j = argc_value - 1; j >= 0; j--)
+		  {
+			  size = sizeof(argv_address[j]);
+			  *esp = *esp - size;
+			  memcpy(*esp, argv_address[j], size);
+		  }
+		  size = sizeof(*esp);
+		  *prev_ptr = *esp;
+		  *esp = *esp - size;
+		  memcpy(*esp, *prev_ptr, size);
+		  size = sizeof(argc_value);
+		  *esp = *esp - size;
+		  memcpy(*esp, &argc_value, size);
+		  size = sizeof(nullPtr);
+		  *esp = *esp - size;
+		  memcpy(*esp, nullPtr, size);
+		  dump_size = PHYS_BASE - *esp;
+		  hex_dump(*esp, *esp, dump_size, true);
+	  }
       else
         palloc_free_page (kpage);
+	 
     }
   return success;
 }
