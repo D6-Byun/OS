@@ -57,7 +57,7 @@ start_process (void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
-  printf("start_process\n");
+  //printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -466,10 +466,10 @@ setup_stack (void **esp, int argc, char *argv[])
 		  /*word-align*/
 		  while ((uintptr_t)*esp % 4 != 0) {
 			  *esp = *esp - 1;
-			  printf("%d\n",(uintptr_t)*esp);
+			  //printf("%d\n",(uintptr_t)*esp);
 			  //memmove(*esp,nullp,sizeof(*nullp));
 		  }
-			printf("%d\n",(uintptr_t)*esp);
+			//printf("%d\n",(uintptr_t)*esp);
 		  /*argv[i]*/
 		  for (int i = argc; i >= 0; i--) {
 			  *esp = *esp - 4;
@@ -477,11 +477,11 @@ setup_stack (void **esp, int argc, char *argv[])
 		  }
 		  /*argv*/
 		  *esp = *esp - 4;
-		  printf("%d\n",(uintptr_t)*esp);
+		  //printf("%d\n",(uintptr_t)*esp);
 		  *(uintptr_t **)*esp = *esp + 4;
 		  /*argc*/
 		  *esp = *esp - 4;
-		  	printf("%d\n",(uintptr_t)*esp);
+		  	//printf("%d\n",(uintptr_t)*esp);
 			*(int *)*esp = argc;
 		  /*ret addr*/
 		  *esp = *esp - 4;

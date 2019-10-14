@@ -8,6 +8,7 @@
 #include "lib/user/syscall.h"
 #include "filesys/filesys.h"
 #include "filesys/file.h"
+#include "threads/vaddr.h"
 
 static void syscall_handler (struct intr_frame *);
 void halt(void) NO_RETURN;
@@ -31,7 +32,7 @@ syscall_init (void)
 }
 
 void is_valid_addr(void *addr) {
-	if (!is_valid_addr(addr)) {
+	if (!is_user_vaddr(addr)) {
 		exit(-1);
 	}
 }
@@ -40,12 +41,17 @@ void is_valid_addr(void *addr) {
 static void
 syscall_handler (struct intr_frame *f) 
 {
+	printf("system call!\n");
+	printf("f->esp: %x\n",f->esp);
+	printf("*f->esp: %d\n",*(int*)f->esp);
+	hex_dump((uintptr_t)f->esp,f->esp,100,true);
 	switch (*(uint32_t *)f->esp) {
 		case SYS_HALT:
 			shutdown_power_off();
 			break;
 		case SYS_EXIT:
 			is_valid_addr(f->esp + 4);
+			printf("EXIT!\n");
 			exit(*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_EXEC:
@@ -77,7 +83,7 @@ syscall_handler (struct intr_frame *f)
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 12);
-			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12);
+			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:
 			is_valid_addr(f->esp + 4);
@@ -100,7 +106,7 @@ syscall_handler (struct intr_frame *f)
 			break;
 	}
 	
-	printf ("system call!\n");
+	//printf ("system call!\n");
 	thread_exit ();
 }
 
@@ -108,10 +114,11 @@ syscall_handler (struct intr_frame *f)
 	shutdown_power_off();
 }*/
 void exit(int status) {
+	printf("%s: exit(%d)\n",thread_name(),status);
 	thread_exit();
 }
 pid_t exec(const char *cmd_line) {
-	return process_execute(cmd_line)
+	return process_execute(cmd_line);
 }
 int wait(pid_t pid) {
 	return process_wait(pid);
@@ -138,7 +145,7 @@ int filesize(int fd) {
 int read(int fd, void *buffer, unsigned length) {
 	if (fd == 0) {
 		for (int i = 0; i < length; i++) {
-			if ((char *)buffer[i] == '\0') {
+			if (((char *)buffer)[i] == '\0') {
 				return i;		
 			}
 		}

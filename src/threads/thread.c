@@ -469,7 +469,7 @@ init_thread (struct thread *t, const char *name, int priority)
 	intr_set_level (old_level);
 
 #ifdef USERPROG
-	sema_init(&(t->sema_child, 0);
+	sema_init(&(t->sema_child), 0);
 	list_init(&(t->child));
 	for (int i = 0; i < 128; i++) {
 		t->files[i] = NULL;
