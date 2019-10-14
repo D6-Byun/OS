@@ -96,6 +96,10 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+	struct list child;
+	struct list_elem child_elem;
+	struct semaphore sema_child;
+	struct file *files[128];
 #endif
 
     /* Owned by thread.c. */

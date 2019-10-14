@@ -451,22 +451,31 @@ is_thread (struct thread *t)
 static void
 init_thread (struct thread *t, const char *name, int priority)
 {
-  enum intr_level old_level;
+	enum intr_level old_level;
 
-  ASSERT (t != NULL);
-  ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
-  ASSERT (name != NULL);
+	ASSERT (t != NULL);
+	ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
+	ASSERT (name != NULL);
 
-  memset (t, 0, sizeof *t);
-  t->status = THREAD_BLOCKED;
-  strlcpy (t->name, name, sizeof t->name);
-  t->stack = (uint8_t *) t + PGSIZE;
-  t->priority = priority;
-  t->magic = THREAD_MAGIC;
+	memset (t, 0, sizeof *t);
+	t->status = THREAD_BLOCKED;
+	strlcpy (t->name, name, sizeof t->name);
+	t->stack = (uint8_t *) t + PGSIZE;
+	t->priority = priority;
+	t->magic = THREAD_MAGIC;
 
-  old_level = intr_disable ();
-  list_push_back (&all_list, &t->allelem);
-  intr_set_level (old_level);
+	old_level = intr_disable ();
+	list_push_back (&all_list, &t->allelem);
+	intr_set_level (old_level);
+
+#ifdef USERPROG
+	sema_init(&(t->sema_child, 0);
+	list_init(&(t->child));
+	for (int i = 0; i < 128; i++) {
+		t->files[i] = NULL;
+	}
+	list_push_back(&(running_thread()->child), &(t->child_elem));
+#endif // USERPROG
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
