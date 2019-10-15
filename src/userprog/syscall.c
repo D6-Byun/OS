@@ -36,14 +36,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 	case SYS_EXIT: /* arg 1 */
 	{
-		arg_catcher(args[4], 2, f->esp);
+		arg_catcher(args, 2, f->esp);
 		thread_exit();
 		break;
 	}
 	case SYS_EXEC: /* arg 1 */
 	{
 		int pid;
-		arg_catcher(args[4], 2, f->esp);
+		arg_catcher(args, 2, f->esp);
 		pid = process_execute(*args[1]);
 		f->eax = pid;
 		break;
@@ -51,7 +51,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_WAIT: /* arg 1 */
 	{
 		int child_pid;
-		arg_catcher(args[4], 2, f->esp);
+		arg_catcher(args, 2, f->esp);
 		child_pid = *args[1];
 		process_wait(child_pid);
 		f->eax = 0; //should be implemented here
@@ -59,7 +59,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 	case SYS_CREATE: /* arg 2 */
 	{
-		arg_catcher(args[4], 3, f->esp);
+		arg_catcher(args, 3, f->esp);
 		if (!filesys_create(*args[1], *args[2]))
 		{
 			f->eax = 0;
@@ -69,8 +69,8 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 	case SYS_REMOVE: /* arg 1 */
 	{
-		arg_catcher(args[4], 2, f->esp);
-		if (!filesys_remove(*args[1]))
+		arg_catcher(args, 2, f->esp);
+		if (!filesys_remove((const char *) *args[1]))
 		{
 			f->eax = 0;
 		}
@@ -80,7 +80,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_OPEN: /* arg 1 */
 	{
 		struct thread * cur = thread_current();
-		arg_catcher(args[4], 2, f->esp);
+		arg_catcher(args, 2, f->esp);
 		cur->fd_table[cur->fd_num] = filesys_open(*args[1]);
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
@@ -90,7 +90,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		arg_catcher(args[4], 2, f->esp);
+		arg_catcher(args, 2, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_length(target_file);
 		break;
@@ -99,7 +99,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		arg_catcher(args[4], 4, f->esp);
+		arg_catcher(args, 4, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_read(target_file, *args[2], *args[3]);
 		break;
@@ -108,7 +108,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		arg_catcher(args[4], 4, f->esp);
+		arg_catcher(args, 4, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_write(target_file, *args[2], *args[3]);
 		break;
@@ -117,7 +117,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		arg_catcher(args[4], 3, f->esp);
+		arg_catcher(args, 3, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		file_seek(target_file, *args[2]);
 		break;
@@ -126,7 +126,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		arg_catcher(args[4], 2, f->esp);
+		arg_catcher(args, 2, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_tell(target_file);
 		break;
@@ -135,7 +135,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		arg_catcher(args[4], 2, f->esp);
+		arg_catcher(args, 2, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		file_close(target_file);
 		break;
