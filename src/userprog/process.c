@@ -101,9 +101,11 @@ process_wait (tid_t child_tid)
 	for (elem = list_begin(&(thread_current()->child)); elem != list_end(&(thread_current()->child)); elem = list_next(elem)) {
 		child_t = list_entry(elem, struct thread, child_elem);
 		if (child_tid == child_t->tid) {
+			child_tid->pthread = thread_current();
 			sema_down(&(child_t->sema_child);
 			exit = child_t->exit;
-			list_remove(child_t->child_elem);
+			//sema_up(&(child_t->sema_imsi));
+			//list_remove(child_t->child_elem);
 			return exit;
 		}
 	}
@@ -114,6 +116,7 @@ process_wait (tid_t child_tid)
 void
 process_exit (void)
 {
+	struct thread *par;
   struct thread *cur = thread_current ();
   uint32_t *pd;
 
@@ -133,6 +136,8 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+  par = cur->pthread;
+  list_remove(&(par->child));
   sema_up(&(cur->child_lock));
 }
 
