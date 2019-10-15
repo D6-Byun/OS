@@ -547,7 +547,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			*(int *)*esp = 0;
 
 			dump_size = PHYS_BASE - *esp;
-			hex_dump(*esp, *esp, dump_size, true);
+			//hex_dump(*esp, *esp, dump_size, true);
 		}
 		else
 			palloc_free_page(kpage);
