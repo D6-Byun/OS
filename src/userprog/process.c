@@ -481,7 +481,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			/*0xc0000000*/
 			*esp = PHYS_BASE;
 			printf("PHYS_BASE");
-			printf("%d\n",(uint32_t)*esp);
+			printf("%x\n",(uint32_t)*esp);
 			/* argv[argc-1][...] ~ argv[0][...]  */
 			for (int i = argc_value - 1; i >= 0; i--)   /* argv[argc-1][...] ~ argv[0][...]  */
 			{
@@ -490,7 +490,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 				memcpy(*esp, arg_struct->argv[i], size+(size_t)1);
 				argv_address[i] = (uint32_t*)*esp;
 				printf("argv%d[...] : ",i);
-				printf("%d\n",(uint32_t)*esp);
+				printf("%x\n",(uint32_t)*esp);
 			}
 			/* word-align */
 			ptr_loop = (uint32_t)*esp;
@@ -502,7 +502,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 				*esp = *esp - size;
 				memcpy(*esp, &zero, size);
 				ptr_loop = (uint32_t)*esp;
-				printf("%d\n",(uint32_t)*esp);
+				printf("%x\n",(uint32_t)*esp);
 			}
 
 			/* argv[argc] */
@@ -523,7 +523,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 				*esp = *esp - 4;
 				*(uint32_t **)*esp = argv_address[j];   /*here was problem*/
 				//memcpy(*esp, argv_address[j], size);
-				printf("%d\n",(uint32_t)*esp);
+				printf("%x\n",(uint32_t)*esp);
 			}
 			/* argv */
 			size = sizeof(*esp);
@@ -531,7 +531,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			printf("size is %d",size);
 			*esp = *esp - size;
 			*(uint32_t **)*esp = *esp + 4;   /*here was problem*/
-			printf("%d\n",(uint32_t)*esp);
+			printf("%x\n",(uint32_t)*esp);
 
 			/* argc */
 			size = sizeof(argc_value);
@@ -539,7 +539,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			printf("argc is %d",argc_value);
 			*esp = *esp - size;
 			memcpy(*esp, &argc_value, size);
-			printf("%d\n",(uint32_t)*esp);
+			printf("%x\n",(uint32_t)*esp);
 
 			/* return address */ /*here was problem*/
 			printf("go to the null pointer\n");
