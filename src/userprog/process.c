@@ -519,7 +519,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			for (int j = argc_value; j >= 0; j--)
 			{
 				printf("argv[%d]\n",j);
-				printf("target address is %d\n",argv_address[j]);
+				printf("target address is %x\n",argv_address[j]);
 				*esp = *esp - 4;
 				*(uint32_t **)*esp = argv_address[j];   /*here was problem*/
 				//memcpy(*esp, argv_address[j], size);
@@ -528,7 +528,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			/* argv */
 			size = sizeof(*esp);
 			printf("argv\n");
-			printf("size is %d",size);
+			printf("size is %d\n",size);
 			*esp = *esp - size;
 			*(uint32_t **)*esp = *esp + 4;   /*here was problem*/
 			printf("%x\n",(uint32_t)*esp);
@@ -536,7 +536,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			/* argc */
 			size = sizeof(argc_value);
 			printf("argc\n");
-			printf("argc is %d",argc_value);
+			printf("argc is %d\n",argc_value);
 			*esp = *esp - size;
 			memcpy(*esp, &argc_value, size);
 			printf("%x\n",(uint32_t)*esp);

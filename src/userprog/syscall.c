@@ -25,6 +25,8 @@ syscall_handler (struct intr_frame *f UNUSED)
 {
 	uint32_t *args[4];
 
+	printf("system call!\n");
+
 	switch (*(uint32_t *)(f->esp))
 	{
 	case SYS_HALT: /* arg 0 */
@@ -139,7 +141,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 		break;
 	}
 	}
-  printf ("system call!\n");
 }
 
 static void arg_catcher(uint32_t* args[], int num, void *esp)
