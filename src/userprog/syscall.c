@@ -29,6 +29,8 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 	//printf("system call start!\n");
 
+	is_pointer_valid((uint32_t *)(f->esp));
+
 	switch (*(uint32_t *)(f->esp))
 	{
 	case SYS_HALT: /* arg 0 */
@@ -51,7 +53,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 2\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
-		pid = process_execute(*args[1]);
+		pid = process_execute((const char *)*args[1]);
 		f->eax = pid;
 		break;
 	}
@@ -70,7 +72,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 4\n");
 		arg_catcher(args, 3, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
-		if (!filesys_create(*args[1], *args[2]))
+		if (!filesys_create((const char *)*args[1], *args[2]))
 		{
 			f->eax = 0;
 		}
@@ -95,7 +97,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 6\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
-		cur->fd_table[cur->fd_num] = filesys_open(*args[1]);
+		cur->fd_table[cur->fd_num] = filesys_open((const char *)*args[1]);
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
 		break;
@@ -204,6 +206,7 @@ static void is_pointer_valid(uint32_t* ptr)
 	if (casted_ptr < 0x08048000 || is_kernel_vaddr(ptr))
 	{
 		//printf("invalid pointer %d", casted_ptr);
+		printf("%s: exit(%d)\n", thread_name(), -1);
 		thread_exit();
 	}
 }
