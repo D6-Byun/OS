@@ -41,7 +41,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		//printf("system call 1\n");
 		arg_catcher(args, 2, f->esp);
-		printf("%s: exit(%d)\n", *args[0], *args[1]);
+		printf("%s: exit(%d)\n", thread_name(), *args[1]);
 		thread_exit();
 		break;
 	}
