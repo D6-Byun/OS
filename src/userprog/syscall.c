@@ -9,6 +9,8 @@
 #include "userprog/process.h"
 #include "filesys/filesys.h"
 #include "filesys/file.h"
+#include "devices/input.h"
+#include <kernel/console.c>
 
 static void syscall_handler (struct intr_frame *);
 static void arg_catcher(uint32_t* args[], int num, void *esp);
@@ -114,6 +116,18 @@ syscall_handler (struct intr_frame *f UNUSED)
 		printf("system call 8\n");
 		arg_catcher(args, 4, f->esp);
 		is_pointer_valid((uint32_t *)*args[2]);
+
+		if (*args[1] == 0)
+		{
+			int count = *args[3];
+			int32_t buffer = *args[2];
+			while (count--)
+			{
+				*((char *)buffer++) = input_getc();
+				f->eax = *args[3];
+			}
+			break;
+		}
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_read(target_file, *args[2], *args[3]);
 		break;
@@ -124,13 +138,21 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file * target_file;
 		printf("system call 9\n");
 		arg_catcher(args, 4, f->esp);
-		printf("not the problem of arg_catch");
+		printf("not the problem of arg_catch\n");
+
+		if (*args[1] == 1)
+		{
+			putbuf(*args[2], *args[3]);
+			f->eax = *args[3];
+			break;
+		}
+
 		is_pointer_valid((uint32_t *)*args[2]);
-		printf("not the problem of is_pointer_valid");
+		printf("not the problem of is_pointer_valid\n");
 		target_file = cur->fd_table[*args[1]];
-		printf("not the problem of target_file");
+		printf("not the problem of target_file\n");
 		f->eax = file_write(target_file, *args[2], *args[3]);
-		printf("not the problem of f->eax");
+		printf("not the problem of f->eax\n");
 		break;
 	}
 	case SYS_SEEK: /* arg 2 */
