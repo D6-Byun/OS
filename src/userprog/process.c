@@ -491,9 +491,9 @@ setup_stack (void **esp, int argc, char *argv[])
       else
         palloc_free_page (kpage);
     }
-  printf("Stack dump check\n");
+  //printf("Stack dump check\n");
   
-  hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
+  //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
   return success;
 }
 

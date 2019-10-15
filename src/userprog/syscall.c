@@ -41,17 +41,17 @@ void is_valid_addr(void *addr) {
 static void
 syscall_handler (struct intr_frame *f) 
 {
-	printf("system call!\n");
-	printf("f->esp: %x\n",f->esp);
-	printf("*f->esp: %d\n",*(int*)f->esp);
-	hex_dump((uintptr_t)f->esp,f->esp,100,true);
+	//printf("system call!\n");
+	//printf("f->esp: %x\n",f->esp);
+	//printf("*f->esp: %d\n",*(int*)f->esp);
+	//hex_dump((uintptr_t)f->esp,f->esp,100,true);
 	switch (*(uint32_t *)f->esp) {
 		case SYS_HALT:
 			shutdown_power_off();
 			break;
 		case SYS_EXIT:
 			is_valid_addr(f->esp + 4);
-			printf("EXIT!\n");
+			//printf("EXIT!\n");
 			exit(*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_EXEC:
@@ -107,7 +107,7 @@ syscall_handler (struct intr_frame *f)
 	}
 	
 	//printf ("system call!\n");
-	thread_exit ();
+	//thread_exit ();
 }
 
 /*void halt() {
