@@ -10,7 +10,7 @@
 #include "filesys/filesys.h"
 #include "filesys/file.h"
 #include "devices/input.h"
-#include <kernel/console.c>
+#include <kernel/stdio.h>
 
 static void syscall_handler (struct intr_frame *);
 static void arg_catcher(uint32_t* args[], int num, void *esp);
