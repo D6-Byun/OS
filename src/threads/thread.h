@@ -101,6 +101,7 @@ struct thread
 	struct list_elem child_elem;
 	struct semaphore sema_child;
 	struct file *files[128];
+	int exit;
 #endif
 
     /* Owned by thread.c. */

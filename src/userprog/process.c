@@ -90,10 +90,22 @@ start_process (void *file_name_)
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
-process_wait (tid_t child_tid UNUSED) 
+process_wait (tid_t child_tid) 
 {
-	for (int i = 0; i < 100000000; i++) {
+	/*for (int i = 0; i < 100000000; i++) {
 
+	}*/
+	int exit;
+	struct list_elem *elem;
+	struct thread *child_t;
+	for (elem = list_begin(&(thread_current()->child)); elem != list_end(&(thread_current()->child)); elem = list_next(elem)) {
+		child_t = list_entry(elem, struct thread, child_elem);
+		if (child_tid == child_t->tid) {
+			sema_down(&(child_t->sema_child);
+			exit = child_t->exit;
+			list_remove(child_t->child_elem);
+			return exit;
+		}
 	}
 	return -1;
 }
@@ -121,6 +133,7 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+  sema_up(&(cur->child_lock));
 }
 
 /* Sets up the CPU for running user code in the current

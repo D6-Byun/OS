@@ -116,6 +116,7 @@ syscall_handler (struct intr_frame *f)
 }*/
 void exit(int status) {
 	printf("%s: exit(%d)\n",thread_name(),status);
+	thread_current()->exit = status;
 	thread_exit();
 }
 pid_t exec(const char *cmd_line) {
@@ -135,6 +136,7 @@ bool remove(const char *file) {
 	return filesys_remove(file);
 }
 int open(const char *file) {
+	is_valid_addr(file);
 	if(file == NULL)
 		exit(-1);
 	/*0 = STDIN, 1 = STDOUT, 2 = STDERR */
@@ -156,6 +158,7 @@ int filesize(int fd) {
 	return file_length(thread_current()->files[fd]);
 }
 int read(int fd, void *buffer, unsigned length) {
+	is_valid_addr(buffer);
 	if (fd == 0) {
 		for (int i = 0; i < length; i++) {
 			if (((char *)buffer)[i] == '\0') {
@@ -171,6 +174,7 @@ int read(int fd, void *buffer, unsigned length) {
 	return -1;
 }
 int write(int fd, const void *buffer, unsigned length) {
+	is_valid_addr(buffer);
 	if (fd == 1) {
 		putbuf(buffer,length);
 		return length;
