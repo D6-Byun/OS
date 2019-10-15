@@ -112,7 +112,7 @@ start_process(void *arg_struct_)
 int
 process_wait(tid_t child_tid UNUSED)
 {
-	while (true)
+	for (int i = 0; i < 100000000; i++)
 	{
 
 	}
