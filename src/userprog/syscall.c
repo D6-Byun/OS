@@ -27,19 +27,19 @@ syscall_handler (struct intr_frame *f UNUSED)
 {
 	uint32_t *args[4];
 
-	printf("system call start!\n");
+	//printf("system call start!\n");
 
 	switch (*(uint32_t *)(f->esp))
 	{
 	case SYS_HALT: /* arg 0 */
 	{
-		printf("system call 0\n");
+		//printf("system call 0\n");
 		shutdown_power_off();
 		break;
 	}
 	case SYS_EXIT: /* arg 1 */
 	{
-		printf("system call 1\n");
+		//printf("system call 1\n");
 		arg_catcher(args, 2, f->esp);
 		thread_exit();
 		break;
@@ -47,7 +47,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_EXEC: /* arg 1 */
 	{
 		int pid;
-		printf("system call 2\n");
+		//printf("system call 2\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		pid = process_execute(*args[1]);
@@ -57,7 +57,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_WAIT: /* arg 1 */
 	{
 		int child_pid;
-		printf("system call 3\n");
+		//printf("system call 3\n");
 		arg_catcher(args, 2, f->esp);
 		child_pid = *args[1];
 		process_wait(child_pid);
@@ -66,7 +66,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 	case SYS_CREATE: /* arg 2 */
 	{
-		printf("system call 4\n");
+		//printf("system call 4\n");
 		arg_catcher(args, 3, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		if (!filesys_create(*args[1], *args[2]))
@@ -78,7 +78,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 	case SYS_REMOVE: /* arg 1 */
 	{
-		printf("system call 5\n");
+		//printf("system call 5\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		if (!filesys_remove((const char *) *args[1]))
@@ -91,7 +91,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_OPEN: /* arg 1 */
 	{
 		struct thread * cur = thread_current();
-		printf("system call 6\n");
+		//printf("system call 6\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		cur->fd_table[cur->fd_num] = filesys_open(*args[1]);
@@ -103,7 +103,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		printf("system call 7\n");
+		//printf("system call 7\n");
 		arg_catcher(args, 2, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_length(target_file);
@@ -113,7 +113,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		printf("system call 8\n");
+		//printf("system call 8\n");
 		arg_catcher(args, 4, f->esp);
 		is_pointer_valid((uint32_t *)*args[2]);
 
@@ -136,9 +136,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		printf("system call 9\n");
+		//printf("system call 9\n");
 		arg_catcher(args, 4, f->esp);
-		printf("not the problem of arg_catch\n");
+		//printf("not the problem of arg_catch\n");
 
 		if (*args[1] == 1)
 		{
@@ -148,18 +148,18 @@ syscall_handler (struct intr_frame *f UNUSED)
 		}
 
 		is_pointer_valid((uint32_t *)*args[2]);
-		printf("not the problem of is_pointer_valid\n");
+		//printf("not the problem of is_pointer_valid\n");
 		target_file = cur->fd_table[*args[1]];
-		printf("not the problem of target_file\n");
+		//printf("not the problem of target_file\n");
 		f->eax = file_write(target_file, *args[2], *args[3]);
-		printf("not the problem of f->eax\n");
+		//printf("not the problem of f->eax\n");
 		break;
 	}
 	case SYS_SEEK: /* arg 2 */
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		printf("system call 10\n");
+		//printf("system call 10\n");
 		arg_catcher(args, 3, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		file_seek(target_file, *args[2]);
@@ -169,7 +169,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		printf("system call 11\n");
+		//printf("system call 11\n");
 		arg_catcher(args, 2, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_tell(target_file);
@@ -179,7 +179,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		printf("system call 12\n");
+		//printf("system call 12\n");
 		arg_catcher(args, 2, f->esp);
 		target_file = cur->fd_table[*args[1]];
 		file_close(target_file);
@@ -202,7 +202,7 @@ static void is_pointer_valid(uint32_t* ptr)
 	unsigned int casted_ptr = (unsigned int)ptr;
 	if (casted_ptr < 0x08048000 || is_kernel_vaddr(ptr))
 	{
-		printf("invalid pointer %d", casted_ptr);
+		//printf("invalid pointer %d", casted_ptr);
 		thread_exit();
 	}
 }

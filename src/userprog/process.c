@@ -53,12 +53,12 @@ process_execute(const char *file_name)
 		argc++;
 	}
 	arg_struct->argc = argc;
-	printf("progress_execude\n");
-	printf("%d\n", arg_struct->argc);
-	printf("%s\n", arg_struct->argv[0]);
+	//printf("progress_execude\n");
+	//printf("%d\n", arg_struct->argc);
+	//printf("%s\n", arg_struct->argv[0]);
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create(((arg_struct->argv)[0]), PRI_DEFAULT, start_process, arg_struct);
-	printf("thread_Created\n");
+	//printf("thread_Created\n");
 	if (tid == TID_ERROR)
 	{
 		palloc_free_page(fn_copy);
@@ -75,7 +75,7 @@ start_process(void *arg_struct_)
 	struct arg *arg_struct = arg_struct_;
 	struct intr_frame if_;
 	bool success;
-	printf("start process start\n");
+	//printf("start process start\n");
 
 	/* Initialize interrupt frame and load executable. */
 	memset(&if_, 0, sizeof if_);
@@ -244,7 +244,7 @@ load(struct arg *arg_struct, void(**eip) (void), void **esp)
 	int i;
 	char *file_name = (arg_struct->argv)[0];
 
-	printf("inter to load");
+	//printf("inter to load");
 	/* Allocate and activate page directory. */
 	t->pagedir = pagedir_create();
 	if (t->pagedir == NULL)
@@ -255,7 +255,7 @@ load(struct arg *arg_struct, void(**eip) (void), void **esp)
 	file = filesys_open(file_name);
 	if (file == NULL)
 	{
-		printf("load: %s: open failed\n", file_name);
+		//printf("load: %s: open failed\n", file_name);
 		goto done;
 	}
 
@@ -268,7 +268,7 @@ load(struct arg *arg_struct, void(**eip) (void), void **esp)
 		|| ehdr.e_phentsize != sizeof(struct Elf32_Phdr)
 		|| ehdr.e_phnum > 1024)
 	{
-		printf("load: %s: error loading executable\n", file_name);
+		//printf("load: %s: error loading executable\n", file_name);
 		goto done;
 	}
 
@@ -470,8 +470,8 @@ setup_stack(void **esp, struct arg *arg_struct)
 	int dump_size = 0;
 	uint32_t ptr_loop;
 
-	printf("stack intered\n");
-	printf("argc_value is %d", argc_value);
+	//printf("stack intered\n");
+	//printf("argc_value is %d", argc_value);
 
 	kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 	if (kpage != NULL)
@@ -480,8 +480,8 @@ setup_stack(void **esp, struct arg *arg_struct)
 		if (success) {
 			/*0xc0000000*/
 			*esp = PHYS_BASE;
-			printf("PHYS_BASE");
-			printf("%x\n",(uint32_t)*esp);
+			//printf("PHYS_BASE");
+			//printf("%x\n",(uint32_t)*esp);
 			/* argv[argc-1][...] ~ argv[0][...]  */
 			for (int i = argc_value - 1; i >= 0; i--)   /* argv[argc-1][...] ~ argv[0][...]  */
 			{
@@ -489,20 +489,20 @@ setup_stack(void **esp, struct arg *arg_struct)
 				*esp = *esp - (size + (size_t)1);
 				memcpy(*esp, arg_struct->argv[i], size+(size_t)1);
 				argv_address[i] = (uint32_t*)*esp;
-				printf("argv%d[...] : ",i);
-				printf("%x\n",(uint32_t)*esp);
+				//printf("argv%d[...] : ",i);
+				//printf("%x\n",(uint32_t)*esp);
 			}
 			/* word-align */
 			ptr_loop = (uint32_t)*esp;
 
 			while (ptr_loop % 4 != 0) {
-				printf("word-align\n");
+				//printf("word-align\n");
 				size = sizeof(zero);
-				printf("size is %d\n",size);
+				//printf("size is %d\n",size);
 				*esp = *esp - size;
 				memcpy(*esp, &zero, size);
 				ptr_loop = (uint32_t)*esp;
-				printf("%x\n",(uint32_t)*esp);
+				//printf("%x\n",(uint32_t)*esp);
 			}
 
 			/* argv[argc] */
@@ -518,31 +518,31 @@ setup_stack(void **esp, struct arg *arg_struct)
 			/* argv[argc-1] ~ argv[0] */
 			for (int j = argc_value; j >= 0; j--)
 			{
-				printf("argv[%d]\n",j);
-				printf("target address is %x\n",argv_address[j]);
+				//printf("argv[%d]\n",j);
+				//printf("target address is %x\n",argv_address[j]);
 				*esp = *esp - 4;
 				*(uint32_t **)*esp = argv_address[j];   /*here was problem*/
 				//memcpy(*esp, argv_address[j], size);
-				printf("%x\n",(uint32_t)*esp);
+				//printf("%x\n",(uint32_t)*esp);
 			}
 			/* argv */
 			size = sizeof(*esp);
-			printf("argv\n");
-			printf("size is %d\n",size);
+			//printf("argv\n");
+			//printf("size is %d\n",size);
 			*esp = *esp - size;
 			*(uint32_t **)*esp = *esp + 4;   /*here was problem*/
-			printf("%x\n",(uint32_t)*esp);
+			//printf("%x\n",(uint32_t)*esp);
 
 			/* argc */
 			size = sizeof(argc_value);
-			printf("argc\n");
-			printf("argc is %d\n",argc_value);
+			//printf("argc\n");
+			//printf("argc is %d\n",argc_value);
 			*esp = *esp - size;
 			memcpy(*esp, &argc_value, size);
-			printf("%x\n",(uint32_t)*esp);
+			//printf("%x\n",(uint32_t)*esp);
 
 			/* return address */ /*here was problem*/
-			printf("go to the null pointer\n");
+			//printf("go to the null pointer\n");
 			*esp = *esp - 4;
 			*(int *)*esp = 0;
 
