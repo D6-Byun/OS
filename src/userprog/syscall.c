@@ -124,9 +124,13 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file * target_file;
 		printf("system call 9\n");
 		arg_catcher(args, 4, f->esp);
+		printf("not the problem of arg_catch");
 		is_pointer_valid((uint32_t *)*args[2]);
+		printf("not the problem of is_pointer_valid");
 		target_file = cur->fd_table[*args[1]];
+		printf("not the problem of target_file");
 		f->eax = file_write(target_file, *args[2], *args[3]);
+		printf("not the problem of f->eax");
 		break;
 	}
 	case SYS_SEEK: /* arg 2 */
