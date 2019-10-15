@@ -32,7 +32,7 @@ syscall_init (void)
 }
 
 void is_valid_addr(void *addr) {
-	if (!is_user_vaddr(addr)) {
+	if (!is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
 		exit(-1);
 	}
 }
@@ -44,7 +44,8 @@ syscall_handler (struct intr_frame *f)
 	//printf("system call!\n");
 	//printf("f->esp: %x\n",f->esp);
 	//printf("*f->esp: %d\n",*(int*)f->esp);
-	//hex_dump((uintptr_t)f->esp,f->esp,100,true);
+	//hex_dump((uintptr_t)f->esp,f->esp,24,true);
+	is_valid_addr(f->esp);
 	switch (*(uint32_t *)f->esp) {
 		case SYS_HALT:
 			shutdown_power_off();
@@ -124,23 +125,35 @@ int wait(pid_t pid) {
 	return process_wait(pid);
 }
 bool create(const char *file, unsigned initial_size) {
-	filesys_create(file, initial_size);
+	if(file == NULL)
+		exit(-1);
+	return filesys_create(file, initial_size);
 }
 bool remove(const char *file) {
-	filesys_remove(file);
+	if(file == NULL)
+		exit(-1);
+	return filesys_remove(file);
 }
 int open(const char *file) {
+	if(file == NULL)
+		exit(-1);
 	/*0 = STDIN, 1 = STDOUT, 2 = STDERR */
 	for (int i = 3; i < 128; i++) {
 		if (thread_current()->files[i] == NULL) {
-			thread_current()->files[i] = filesys_open(file);
-			return i;
+			if(filesys_open(file) != NULL){
+				thread_current()->files[i] = filesys_open(file);
+				return i;
+			}else{
+				return -1;
+			}
 		}
 	}
 	return -1;
 }
 int filesize(int fd) {
-	file_length(thread_current()->files[fd]);
+	if(thread_current()->files[fd] == NULL)
+		exit(-1);
+	return file_length(thread_current()->files[fd]);
 }
 int read(int fd, void *buffer, unsigned length) {
 	if (fd == 0) {
@@ -151,6 +164,8 @@ int read(int fd, void *buffer, unsigned length) {
 		}
 	}
 	else {
+		if(thread_current()->files[fd] == NULL)
+			exit(-1);
 		return file_read(thread_current()->files[fd], buffer, length);
 	}
 	return -1;
@@ -161,16 +176,25 @@ int write(int fd, const void *buffer, unsigned length) {
 		return length;
 	}
 	else {
+		if(thread_current()->files[fd] == NULL)
+			exit(-1);
 		return file_write(thread_current()->files[fd], buffer, length);
 	}
 	return -1;	
 }
 void seek(int fd, unsigned position) {
+	if(thread_current()->files[fd] == NULL)
+		exit(-1);
 	file_seek(thread_current()->files[fd],position);
 }
 unsigned tell(int fd) {
-	file_tell(thread_current()->files[fd]);
+	if(thread_current()->files[fd] == NULL)
+		exit(-1);
+	return file_tell(thread_current()->files[fd]);
 }
 void close(int fd) {
+	if(thread_current()->files[fd] == NULL)
+		exit(-1);
 	file_close(thread_current()->files[fd]);
+	thread_current()->files[fd] = NULL;
 }
