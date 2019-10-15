@@ -11,8 +11,8 @@
 #include "filesys/file.h"
 
 static void syscall_handler (struct intr_frame *);
-static void arg_catcher(uintptr_t* args[], int num, void *esp);
-static void is_pointer_valid(uintptr_t* ptr);
+static void arg_catcher(uint32_t* args[], int num, void *esp);
+static void is_pointer_valid(uint32_t* ptr);
 
 void
 syscall_init (void) 
@@ -23,9 +23,9 @@ syscall_init (void)
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
-	uintptr_t *args[4];
+	uint32_t *args[4];
 
-	switch (*(uintptr_t *)(f->esp))
+	switch (*(uint32_t *)(f->esp))
 	{
 	case SYS_HALT: /* arg 0 */
 	{
@@ -142,16 +142,16 @@ syscall_handler (struct intr_frame *f UNUSED)
   printf ("system call!\n");
 }
 
-static void arg_catcher(uintptr_t* args[], int num, void *esp)
+static void arg_catcher(uint32_t* args[], int num, void *esp)
 {
 	for (int i = 0; i < num; i++)
 	{
-		is_pointer_valid((uintptr_t*)(esp + 4 * i));
-		args[i] = (uintptr_t*)(esp + 4 * i);
+		is_pointer_valid((uint32_t*)(esp + 4 * i));
+		args[i] = (uint32_t*)(esp + 4 * i);
 	}
 }
 
-static void is_pointer_valid(uintptr_t* ptr)
+static void is_pointer_valid(uint32_t* ptr)
 {
 	int casted_ptr = (int)ptr;
 	if (casted_ptr < 0x08048000 || is_kernel_vaddr(ptr))

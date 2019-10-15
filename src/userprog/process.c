@@ -463,12 +463,12 @@ setup_stack(void **esp, struct arg *arg_struct)
 	bool success = false;
 	size_t size;
 	int argc_value = arg_struct->argc;
-	uintptr_t *argv_address[32];
+	uint32_t *argv_address[32];
 	int *nullPtr = NULL;
 	char **prev_ptr;
 	uint8_t zero = 0;
 	int dump_size = 0;
-	intptr_t ptr_loop;
+	uint32_t ptr_loop;
 
 	printf("stack intered\n");
 	printf("argc_value is %d", argc_value);
@@ -481,19 +481,19 @@ setup_stack(void **esp, struct arg *arg_struct)
 			/*0xc0000000*/
 			*esp = PHYS_BASE;
 			printf("PHYS_BASE");
-			printf("%d\n",(uintptr_t)*esp);
+			printf("%d\n",(uint32_t)*esp);
 			/* argv[argc-1][...] ~ argv[0][...]  */
 			for (int i = argc_value - 1; i >= 0; i--)   /* argv[argc-1][...] ~ argv[0][...]  */
 			{
 				size = strlen(arg_struct->argv[i]);
 				*esp = *esp - (size + (size_t)1);
 				memcpy(*esp, arg_struct->argv[i], size+(size_t)1);
-				argv_address[i] = (uintptr_t*)*esp;
+				argv_address[i] = (uint32_t*)*esp;
 				printf("argv%d[...] : ",i);
-				printf("%d\n",(uintptr_t)*esp);
+				printf("%d\n",(uint32_t)*esp);
 			}
 			/* word-align */
-			ptr_loop = (intptr_t)*esp;
+			ptr_loop = (uint32_t)*esp;
 
 			while (ptr_loop % 4 != 0) {
 				printf("word-align\n");
@@ -501,8 +501,8 @@ setup_stack(void **esp, struct arg *arg_struct)
 				printf("size is %d\n",size);
 				*esp = *esp - size;
 				memcpy(*esp, &zero, size);
-				ptr_loop = (intptr_t)*esp;
-				printf("%d\n",(uintptr_t)*esp);
+				ptr_loop = (uint32_t)*esp;
+				printf("%d\n",(uint32_t)*esp);
 			}
 
 			/* argv[argc] */
@@ -521,17 +521,17 @@ setup_stack(void **esp, struct arg *arg_struct)
 				printf("argv[%d]\n",j);
 				printf("target address is %d\n",argv_address[j]);
 				*esp = *esp - 4;
-				*(uintptr_t **)*esp = argv_address[j];   /*here was problem*/
+				*(uint32_t **)*esp = argv_address[j];   /*here was problem*/
 				//memcpy(*esp, argv_address[j], size);
-				printf("%d\n",(uintptr_t)*esp);
+				printf("%d\n",(uint32_t)*esp);
 			}
 			/* argv */
 			size = sizeof(*esp);
 			printf("argv\n");
 			printf("size is %d",size);
 			*esp = *esp - size;
-			*(uintptr_t **)*esp = *esp + 4;   /*here was problem*/
-			printf("%d\n",(uintptr_t)*esp);
+			*(uint32_t **)*esp = *esp + 4;   /*here was problem*/
+			printf("%d\n",(uint32_t)*esp);
 
 			/* argc */
 			size = sizeof(argc_value);
@@ -539,7 +539,7 @@ setup_stack(void **esp, struct arg *arg_struct)
 			printf("argc is %d",argc_value);
 			*esp = *esp - size;
 			memcpy(*esp, &argc_value, size);
-			printf("%d\n",(uintptr_t)*esp);
+			printf("%d\n",(uint32_t)*esp);
 
 			/* return address */ /*here was problem*/
 			printf("go to the null pointer\n");
