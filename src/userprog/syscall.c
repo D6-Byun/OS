@@ -79,12 +79,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 		arg_catcher(args, 3, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
+		/*
 		if (strlen((const char *)*args[1]) > 56)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
 			break;
 		}
+		*/
 		if (*(const char *)*args[1] == NULL)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
