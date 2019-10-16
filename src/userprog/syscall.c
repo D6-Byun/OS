@@ -11,6 +11,7 @@
 #include "filesys/file.h"
 #include "devices/input.h"
 #include <kernel/stdio.h>
+#include <string.h>
 
 static void syscall_handler (struct intr_frame *);
 static void arg_catcher(uint32_t* args[], int num, void *esp);
@@ -75,6 +76,11 @@ syscall_handler (struct intr_frame *f UNUSED)
 		arg_catcher(args, 3, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
+		if (strlen(*args[1]) > 56)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+		}
 		if (!filesys_create((const char *)*args[1], *args[2]))
 		{
 			f->eax = 0;
