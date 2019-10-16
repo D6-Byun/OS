@@ -54,9 +54,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		int pid;
 		//printf("system call 2\n");
 		arg_catcher(args, 2, f->esp);
-		is_pointer_valid((uint32_t *)*args[1]);
-		is_pointer_valid((uint32_t *)(*args[1]+3));
+		//is_pointer_valid((uint32_t *)*args[1]);
+		//is_pointer_valid((uint32_t *)(*args[1]+3));
 		pid = process_execute((const char *)*args[1]);
+		if (pid == TID_ERROR)
+		{
+		}
 		f->eax = pid;
 		break;
 	}
@@ -77,6 +80,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		if (strlen((const char *)*args[1]) > 56)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
+		if ((const char *)*args[1] == NULL)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
