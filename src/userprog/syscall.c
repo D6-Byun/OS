@@ -141,9 +141,8 @@ syscall_handler (struct intr_frame *f UNUSED)
 		arg_catcher(args, 2, f->esp);
 		if (*(const char *)*args[1] == NULL)
 		{
-			cur->fd_table[cur->fd_num] = target_file;
-			f->eax = cur->fd_num;
-			cur->fd_num += 1;
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
 			break;
 		}
 		is_pointer_valid((uint32_t *)*args[1]);
@@ -151,8 +150,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 		target_file = filesys_open((const char *)*args[1]);
 		if (target_file == NULL)
 		{
-			printf("%s: exit(%d)\n", thread_name(), -1);
-			thread_exit();
+			cur->fd_table[cur->fd_num] = target_file;
+			f->eax = cur->fd_num;
+			cur->fd_num += 1;
 			break;
 		}
 		cur->fd_table[cur->fd_num] = target_file;
