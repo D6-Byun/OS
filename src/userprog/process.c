@@ -106,12 +106,10 @@ process_wait (tid_t child_tid)
 	for (elem = list_begin(&(thread_current()->child)); elem != list_end(&(thread_current()->child)); elem = list_next(elem)) {
 		child_t = list_entry(elem, struct thread, child_elem);
 		if (child_tid == child_t->tid) {
-			child_t->pthread = thread_current();
-			sema_up(child_t->sema_imsi);
 			sema_down(&(child_t->sema_child));
 			exit = child_t->exit;
-			//sema_up(&(child_t->sema_imsi));
-			//list_remove(child_t->child_elem);
+			list_remove(child_t->child_elem);
+			sema_up(&(child_t->sema_imsi));
 			return exit;
 		}
 	}
@@ -142,12 +140,9 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
-  par = cur->pthread;
-  sema_down(&cur->sema_imsi);
-  if(par != NULL);
-  	list_remove(&(par->child_elem));
-  sema_up(&(cur->sema_child));
-  
+
+	sema_up(&(cur->sema_child));
+	sema_down(&(cur->sema_imsi));
 }
 
 /* Sets up the CPU for running user code in the current
