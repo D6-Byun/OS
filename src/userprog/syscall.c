@@ -30,7 +30,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	//printf("system call start!\n");
 
 	is_pointer_valid((uint32_t *)(f->esp));
-	is_pointer_valid((uint32_t *)(f->esp)+3);
+	is_pointer_valid((uint32_t *)(f->esp + 3));
 
 	switch (*(uint32_t *)(f->esp))
 	{
@@ -54,6 +54,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 2\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
+		is_pointer_valid((uint32_t *)(*args[1]+3));
 		pid = process_execute((const char *)*args[1]);
 		f->eax = pid;
 		break;
@@ -73,6 +74,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 4\n");
 		arg_catcher(args, 3, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
+		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		if (!filesys_create((const char *)*args[1], *args[2]))
 		{
 			f->eax = 0;
@@ -85,6 +87,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 5\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
+		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		if (!filesys_remove((const char *) *args[1]))
 		{
 			f->eax = 0;
@@ -98,6 +101,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 6\n");
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
+		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		cur->fd_table[cur->fd_num] = filesys_open((const char *)*args[1]);
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
@@ -120,6 +124,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 8\n");
 		arg_catcher(args, 4, f->esp);
 		is_pointer_valid((uint32_t *)*args[2]);
+		is_pointer_valid((uint32_t *)(*args[2] + 3));
 
 		if (*args[1] == 0)
 		{
@@ -152,6 +157,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		}
 
 		is_pointer_valid((uint32_t *)*args[2]);
+		is_pointer_valid((uint32_t *)(*args[2] + 3));
 		//printf("not the problem of is_pointer_valid\n");
 		target_file = cur->fd_table[*args[1]];
 		//printf("not the problem of target_file\n");
@@ -197,6 +203,7 @@ static void arg_catcher(uint32_t* args[], int num, void *esp)
 	for (int i = 0; i < num; i++)
 	{
 		is_pointer_valid((uint32_t*)(esp + 4 * i));
+		is_pointer_valid((uint32_t *)(esp + 4 * i + 3));
 		args[i] = (uint32_t*)(esp + 4 * i);
 	}
 }
