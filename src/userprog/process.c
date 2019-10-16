@@ -107,6 +107,7 @@ process_wait (tid_t child_tid)
 		child_t = list_entry(elem, struct thread, child_elem);
 		if (child_tid == child_t->tid) {
 			child_t->pthread = thread_current();
+			sema_up(child_t->sema_imsi);
 			sema_down(&(child_t->sema_child));
 			exit = child_t->exit;
 			//sema_up(&(child_t->sema_imsi));
@@ -142,9 +143,11 @@ process_exit (void)
       pagedir_destroy (pd);
     }
   par = cur->pthread;
+  sema_down(&cur->sema_imsi);
   if(par != NULL);
   	list_remove(&(par->child_elem));
   sema_up(&(cur->sema_child));
+  
 }
 
 /* Sets up the CPU for running user code in the current
@@ -248,6 +251,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   char *argv[32];
   char *token, *save_ptr;
 
+	hex_dump((uintptr_t)*file_name,*file_name,20,true);
 	argv[0] = strtok_r(file_name, " ", &save_ptr);
 		while (1) {
 			argv[argc] = strtok_r(NULL, " ",&save_ptr);
