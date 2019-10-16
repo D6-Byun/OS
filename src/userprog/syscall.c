@@ -148,7 +148,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		target_file = filesys_open((const char *)*args[1]);
-		if (*target_file == NULL)
+		if (target_file == NULL)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
