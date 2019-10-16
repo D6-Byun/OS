@@ -153,6 +153,7 @@ page_fault (struct intr_frame *f)
 
   if (!user || is_kernel_vaddr(fault_addr))
   {
+	  printf("%s: exit(%d)\n", thread_name(), -1);
 	  thread_exit();
   }
 
