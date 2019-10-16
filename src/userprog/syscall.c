@@ -36,13 +36,13 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 	case SYS_HALT: /* arg 0 */
 	{
-		//printf("system call 0\n");
+		printf("system call 0\n");
 		shutdown_power_off();
 		break;
 	}
 	case SYS_EXIT: /* arg 1 */
 	{
-		//printf("system call 1\n");
+		printf("system call 1\n");
 		arg_catcher(args, 2, f->esp);
 		printf("%s: exit(%d)\n", thread_name(), *args[1]);
 		thread_exit();
