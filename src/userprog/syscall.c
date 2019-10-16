@@ -29,8 +29,8 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 	//printf("system call start!\n");
 
-	is_pointer_valid(*(uint32_t *)(f->esp));
-	is_pointer_valid(*(uint32_t *)(f->esp + 3));
+	is_pointer_valid((uint32_t *)(f->esp));
+	is_pointer_valid((uint32_t *)(f->esp + 3));
 
 	switch (*(uint32_t *)(f->esp))
 	{
