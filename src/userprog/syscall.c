@@ -203,7 +203,7 @@ static void arg_catcher(uint32_t* args[], int num, void *esp)
 static void is_pointer_valid(uint32_t* ptr)
 {
 	unsigned int casted_ptr = (unsigned int)ptr;
-	if (casted_ptr < 0x08048000 || is_kernel_vaddr(ptr))
+	if (casted_ptr < 0x08048000 || is_kernel_vaddr(ptr + 3))
 	{
 		//printf("invalid pointer %d", casted_ptr);
 		printf("%s: exit(%d)\n", thread_name(), -1);
