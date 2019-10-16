@@ -470,6 +470,7 @@ init_thread (struct thread *t, const char *name, int priority)
 
 #ifdef USERPROG
 	//t->pthread = NULL;
+	sema_init(&(t->sema_imsi),0);
 	sema_init(&(t->sema_child), 0);
 	list_init(&(t->child));
 	for (int i = 0; i < 128; i++) {

@@ -62,7 +62,7 @@ start_process (void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
-  //printf("start_process\n");
+  	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -102,13 +102,13 @@ process_wait (tid_t child_tid)
 	}*/
 	int exit;
 	struct list_elem *elem;
-	struct thread *child_t;
+	struct thread *child_t = NULL;
 	for (elem = list_begin(&(thread_current()->child)); elem != list_end(&(thread_current()->child)); elem = list_next(elem)) {
 		child_t = list_entry(elem, struct thread, child_elem);
 		if (child_tid == child_t->tid) {
 			sema_down(&(child_t->sema_child));
 			exit = child_t->exit;
-			list_remove(child_t->child_elem);
+			list_remove(&(child_t->child_elem));
 			sema_up(&(child_t->sema_imsi));
 			return exit;
 		}
@@ -245,33 +245,32 @@ load (const char *file_name, void (**eip) (void), void **esp)
   int i, argc = 1;
   char *argv[32];
   char *token, *save_ptr;
-
-	hex_dump((uintptr_t)*file_name,*file_name,20,true);
+	//printf("start loading\n");
+	//hex_dump((uintptr_t)file_name,file_name,100,true);
 	argv[0] = strtok_r(file_name, " ", &save_ptr);
 		while (1) {
-			argv[argc] = strtok_r(NULL, " ",&save_ptr);
-			printf("%s\n",argv[argc]);	
-			if (argv[argc] == NULL)
+			argv[argc] = strtok_r(NULL, " ",&save_ptr);	
+			if (argv[argc] == NULL)	
 				break;
 			argc++;
+			//printf("%d\n",argc);
   		}
-
-  /* Allocate and activate page directory. */
-  t->pagedir = pagedir_create ();
-  if (t->pagedir == NULL) 
-    goto done;
-  process_activate ();
+	 /* Allocate and activate page directory. */
+  	t->pagedir = pagedir_create ();
+    if (t->pagedir == NULL) 
+    	goto done;
+  	process_activate ();
 
   /* Open executable file. */
-  file = filesys_open (file_name);
-  if (file == NULL) 
+  	file = filesys_open (file_name);
+  	if (file == NULL) 
     {
-      printf ("load: %s: open failed\n", file_name);
-      goto done; 
+      	printf ("load: %s: open failed\n", file_name);
+      	goto done; 
     }
 
   /* Read and verify executable header. */
-  if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
+  	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
       || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
       || ehdr.e_type != 2
       || ehdr.e_machine != 3
@@ -279,19 +278,19 @@ load (const char *file_name, void (**eip) (void), void **esp)
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      printf ("load: %s: error loading executable\n", file_name);
-      goto done; 
+      	printf ("load: %s: error loading executable\n", file_name);
+      	goto done; 
     }
 
   /* Read program headers. */
-  file_ofs = ehdr.e_phoff;
-  for (i = 0; i < ehdr.e_phnum; i++) 
+  	file_ofs = ehdr.e_phoff;
+  	for (i = 0; i < ehdr.e_phnum; i++) 
     {
-      struct Elf32_Phdr phdr;
+    	struct Elf32_Phdr phdr;
 
-      if (file_ofs < 0 || file_ofs > file_length (file))
-        goto done;
-      file_seek (file, file_ofs);
+      	if (file_ofs < 0 || file_ofs > file_length (file))
+        	goto done;
+      	file_seek (file, file_ofs);
 
       if (file_read (file, &phdr, sizeof phdr) != sizeof phdr)
         goto done;
@@ -341,7 +340,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
           break;
         }
     }
-
   /* Set up stack. */
   if (!setup_stack (esp,argc,argv))
     goto done;
@@ -474,6 +472,7 @@ setup_stack (void **esp, int argc, char *argv[])
   bool success = false;
   uintptr_t *addr[32];
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  //printf("start stacking");
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);

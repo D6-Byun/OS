@@ -5,10 +5,12 @@
 #include "threads/thread.h"
 #include "devices/shutdown.h"
 #include "userprog/process.h"
-#include "lib/user/syscall.h"
+//#include "lib/user/syscall.h"
 #include "filesys/filesys.h"
 #include "filesys/file.h"
 #include "threads/vaddr.h"
+
+typedef int pid_t;
 
 static void syscall_handler (struct intr_frame *);
 void halt(void) NO_RETURN;
@@ -32,7 +34,7 @@ syscall_init (void)
 }
 
 void is_valid_addr(void *addr) {
-	if (!is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
+	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
 		exit(-1);
 	}
 }
@@ -126,52 +128,60 @@ int wait(pid_t pid) {
 	return process_wait(pid);
 }
 bool create(const char *file, unsigned initial_size) {
-	if(file == NULL)
+	if(file == NULL){
 		exit(-1);
+	}
 	return filesys_create(file, initial_size);
 }
 bool remove(const char *file) {
-	if(file == NULL)
+	if(file == NULL){
 		exit(-1);
+	}
 	return filesys_remove(file);
 }
 int open(const char *file) {
 	is_valid_addr(file);
-	if(file == NULL)
+	if(file == NULL){
 		exit(-1);
+	}
+	if(filesys_open(file) == NULL){
+		return -1;
+	}
 	/*0 = STDIN, 1 = STDOUT, 2 = STDERR */
 	for (int i = 3; i < 128; i++) {
 		if (thread_current()->files[i] == NULL) {
-			if(filesys_open(file) != NULL){
-				thread_current()->files[i] = filesys_open(file);
-				return i;
-			}else{
-				return -1;
-			}
+			thread_current()->files[i] = filesys_open(file);
+			//printf("%d\n",i);
+			return i;
 		}
 	}
+	//printf("-1\n");
 	return -1;
 }
 int filesize(int fd) {
-	if(thread_current()->files[fd] == NULL)
+	if(thread_current()->files[fd] == NULL){
 		exit(-1);
+	}
+	//printf("file length : %d\n",file_length(thread_current()->files[fd]));
 	return file_length(thread_current()->files[fd]);
 }
 int read(int fd, void *buffer, unsigned length) {
+	int i = 0;
 	is_valid_addr(buffer);
 	if (fd == 0) {
-		for (int i = 0; i < length; i++) {
+		for (i = 0; i < length; i++) {
 			if (((char *)buffer)[i] == '\0') {
-				return i;		
+				break;		
 			}
 		}
 	}
-	else {
+	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL)
 			exit(-1);
 		return file_read(thread_current()->files[fd], buffer, length);
 	}
-	return -1;
+	//printf("%d\n",i);
+	return i;
 }
 int write(int fd, const void *buffer, unsigned length) {
 	is_valid_addr(buffer);
@@ -179,7 +189,7 @@ int write(int fd, const void *buffer, unsigned length) {
 		putbuf(buffer,length);
 		return length;
 	}
-	else {
+	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL)
 			exit(-1);
 		return file_write(thread_current()->files[fd], buffer, length);
@@ -199,6 +209,7 @@ unsigned tell(int fd) {
 void close(int fd) {
 	if(thread_current()->files[fd] == NULL)
 		exit(-1);
+	
 	file_close(thread_current()->files[fd]);
 	thread_current()->files[fd] = NULL;
 }
