@@ -117,7 +117,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
-		if ((const char *)*args[1] == NULL)
+		if (*(const char *)*args[1] == NULL)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
@@ -136,9 +136,10 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_OPEN: /* arg 1 */
 	{
 		struct thread * cur = thread_current();
+		struct file * target_file;
 		//printf("system call 6\n");
 		arg_catcher(args, 2, f->esp);
-		if ((const char *)*args[1] == NULL)
+		if (*(const char *)*args[1] == NULL)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
@@ -146,6 +147,13 @@ syscall_handler (struct intr_frame *f UNUSED)
 		}
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
+		target_file = filesys_open((const char *)*args[1]);
+		if (*target_file == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		cur->fd_table[cur->fd_num] = filesys_open((const char *)*args[1]);
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
