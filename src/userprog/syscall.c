@@ -104,6 +104,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		arg_catcher(args, 2, f->esp);
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
+		if ((const char *)*args[1] == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		if (!filesys_remove((const char *) *args[1]))
 		{
 			f->eax = 0;
@@ -116,6 +122,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct thread * cur = thread_current();
 		//printf("system call 6\n");
 		arg_catcher(args, 2, f->esp);
+		if ((const char *)*args[1] == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		cur->fd_table[cur->fd_num] = filesys_open((const char *)*args[1]);
@@ -129,6 +141,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file * target_file;
 		//printf("system call 7\n");
 		arg_catcher(args, 2, f->esp);
+		if (thread_current()->fd_table[(int)*args[1]]== NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_length(target_file);
 		break;
@@ -141,7 +159,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		arg_catcher(args, 4, f->esp);
 		is_pointer_valid((uint32_t *)*args[2]);
 		is_pointer_valid((uint32_t *)(*args[2] + 3));
-
+		if (thread_current()->fd_table[(int)*args[1]] == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		if (*args[1] == 0)
 		{
 			int count = *args[3];
@@ -163,6 +186,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file * target_file;
 		//printf("system call 9\n");
 		arg_catcher(args, 4, f->esp);
+		if (thread_current()->fd_table[(int)*args[1]] == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		//printf("not the problem of arg_catch\n");
 
 		if (*args[1] == 1)
@@ -187,6 +216,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file * target_file;
 		//printf("system call 10\n");
 		arg_catcher(args, 3, f->esp);
+		if (thread_current()->fd_table[(int)*args[1]] == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		target_file = cur->fd_table[*args[1]];
 		file_seek(target_file, *args[2]);
 		break;
@@ -197,6 +232,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file * target_file;
 		//printf("system call 11\n");
 		arg_catcher(args, 2, f->esp);
+		if (thread_current()->fd_table[(int)*args[1]] == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_tell(target_file);
 		break;
@@ -207,6 +248,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file * target_file;
 		//printf("system call 12\n");
 		arg_catcher(args, 2, f->esp);
+		if (thread_current()->fd_table[(int)*args[1]] == NULL)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		target_file = cur->fd_table[*args[1]];
 		file_close(target_file);
 		break;
