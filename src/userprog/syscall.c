@@ -91,6 +91,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 			thread_exit();
 			break;
 		}
+		if ((int)*args[2] == 0)
+		{
+			printf("%s: exit(%d)\n", thread_name(), -1);
+			thread_exit();
+			break;
+		}
 		if (!filesys_create((const char *)*args[1], *args[2]))
 		{
 			f->eax = 0;
