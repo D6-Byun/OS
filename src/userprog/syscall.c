@@ -105,7 +105,10 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			f->eax = 0;
 		}
-		f->eax = 1;
+		else
+		{
+			f->eax = 1;
+		}
 		break;
 	}
 	case SYS_REMOVE: /* arg 1 */
