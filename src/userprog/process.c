@@ -28,24 +28,29 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy, *save_ptr, *token;
-  tid_t tid;
+	char *fn_copy, *save_ptr, *token;
+  	tid_t tid;
 
-  /* Make a copy of FILE_NAME.
+  	/* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
-  fn_copy = palloc_get_page (0);
-  if (fn_copy == NULL)
-    return TID_ERROR;
-  strlcpy (fn_copy, file_name, PGSIZE);
+  	fn_copy = palloc_get_page (0);
+  	if (fn_copy == NULL)
+    	return TID_ERROR;
+  	strlcpy (fn_copy, file_name, PGSIZE);
 
-  token = strtok_r(file_name, " ", &save_ptr);
-
-  /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (token, PRI_DEFAULT, start_process, fn_copy);
+  	token = strtok_r(file_name, " ", &save_ptr);
+	//printf("%s\n",token);
+	/*if load failed, return -1 */
+	if(filesys_open(token) == NULL){
+		return -1;
+	}
+	//printf("check\n");
+  	/* Create a new thread to execute FILE_NAME. */
+  	tid = thread_create (token, PRI_DEFAULT, start_process, fn_copy);
   
-  if (tid == TID_ERROR)
-    palloc_free_page (fn_copy); 
-  return tid;
+  	if (tid == TID_ERROR)
+    	palloc_free_page (fn_copy); 
+  	return tid;
 }
 
 /* A thread function that loads a user process and starts it
@@ -101,8 +106,8 @@ process_wait (tid_t child_tid)
 	for (elem = list_begin(&(thread_current()->child)); elem != list_end(&(thread_current()->child)); elem = list_next(elem)) {
 		child_t = list_entry(elem, struct thread, child_elem);
 		if (child_tid == child_t->tid) {
-			child_tid->pthread = thread_current();
-			sema_down(&(child_t->sema_child);
+			child_t->pthread = thread_current();
+			sema_down(&(child_t->sema_child));
 			exit = child_t->exit;
 			//sema_up(&(child_t->sema_imsi));
 			//list_remove(child_t->child_elem);
@@ -137,8 +142,9 @@ process_exit (void)
       pagedir_destroy (pd);
     }
   par = cur->pthread;
-  list_remove(&(par->child));
-  sema_up(&(cur->child_lock));
+  if(par != NULL);
+  	list_remove(&(par->child_elem));
+  sema_up(&(cur->sema_child));
 }
 
 /* Sets up the CPU for running user code in the current
@@ -242,13 +248,14 @@ load (const char *file_name, void (**eip) (void), void **esp)
   char *argv[32];
   char *token, *save_ptr;
 
-  argv[0] = strtok_r(file_name, " ", &save_ptr);
-  while (1) {
-	  argv[argc] = strtok_r(NULL, " ",&save_ptr);
-	  if (argv[argc] == NULL)
-		  break;
-	  argc++;
-  }
+	argv[0] = strtok_r(file_name, " ", &save_ptr);
+		while (1) {
+			argv[argc] = strtok_r(NULL, " ",&save_ptr);
+			printf("%s\n",argv[argc]);	
+			if (argv[argc] == NULL)
+				break;
+			argc++;
+  		}
 
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();

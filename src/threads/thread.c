@@ -463,12 +463,13 @@ init_thread (struct thread *t, const char *name, int priority)
 	t->stack = (uint8_t *) t + PGSIZE;
 	t->priority = priority;
 	t->magic = THREAD_MAGIC;
-
+	
 	old_level = intr_disable ();
 	list_push_back (&all_list, &t->allelem);
 	intr_set_level (old_level);
 
 #ifdef USERPROG
+	t->pthread = NULL;
 	sema_init(&(t->sema_child), 0);
 	list_init(&(t->child));
 	for (int i = 0; i < 128; i++) {
