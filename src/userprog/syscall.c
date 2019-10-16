@@ -154,7 +154,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			thread_exit();
 			break;
 		}
-		cur->fd_table[cur->fd_num] = filesys_open((const char *)*args[1]);
+		cur->fd_table[cur->fd_num] = target_file;
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
 		break;
