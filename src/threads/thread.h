@@ -109,7 +109,7 @@ struct thread
 	struct semaphore child_sema;
 	struct semaphore wait_sema;
 	struct semaphore load_sema;
-	int status;
+	int exit_status;
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
