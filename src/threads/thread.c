@@ -295,10 +295,10 @@ thread_exit (void)
   for (child = list_begin(&thread_current()->child_list); child != list_end(&thread_current()->child_list);)
   {
 	  t = list_entry(child, struct thread, child_elem);
-	  child != list_remove(child);
+	  child = list_remove(child);
   }
 
-  sema_up(&t->child_sema);
+  sema_up(&thread_current()->child_sema);
   sema_down(&thread_current()->wait_sema);
 
   /* Remove thread from all threads list, set our status to dying,

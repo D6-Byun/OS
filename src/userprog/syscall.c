@@ -92,7 +92,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		sema_down(&child->child_sema);
 		//process_wait(child_pid);
 		list_remove(&child->child_elem);
-		sema_up(&thread_current()->wait_sema);
+		sema_up(&child->wait_sema);
 		f->eax = 0; //should be implemented here
 		break;
 	}
