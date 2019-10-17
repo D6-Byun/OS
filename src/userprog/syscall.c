@@ -12,15 +12,19 @@
 #include "devices/input.h"
 #include <kernel/stdio.h>
 #include <string.h>
+#include <threads/synch.h>
 
 static void syscall_handler (struct intr_frame *);
 static void arg_catcher(uint32_t* args[], int num, void *esp);
 static void is_pointer_valid(uint32_t* ptr);
 
+struct lock file_lock;
+
 void
 syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+  lock_init(&file_lock);
 }
 
 static void
@@ -146,16 +150,19 @@ syscall_handler (struct intr_frame *f UNUSED)
 		}
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
+		lock_acquire(&file_lock);
 		target_file = filesys_open((const char *)*args[1]);
 		
 		if (target_file == NULL)
 		{
 			f->eax = -1;
+			lock_release(&file_lock);
 			break;
 		}
 		cur->fd_table[cur->fd_num] = target_file;
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
+		lock_release(&file_lock);
 		break;
 	}
 	case SYS_FILESIZE: /* arg 1 */
@@ -182,6 +189,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		arg_catcher(args, 4, f->esp);
 		is_pointer_valid((uint32_t *)*args[2]);
 		is_pointer_valid((uint32_t *)(*args[2] + 3));
+		lock_acquire(&file_lock);
 		if (*args[1] == 0)
 		{
 			int count = *args[3];
@@ -191,16 +199,19 @@ syscall_handler (struct intr_frame *f UNUSED)
 				*((char *)buffer++) = input_getc();
 				f->eax = *args[3];
 			}
+			lock_release(&file_lock);
 			break;
 		}
 		if (thread_current()->fd_table[(int)*args[1]] == NULL)
 		{
+			lock_release(&file_lock);
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
 			break;
 		}
 		target_file = cur->fd_table[*args[1]];
 		f->eax = file_read(target_file, *args[2], *args[3]);
+		lock_release(&file_lock);
 		break;
 	}
 	case SYS_WRITE: /* arg 3 */
@@ -210,16 +221,18 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 9\n");
 		arg_catcher(args, 4, f->esp);
 		//printf("not the problem of arg_catch\n");
-
+		lock_acquire(&file_lock);
 		if (*args[1] == 1)
 		{
 			putbuf(*args[2], *args[3]);
 			f->eax = *args[3];
+			lock_release(&file_lock);
 			break;
 		}
 		if (thread_current()->fd_table[(int)*args[1]] == NULL)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
+			lock_release(&file_lock);
 			thread_exit();
 			break;
 		}
@@ -231,6 +244,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("not the problem of target_file\n");
 		f->eax = file_write(target_file, *args[2], *args[3]);
 		//printf("not the problem of f->eax\n");
+		lock_release(&file_lock);
 		break;
 	}
 	case SYS_SEEK: /* arg 2 */
