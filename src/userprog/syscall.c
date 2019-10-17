@@ -9,6 +9,15 @@
 #include "filesys/filesys.h"
 #include "filesys/file.h"
 #include "threads/vaddr.h"
+#include "filesys/off_t.h"
+
+struct file 
+	{
+		struct inode *inode;        /* File's inode. */
+		off_t pos;                  /* Current position. */
+    	bool deny_write;            /* Has file_deny_write() been called? */
+	};
+
 
 typedef int pid_t;
 
@@ -27,6 +36,8 @@ void seek(int fd, unsigned position);
 unsigned tell(int fd);
 void close(int fd);
 
+
+	
 void
 syscall_init (void) 
 {
@@ -79,8 +90,9 @@ syscall_handler (struct intr_frame *f)
 			f->eax = open((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_FILESIZE:
+			
 			is_valid_addr(f->esp + 4);
-			f->eax = ((int)*(uint32_t *)(f->esp + 4));
+			f->eax = filesize((int)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_READ:
 			is_valid_addr(f->esp + 4);
@@ -92,7 +104,7 @@ syscall_handler (struct intr_frame *f)
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 12);
-			f->eax = write((int)*(uint32_t *)(f->esp + 4),*(uint32_t *)(f->esp + 8),(uintptr_t)*(uint32_t *)(f->esp + 12));
+			f->eax = write((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8),(uintptr_t)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_SEEK:
 			is_valid_addr(f->esp + 4);
@@ -108,9 +120,6 @@ syscall_handler (struct intr_frame *f)
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
 	}
-	
-	//printf ("system call!\n");
-	//thread_exit ();
 }
 
 /*void halt() {
@@ -119,9 +128,18 @@ syscall_handler (struct intr_frame *f)
 void exit(int status) {
 	printf("%s: exit(%d)\n",thread_name(),status);
 	thread_current()->exit = status;
+	for(int i = 3; i < 128; i++){
+		if(thread_current()->files[i] != NULL){
+			close(i);
+		}
+	}
 	thread_exit();
 }
 pid_t exec(const char *cmd_line) {
+	//hex_dump((uintptr_t)cmd_line,cmd_line,64,true);
+	if(cmd_line == NULL){
+		exit(-1);
+	}
 	return process_execute(cmd_line);
 }
 int wait(pid_t pid) {
@@ -140,6 +158,7 @@ bool remove(const char *file) {
 	return filesys_remove(file);
 }
 int open(const char *file) {
+	struct file *openfile;
 	is_valid_addr(file);
 	if(file == NULL){
 		exit(-1);
@@ -147,11 +166,14 @@ int open(const char *file) {
 	if(filesys_open(file) == NULL){
 		return -1;
 	}
+	openfile = filesys_open(file);
 	/*0 = STDIN, 1 = STDOUT, 2 = STDERR */
 	for (int i = 3; i < 128; i++) {
 		if (thread_current()->files[i] == NULL) {
-			thread_current()->files[i] = filesys_open(file);
-			//printf("%d\n",i);
+			if(strcmp(thread_current()->name,file) == 0){
+				file_deny_write(openfile);	
+			}
+			thread_current()->files[i] = openfile;
 			return i;
 		}
 	}
@@ -159,6 +181,7 @@ int open(const char *file) {
 	return -1;
 }
 int filesize(int fd) {
+	//printf("filesize start\n");
 	if(thread_current()->files[fd] == NULL){
 		exit(-1);
 	}
@@ -187,11 +210,17 @@ int write(int fd, const void *buffer, unsigned length) {
 	is_valid_addr(buffer);
 	if (fd == 1) {
 		putbuf(buffer,length);
+		//printf("size = %d\n",length);
 		return length;
 	}
 	else if(fd > 2){
-		if(thread_current()->files[fd] == NULL)
+		if(thread_current()->files[fd] == NULL){
 			exit(-1);
+		}
+		if(thread_current()->files[fd]->deny_write){
+			file_deny_write(thread_current()->files[fd]);
+		}
+		//printf("write bytes: %d\n",file_write(thread_current()->files[fd],buffer,length));
 		return file_write(thread_current()->files[fd], buffer, length);
 	}
 	return -1;	

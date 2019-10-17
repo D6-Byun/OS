@@ -469,7 +469,6 @@ init_thread (struct thread *t, const char *name, int priority)
 	intr_set_level (old_level);
 
 #ifdef USERPROG
-	//t->pthread = NULL;
 	sema_init(&(t->sema_imsi),0);
 	sema_init(&(t->sema_child), 0);
 	list_init(&(t->child));
@@ -477,6 +476,8 @@ init_thread (struct thread *t, const char *name, int priority)
 		t->files[i] = NULL;
 	}
 	list_push_back(&(running_thread()->child), &(t->child_elem));
+	t->pthread = running_thread();
+	sema_init(&(t->lock_imsi),0);
 #endif // USERPROG
 }
 

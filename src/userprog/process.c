@@ -17,6 +17,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "threads/malloc.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -25,31 +26,50 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
    thread id, or TID_ERROR if the thread cannot be created. */
+
+
+/*parse function for a to b*/
+void parse(char *a, char * b){
+	int i;
+	strlcpy(b, a, strlen(a) + 1);
+	for(i = 0; b[i] != '\0' && b[i] != ' '; i++){
+	
+	}
+	b[i] = '\0';
+}
+	
+	
 tid_t
 process_execute (const char *file_name) 
 {
-	char *fn_copy, *save_ptr, *token;
+	char *fn_copy, *save_ptr, *save_ptr2;
   	tid_t tid;
+	char hongkong[128];	
 
-  	/* Make a copy of FILE_NAME.
+	/* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   	fn_copy = palloc_get_page (0);
-  	if (fn_copy == NULL)
-    	return TID_ERROR;
+	
+  	if (fn_copy == NULL){
+		return TID_ERROR;
+	}
   	strlcpy (fn_copy, file_name, PGSIZE);
 
-  	token = strtok_r(file_name, " ", &save_ptr);
+  	parse(file_name, hongkong);
+	
 	//printf("%s\n",token);
 	/*if load failed, return -1 */
-	if(filesys_open(token) == NULL){
+	if(filesys_open(hongkong) == NULL){
 		return -1;
 	}
 	//printf("check\n");
   	/* Create a new thread to execute FILE_NAME. */
-  	tid = thread_create (token, PRI_DEFAULT, start_process, fn_copy);
-  
-  	if (tid == TID_ERROR)
-    	palloc_free_page (fn_copy); 
+	tid = thread_create (hongkong, PRI_DEFAULT, start_process, fn_copy);
+	sema_down(&(thread_current()->lock_imsi));  	
+	if (tid == TID_ERROR){
+    	palloc_free_page (fn_copy);
+	}
+	//free(hongkong);
   	return tid;
 }
 
@@ -69,12 +89,14 @@ start_process (void *file_name_)
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (file_name, &if_.eip, &if_.esp);
-
+  
+  sema_up(&(thread_current()->pthread->lock_imsi));
   /* If load failed, quit. */
   palloc_free_page (file_name);
-  if (!success) 
-    thread_exit ();
-
+  if (!success){
+    //thread_exit ();
+	exit(-1);
+  }
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -140,7 +162,6 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
-
 	sema_up(&(cur->sema_child));
 	sema_down(&(cur->sema_imsi));
 }

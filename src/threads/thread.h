@@ -100,10 +100,11 @@ struct thread
 	struct list child;
 	struct list_elem child_elem;
 	struct semaphore sema_child;
-	//struct thread * pthread;
+	struct thread *pthread;
 	struct semaphore sema_imsi;
 	struct file *files[128];
-	int exit;
+	int exit;							/*exit status*/
+	struct semaphore lock_imsi;
 #endif
 
     /* Owned by thread.c. */
