@@ -137,13 +137,13 @@ process_wait(tid_t child_tid UNUSED)
 {
 	int return_value;
 	struct thread * child;
-	if (thread_current()->waiting_pid == child_pid)
+	if (thread_current()->waiting_pid == child_tid)
 	{
 		return -1;
 	}
-	child = thread_get_child(child_pid);
+	child = thread_get_child(child_tid);
 
-	thread_current()->waiting_pid = child_pid;
+	thread_current()->waiting_pid = child_tid;
 	sema_down(&child->child_sema);
 	return_value = child->exit_status;
 	//process_wait(child_pid);
