@@ -59,6 +59,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct list_elem e;
 		struct thread* t;
 		arg_catcher(args, 2, f->esp);
+		/*
 		for (int i = 3; i <= 128; i++)
 		{
 			struct thread * cur = thread_current();
@@ -70,6 +71,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 				cur->fd_table[i] = NULL;
 			}
 		}
+		*/
 		thread_current()->exit_status = *args[1];
 		printf("%s: exit(%d)\n", thread_name(), *args[1]);
 		thread_exit();
