@@ -210,7 +210,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			}
 		}
 		*/
-		if (strcmp(thread_current()->name, target_file) == 0)
+		if (strcmp(thread_current()->name, (const char *)*args[1]) == 0)
 		{
 			file_deny_write(target_file);
 
