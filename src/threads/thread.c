@@ -183,6 +183,8 @@ thread_create (const char *name, int priority,
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
+  list_push_back(&thread_current()->child_list, t->child_elem);
+
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame (t, sizeof *kf);
   kf->eip = NULL;
@@ -280,11 +282,22 @@ thread_tid (void)
 void
 thread_exit (void) 
 {
+  struct list_elem *child;
+  struct thread *t;
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
   process_exit ();
 #endif
+
+  for (child = list_begin(&thread_current()->child_list); child != list_end(&thread_current()->child_list);)
+  {
+	  t = list_entry(child, struct thread, child_elem);
+	  child != list_remove(child);
+  }
+
+  sema_up(&t->child_sema);
+  sema_down(thread_current()->wait_sema);
 
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
@@ -464,6 +477,11 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
   t->fd_num = 3;
+  t->is_terminated = false;
+
+  sema_init(&t->child_sema, 0);
+  sema_init(&t->wait_sema, 0);
+  list_init(&t->child_list);
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
@@ -578,6 +596,20 @@ allocate_tid (void)
   lock_release (&tid_lock);
 
   return tid;
+}
+
+struct thread * thread_get_child(tid_t tid)
+{
+	struct list_elem *elem;
+	for (elem = list_begin(&thread_current()->child_list); elem != list_end(&thread_current()->child_list); elem = list_next(elem))
+	{
+		struct thread *child = list_entry(elem, struct thread, child_elem);
+		if (child->tid == tid)
+		{
+			return child;
+		}
+	}
+	return NULL;
 }
 
 /* Offset of `stack' member within `struct thread'.

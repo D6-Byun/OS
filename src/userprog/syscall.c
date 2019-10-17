@@ -56,6 +56,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_EXEC: /* arg 1 */
 	{
 		int pid;
+		struct thread * cur = thread_current();
+		struct thread * child;
+
 		//printf("system call 2\n");
 		arg_catcher(args, 2, f->esp);
 		//is_pointer_valid((uint32_t *)*args[1]);
@@ -63,17 +66,26 @@ syscall_handler (struct intr_frame *f UNUSED)
 		pid = process_execute((const char *)*args[1]);
 		if (pid == TID_ERROR)
 		{
+			f->eax = pid;
+			break;
 		}
+		child = thread_get_child(pid);
+
+		sema_down(&child->child_sema);
 		f->eax = pid;
 		break;
 	}
 	case SYS_WAIT: /* arg 1 */
 	{
 		int child_pid;
+		struct thread * child;
 		//printf("system call 3\n");
 		arg_catcher(args, 2, f->esp);
 		child_pid = *args[1];
-		process_wait(child_pid);
+		child = thread_get_child(child_pid);
+		sema_down(&child->child_sema);
+		//process_wait(child_pid);
+		sema_up(&thread_current()->wait_sema);
 		f->eax = 0; //should be implemented here
 		break;
 	}
