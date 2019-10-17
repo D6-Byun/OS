@@ -177,7 +177,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		struct thread * cur = thread_current();
 		struct file * target_file;
-		int i;
 		//printf("system call 6\n");
 		arg_catcher(args, 2, f->esp);
 		if (*(const char *)*args[1] == NULL)
@@ -195,35 +194,27 @@ syscall_handler (struct intr_frame *f UNUSED)
 			lock_release(&file_lock);
 			break;
 		}
-		
+		/*
 		else
 		{
-			for (i = 3; i < 128; i++)
+			for (int i = 3; i < 128; i++)
 			{
 				if (thread_current()->fd_table[i] == NULL)
 				{
-					if (strcmp(thread_current()->name, (const char *)*args[1]) == 0)
+					if (strcmp(thread_current()->name, target_file) == 0)
 					{
-						file_deny_write(target_file);
+						file_deny_write(fp);
 					}
 					thread_current()->fd_table[i] = target_file;
-					cur->fd_table[i] = target_file;
-					f->eax = i;
-					lock_release(&file_lock);
-					break;
 				}
 			}
 		}
-		f->eax = -1;
-		lock_release(&file_lock);
-		break;
-		/*
+		*/
 		if (strcmp(thread_current()->name, (const char *)*args[1]) == 0)
 		{
 			file_deny_write(target_file);
 
 		}
-		*/
 		cur->fd_table[cur->fd_num] = target_file;
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
