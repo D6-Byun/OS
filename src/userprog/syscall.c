@@ -58,23 +58,21 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 1\n");
 		struct list_elem e;
 		struct thread* t;
+		struct file * target_file;
 		arg_catcher(args, 2, f->esp);
-		/*
-		for (int i = 3; i <= 128; i++)
-		{
-			struct thread * cur = thread_current();
-			struct file * target_file;
-			if (thread_current()->fd_table[i] != NULL)
-			{
-				target_file = cur->fd_table[i];
-				file_close(target_file);
-				cur->fd_table[i] = NULL;
-			}
-		}
-		*/
+		
 		thread_current()->exit_status = *args[1];
 		printf("%s: exit(%d)\n", thread_name(), *args[1]);
 		thread_exit();
+		for (int i = 3; i <= 128; i++)
+		{
+			if (thread_current()->fd_table[i] != NULL)
+			{
+				target_file = thread_current()->fd_table[i];
+				file_close(target_file);
+				thread_current()->fd_table[i] = NULL;
+			}
+		}
 		break;
 	}
 	case SYS_EXEC: /* arg 1 */
