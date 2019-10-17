@@ -67,6 +67,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			{
 				target_file = cur->fd_table[i];
 				file_close(target_file);
+				cur->fd_table[i] = NULL;
 			}
 		}
 		thread_current()->exit_status = *args[1];
