@@ -481,6 +481,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->fd_num = 3;
   t->is_terminated = false;
   t->exit_status = -1;
+  t->flag = false;
 
   sema_init(&t->child_sema, 0);
   sema_init(&t->wait_sema, 0);

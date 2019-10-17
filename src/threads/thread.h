@@ -111,6 +111,7 @@ struct thread
 	struct semaphore load_sema;
 	int exit_status;
 	int waiting_pid;
+	bool flag;
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */

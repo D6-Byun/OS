@@ -34,6 +34,8 @@ process_execute(const char *file_name)
 	int argc = 0;
 	struct arg *arg_struct;
 	struct file *file;
+	struct list_elem* e;
+	struct thread * t;
 
 	arg_struct = palloc_get_page(0);
 	if (arg_struct == NULL)
@@ -71,6 +73,14 @@ process_execute(const char *file_name)
 		palloc_free_page(fn_copy);
 		palloc_free_page(arg_struct);
 	}
+	for (e = list_begin(&thread_current()->child_list); e != list_end(&thread_current()->child_list); e = list_next(e))
+	{
+		t = list_entry(e, struct thread, child_elem);
+		if (t->flag)
+		{
+			return process_wait(tid);
+		}
+	}
 	return tid;
 }
 
@@ -97,7 +107,10 @@ start_process(void *arg_struct_)
 	palloc_free_page(arg_struct->filename);
 	palloc_free_page(arg_struct);
 	if (!success)
+	{
+		thread_current()->flag = true;
 		thread_exit();
+	}
 
 	/* Start the user process by simulating a return from an
 	   interrupt, implemented by intr_exit (in
@@ -134,6 +147,8 @@ process_exit(void)
 {
 	struct thread *cur = thread_current();
 	uint32_t *pd;
+
+
 
 	/* Destroy the current process's page directory and switch back
 	   to the kernel-only page directory. */
