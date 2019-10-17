@@ -109,6 +109,7 @@ start_process(void *arg_struct_)
 	if (!success)
 	{
 		thread_current()->flag = true;
+		printf("%s: exit(%d)\n", thread_name(), -1);
 		thread_exit();
 	}
 
@@ -134,11 +135,22 @@ start_process(void *arg_struct_)
 int
 process_wait(tid_t child_tid UNUSED)
 {
-	for (int i = 0; i < 100000000; i++)
+	int return_value;
+	struct thread * child;
+	if (thread_current()->waiting_pid == child_pid)
 	{
-
+		return -1;
 	}
-	return -1;
+	child = thread_get_child(child_pid);
+
+	thread_current()->waiting_pid = child_pid;
+	sema_down(&child->child_sema);
+	return_value = child->exit_status;
+	//process_wait(child_pid);
+	list_remove(&child->child_elem);
+	sema_up(&child->wait_sema);
+
+	return return_value;
 }
 
 /* Free the current process's resources. */
