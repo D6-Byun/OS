@@ -13,12 +13,20 @@
 #include <kernel/stdio.h>
 #include <string.h>
 #include <threads/synch.h>
+#include <filesys/off_t.h>
 
 static void syscall_handler (struct intr_frame *);
 static void arg_catcher(uint32_t* args[], int num, void *esp);
 static void is_pointer_valid(uint32_t* ptr);
 
 struct lock file_lock;
+
+struct file
+{
+	struct inode *inode;        /* File's inode. */
+	off_t pos;                  /* Current position. */
+	bool deny_write;            /* Has file_deny_write() been called? */
+};
 
 void
 syscall_init (void) 
@@ -290,7 +298,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("not the problem of is_pointer_valid\n");
 		target_file = cur->fd_table[*args[1]];
 		//printf("not the problem of target_file\n");
-		if (thread_current()->fd_table[(int)*args[1]]->deny_write)
+		if (target_file->deny_write)
 		{
 			file_deny_write(thread_current()->fd_table[(int)*args[1]]);
 		}
