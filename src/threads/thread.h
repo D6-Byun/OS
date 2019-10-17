@@ -108,6 +108,7 @@ struct thread
 	struct list child_list;
 	struct semaphore child_sema;
 	struct semaphore wait_sema;
+	struct semaphore load_sema;
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */

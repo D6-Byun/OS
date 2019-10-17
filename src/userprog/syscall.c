@@ -70,8 +70,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 			break;
 		}
 		child = thread_get_child(pid);
+		if (child == NULL)
+		{
+			printf("child doens't exist \n");
+			f->eax = -1;
+			break;
+		}
 
-		sema_down(&child->child_sema);
+		sema_down(&child->load_sema);
 		f->eax = pid;
 		break;
 	}
@@ -85,6 +91,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		child = thread_get_child(child_pid);
 		sema_down(&child->child_sema);
 		//process_wait(child_pid);
+		list_remove(&child->child_elem);
 		sema_up(&thread_current()->wait_sema);
 		f->eax = 0; //should be implemented here
 		break;

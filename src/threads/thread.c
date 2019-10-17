@@ -200,6 +200,8 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
 
+  sema_up(&t->load_sema);
+
   /* Add to run queue. */
   thread_unblock (t);
 
@@ -481,6 +483,7 @@ init_thread (struct thread *t, const char *name, int priority)
 
   sema_init(&t->child_sema, 0);
   sema_init(&t->wait_sema, 0);
+  sema_init(&t->load_sema, 0);
   list_init(&t->child_list);
 
   old_level = intr_disable ();
