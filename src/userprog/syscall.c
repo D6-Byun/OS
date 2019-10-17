@@ -90,7 +90,13 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 3\n");
 		arg_catcher(args, 2, f->esp);
 		child_pid = *args[1];
+		if (thread_current()->waiting_pid == child_pid)
+		{
+			f->eax = -1;
+			break;
+		}
 		child = thread_get_child(child_pid);
+		thread_current()->waiting_pid = child_pid;
 		sema_down(&child->child_sema);
 		return_value = child->exit_status;
 		//process_wait(child_pid);
