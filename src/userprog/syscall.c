@@ -166,18 +166,20 @@ int open(const char *file) {
 	}
 	is_valid_addr(file);
 	lock_acquire(&lock_imsi2);
-	if(filesys_open(file) == NULL){
-		retval = -1;
-	}
 	openfile = filesys_open(file);
+	if(openfile == NULL){
+		retval = -1;
+	}else{
 	/*0 = STDIN, 1 = STDOUT, 2 = STDERR */
-	for (int i = 3; i < 128; i++) {
-		if (thread_current()->files[i] == NULL) {
-			if(strcmp(thread_current()->name,file) == 0){
-				file_deny_write(openfile);	
+		for (int i = 3; i < 128; i++) {
+			if (thread_current()->files[i] == NULL) {
+				if(strcmp(thread_current()->name,file) == 0){
+					file_deny_write(openfile);	
+				}
+				thread_current()->files[i] = openfile;
+				retval = i;
+				break;
 			}
-			thread_current()->files[i] = openfile;
-			retval = i;
 		}
 	}
 	//printf("-1\n");
