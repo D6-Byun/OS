@@ -180,12 +180,32 @@ syscall_handler (struct intr_frame *f UNUSED)
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		lock_acquire(&file_lock);
 		target_file = filesys_open((const char *)*args[1]);
-		
 		if (target_file == NULL)
 		{
 			f->eax = -1;
 			lock_release(&file_lock);
 			break;
+		}
+		/*
+		else
+		{
+			for (int i = 3; i < 128; i++)
+			{
+				if (thread_current()->fd_table[i] == NULL)
+				{
+					if (strcmp(thread_current()->name, target_file) == 0)
+					{
+						file_deny_write(fp);
+					}
+					thread_current()->fd_table[i] = target_file;
+				}
+			}
+		}
+		*/
+		if (strcmp(thread_current()->name, target_file) == 0)
+		{
+			file_deny_write(target_file);
+
 		}
 		cur->fd_table[cur->fd_num] = target_file;
 		f->eax = cur->fd_num;
@@ -270,6 +290,10 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("not the problem of is_pointer_valid\n");
 		target_file = cur->fd_table[*args[1]];
 		//printf("not the problem of target_file\n");
+		if (thread_current()->fd_table[(int)*args[1]]->deny_write)
+		{
+			file_deny_write(thread_current()->fd_table[(int)*args[1]]);
+		}
 		f->eax = file_write(target_file, *args[2], *args[3]);
 		//printf("not the problem of f->eax\n");
 		lock_release(&file_lock);
