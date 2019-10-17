@@ -196,7 +196,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			lock_release(&file_lock);
 			break;
 		}
-		/*
+		
 		else
 		{
 			for (int i = 3; i < 128; i++)
@@ -208,10 +208,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 						file_deny_write(fp);
 					}
 					thread_current()->fd_table[i] = target_file;
+					f->eax = i;
+					break;
 				}
 			}
+			lock_release(&file_lock);
+			break;
 		}
-		*/
+		/*
 		if (strcmp(thread_current()->name, (const char *)*args[1]) == 0)
 		{
 			file_deny_write(target_file);
@@ -222,6 +226,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		cur->fd_num += 1;
 		lock_release(&file_lock);
 		break;
+		*/
 	}
 	case SYS_FILESIZE: /* arg 1 */
 	{
