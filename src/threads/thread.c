@@ -480,6 +480,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->magic = THREAD_MAGIC;
   t->fd_num = 3;
   t->is_terminated = false;
+  t->status = -1;
 
   sema_init(&t->child_sema, 0);
   sema_init(&t->wait_sema, 0);

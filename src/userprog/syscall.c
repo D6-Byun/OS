@@ -49,6 +49,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	{
 		//printf("system call 1\n");
 		arg_catcher(args, 2, f->esp);
+		thread_current()->status = *args[1];
 		printf("%s: exit(%d)\n", thread_name(), *args[1]);
 		thread_exit();
 		break;
@@ -84,16 +85,18 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_WAIT: /* arg 1 */
 	{
 		int child_pid;
+		int return_value;
 		struct thread * child;
 		//printf("system call 3\n");
 		arg_catcher(args, 2, f->esp);
 		child_pid = *args[1];
 		child = thread_get_child(child_pid);
 		sema_down(&child->child_sema);
+		return_value = child->status;
 		//process_wait(child_pid);
 		list_remove(&child->child_elem);
 		sema_up(&child->wait_sema);
-		f->eax = 0; //should be implemented here
+		f->eax = return_value; //should be implemented here
 		break;
 	}
 	case SYS_CREATE: /* arg 2 */
