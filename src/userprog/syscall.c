@@ -300,7 +300,10 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("not the problem of target_file\n");
 		if (target_file->deny_write)
 		{
-			file_deny_write(thread_current()->fd_table[(int)*args[1]]);
+			f->eax = 0;
+			lock_release(&file_lock);
+			break;
+			
 		}
 		f->eax = file_write(target_file, *args[2], *args[3]);
 		//printf("not the problem of f->eax\n");
