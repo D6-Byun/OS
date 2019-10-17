@@ -293,6 +293,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		}
 		target_file = cur->fd_table[*args[1]];
 		file_close(target_file);
+		cur->fd_table[*args[1]] = NULL;
 		break;
 	}
 	}
