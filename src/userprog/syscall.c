@@ -204,8 +204,10 @@ int read(int fd, void *buffer, unsigned length) {
 		}
 	}
 	else if(fd > 2){
-		if(thread_current()->files[fd] == NULL)
+		if (thread_current()->files[fd] == NULL) {
+			lock_release(&lock_imsi2);
 			exit(-1);
+		}
 		i = file_read(thread_current()->files[fd], buffer, length);
 	}
 
@@ -224,6 +226,7 @@ int write(int fd, const void *buffer, unsigned length) {
 	}
 	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL){
+			lock_release(&lock_imsi2);
 			exit(-1);
 		}
 		if(thread_current()->files[fd]->deny_write){
