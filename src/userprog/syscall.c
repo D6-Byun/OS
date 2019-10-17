@@ -10,6 +10,7 @@
 #include "filesys/file.h"
 #include "threads/vaddr.h"
 #include "filesys/off_t.h"
+#include "threads/synch.h"
 
 struct file 
 	{
@@ -17,7 +18,6 @@ struct file
 		off_t pos;                  /* Current position. */
     	bool deny_write;            /* Has file_deny_write() been called? */
 	};
-
 
 typedef int pid_t;
 
@@ -36,12 +36,13 @@ void seek(int fd, unsigned position);
 unsigned tell(int fd);
 void close(int fd);
 
-
+struct lock lock_imsi2;
 	
 void
 syscall_init (void) 
 {
-  intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+	lock_init(&lock_imsi2);
+  	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
 void is_valid_addr(void *addr) {
@@ -159,12 +160,14 @@ bool remove(const char *file) {
 }
 int open(const char *file) {
 	struct file *openfile;
-	is_valid_addr(file);
+	int retval;
 	if(file == NULL){
 		exit(-1);
 	}
+	is_valid_addr(file);
+	lock_acquire(&lock_imsi2);
 	if(filesys_open(file) == NULL){
-		return -1;
+		retval = -1;
 	}
 	openfile = filesys_open(file);
 	/*0 = STDIN, 1 = STDOUT, 2 = STDERR */
@@ -174,11 +177,12 @@ int open(const char *file) {
 				file_deny_write(openfile);	
 			}
 			thread_current()->files[i] = openfile;
-			return i;
+			retval = i;
 		}
 	}
 	//printf("-1\n");
-	return -1;
+	lock_release(&lock_imsi2);
+	return retval;
 }
 int filesize(int fd) {
 	//printf("filesize start\n");
@@ -191,6 +195,7 @@ int filesize(int fd) {
 int read(int fd, void *buffer, unsigned length) {
 	int i = 0;
 	is_valid_addr(buffer);
+	lock_acquire(&lock_imsi2);
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
 			if (((char *)buffer)[i] == '\0') {
@@ -201,17 +206,21 @@ int read(int fd, void *buffer, unsigned length) {
 	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL)
 			exit(-1);
-		return file_read(thread_current()->files[fd], buffer, length);
+		i = file_read(thread_current()->files[fd], buffer, length);
 	}
+
 	//printf("%d\n",i);
+	lock_release(&lock_imsi2);
 	return i;
 }
 int write(int fd, const void *buffer, unsigned length) {
+	int retval;
 	is_valid_addr(buffer);
+	lock_acquire(&lock_imsi2);
 	if (fd == 1) {
 		putbuf(buffer,length);
 		//printf("size = %d\n",length);
-		return length;
+		retval = length;
 	}
 	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL){
@@ -221,9 +230,12 @@ int write(int fd, const void *buffer, unsigned length) {
 			file_deny_write(thread_current()->files[fd]);
 		}
 		//printf("write bytes: %d\n",file_write(thread_current()->files[fd],buffer,length));
-		return file_write(thread_current()->files[fd], buffer, length);
+		retval = file_write(thread_current()->files[fd], buffer, length);
+	}else{
+		retval = -1;
 	}
-	return -1;	
+	lock_release(&lock_imsi2);
+	return retval;	
 }
 void seek(int fd, unsigned position) {
 	if(thread_current()->files[fd] == NULL)
