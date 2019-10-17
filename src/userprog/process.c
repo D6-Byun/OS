@@ -52,6 +52,12 @@ process_execute(const char *file_name)
 		(arg_struct->argv)[argc] = token;
 		argc++;
 	}
+	file = filesys_open(arg_struct->argv[0]);
+	if (file == NULL)
+	{
+		//printf("load: %s: open failed\n", file_name);
+		return TID_ERROR;
+	}
 	arg_struct->argc = argc;
 	//printf("progress_execude\n");
 	//printf("%d\n", arg_struct->argc);
