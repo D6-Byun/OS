@@ -160,7 +160,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 			break;
 			*/
 		}
-		*/
 		cur->fd_table[cur->fd_num] = target_file;
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
