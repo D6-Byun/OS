@@ -203,9 +203,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 			{
 				if (thread_current()->fd_table[i] == NULL)
 				{
-					if (strcmp(thread_current()->name, target_file) == 0)
+					if (strcmp(thread_current()->name, (const char *) *args[1]) == 0)
 					{
-						file_deny_write(fp);
+						file_deny_write(target_file);
 					}
 					thread_current()->fd_table[i] = target_file;
 					f->eax = i;
