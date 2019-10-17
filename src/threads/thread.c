@@ -200,7 +200,7 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
 
-  sema_up(&t->load_sema);
+  //sema_up(&t->load_sema);
 
   /* Add to run queue. */
   thread_unblock (t);

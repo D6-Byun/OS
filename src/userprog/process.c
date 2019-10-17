@@ -84,6 +84,8 @@ start_process(void *arg_struct_)
 	if_.eflags = FLAG_IF | FLAG_MBS;
 	success = load(arg_struct, &if_.eip, &if_.esp);
 
+	sema_up(&thread_current()->load_sema);
+
 	/* If load failed, quit. */
 	palloc_free_page(arg_struct->filename);
 	palloc_free_page(arg_struct);
