@@ -33,6 +33,7 @@ process_execute(const char *file_name)
 	tid_t tid;
 	int argc = 0;
 	struct arg *arg_struct;
+	struct file *file;
 
 	arg_struct = palloc_get_page(0);
 	if (arg_struct == NULL)
