@@ -469,6 +469,8 @@ init_thread (struct thread *t, const char *name, int priority)
 	intr_set_level (old_level);
 
 #ifdef USERPROG
+	//t->exit = 0;i
+	t->isexit = false;
 	sema_init(&(t->sema_imsi),0);
 	sema_init(&(t->sema_child), 0);
 	list_init(&(t->child));

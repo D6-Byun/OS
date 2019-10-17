@@ -45,7 +45,8 @@ process_execute (const char *file_name)
 	char *fn_copy, *save_ptr, *save_ptr2;
   	tid_t tid;
 	char hongkong[128];	
-
+	struct list_elem *child_e;
+	struct thread *child_t;
 	/* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   	fn_copy = palloc_get_page (0);
@@ -69,6 +70,15 @@ process_execute (const char *file_name)
 	if (tid == TID_ERROR){
     	palloc_free_page (fn_copy);
 	}
+	/*for(child_e = list_next(list_begin(&(thread_current()->child)));child_e != list_end(&(thread_current()->child));child_e = list_next(&child_e)){
+		child_t = list_entry(child_e,struct thread,child_elem);
+		if(child_t -> isexit == true){
+			return process_wait(tid);
+		}
+	}*/
+	if(thread_current()->isexit){
+		return -1;
+	}
 	//free(hongkong);
   	return tid;
 }
@@ -90,12 +100,12 @@ start_process (void *file_name_)
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (file_name, &if_.eip, &if_.esp);
   
-  sema_up(&(thread_current()->pthread->lock_imsi));
   /* If load failed, quit. */
   palloc_free_page (file_name);
-  if (!success){
-    //thread_exit ();
-	exit(-1);
+  sema_up(&(thread_current()->pthread->lock_imsi));
+	if (!success){
+	  	thread_current()->pthread->isexit = true;
+		thread_exit ();
   }
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in

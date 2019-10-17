@@ -105,6 +105,7 @@ struct thread
 	struct file *files[128];
 	int exit;							/*exit status*/
 	struct semaphore lock_imsi;
+	bool isexit;
 #endif
 
     /* Owned by thread.c. */
