@@ -141,10 +141,6 @@ process_wait(tid_t child_tid UNUSED)
 	{
 		return -1;
 	}
-	if (!(thread_get_child(child_tid)))
-	{
-		return -1;
-	}
 	child = thread_get_child(child_tid);
 
 	thread_current()->waiting_pid = child_tid;
