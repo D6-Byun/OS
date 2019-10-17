@@ -58,7 +58,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 		//printf("system call 1\n");
 		struct list_elem e;
 		struct thread* t;
-		struct file * target_file;
 		arg_catcher(args, 2, f->esp);
 		
 		thread_current()->exit_status = *args[1];
@@ -66,6 +65,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		thread_exit();
 		for (int i = 3; i <= 128; i++)
 		{
+			struct file * target_file;
 			if (thread_current()->fd_table[i] != NULL)
 			{
 				target_file = thread_current()->fd_table[i];
@@ -133,6 +133,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		
@@ -140,6 +150,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		
@@ -163,6 +183,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		if (!filesys_remove((const char *) *args[1]))
@@ -238,6 +268,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		target_file = cur->fd_table[*args[1]];
@@ -270,6 +310,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 			lock_release(&file_lock);
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		target_file = cur->fd_table[*args[1]];
@@ -297,6 +347,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			lock_release(&file_lock);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 
@@ -327,6 +387,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		target_file = cur->fd_table[*args[1]];
@@ -343,6 +413,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		target_file = cur->fd_table[*args[1]];
@@ -359,6 +439,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 		{
 			printf("%s: exit(%d)\n", thread_name(), -1);
 			thread_exit();
+			for (int i = 3; i <= 128; i++)
+			{
+				struct file * target_file;
+				if (thread_current()->fd_table[i] != NULL)
+				{
+					target_file = thread_current()->fd_table[i];
+					file_close(target_file);
+					thread_current()->fd_table[i] = NULL;
+				}
+			}
 			break;
 		}
 		target_file = cur->fd_table[*args[1]];
@@ -388,5 +478,15 @@ static void is_pointer_valid(uint32_t* ptr)
 		//printf("invalid pointer %d", casted_ptr);
 		printf("%s: exit(%d)\n", thread_name(), -1);
 		thread_exit();
+		for (int i = 3; i <= 128; i++)
+		{
+			struct file * target_file;
+			if (thread_current()->fd_table[i] != NULL)
+			{
+				target_file = thread_current()->fd_table[i];
+				file_close(target_file);
+				thread_current()->fd_table[i] = NULL;
+			}
+		}
 	}
 }

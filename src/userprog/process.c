@@ -111,6 +111,16 @@ start_process(void *arg_struct_)
 		thread_current()->flag = true;
 		printf("%s: exit(%d)\n", thread_name(), -1);
 		thread_exit();
+		for (int i = 3; i <= 128; i++)
+		{
+			struct file * target_file;
+			if (thread_current()->fd_table[i] != NULL)
+			{
+				target_file = thread_current()->fd_table[i];
+				file_close(target_file);
+				thread_current()->fd_table[i] = NULL;
+			}
+		}
 	}
 
 	/* Start the user process by simulating a return from an
