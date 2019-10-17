@@ -297,7 +297,7 @@ thread_exit (void)
   }
 
   sema_up(&t->child_sema);
-  sema_down(thread_current()->wait_sema);
+  sema_down(&thread_current()->wait_sema);
 
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
