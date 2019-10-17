@@ -148,13 +148,19 @@ syscall_handler (struct intr_frame *f UNUSED)
 		is_pointer_valid((uint32_t *)*args[1]);
 		is_pointer_valid((uint32_t *)(*args[1] + 3));
 		target_file = filesys_open((const char *)*args[1]);
+		
 		if (target_file == NULL)
 		{
+			f->eax = -1;
+			break;
+			/*
 			cur->fd_table[cur->fd_num] = target_file;
 			f->eax = cur->fd_num;
 			cur->fd_num += 1;
 			break;
+			*/
 		}
+		*/
 		cur->fd_table[cur->fd_num] = target_file;
 		f->eax = cur->fd_num;
 		cur->fd_num += 1;
