@@ -50,69 +50,30 @@ syscall_handler (struct intr_frame *f UNUSED)
 	case SYS_HALT: /* arg 0 */
 	{
 		//printf("system call 0\n");
-		shutdown_power_off();
+		halt();
 		break;
 	}
 	case SYS_EXIT: /* arg 1 */
 	{
 		//printf("system call 1\n");
-		struct list_elem e;
-		struct thread* t;
 		arg_catcher(args, 2, f->esp);
-		
-		thread_current()->exit_status = *args[1];
-		printf("%s: exit(%d)\n", thread_name(), *args[1]);
-		thread_exit();
-		for (int i = 3; i <= 128; i++)
-		{
-			struct file * target_file;
-			if (thread_current()->fd_table[i] != NULL)
-			{
-				target_file = thread_current()->fd_table[i];
-				file_close(target_file);
-				thread_current()->fd_table[i] = NULL;
-			}
-		}
+		exit((int)*args[1]);
 		break;
 	}
 	case SYS_EXEC: /* arg 1 */
 	{
-		int pid;
-		struct thread * cur = thread_current();
-		struct thread * child;
-
 		//printf("system call 2\n");
 		arg_catcher(args, 2, f->esp);
 		//is_pointer_valid((uint32_t *)*args[1]);
 		//is_pointer_valid((uint32_t *)(*args[1]+3));
-		pid = process_execute((const char *)*args[1]);
-		if (pid == TID_ERROR)
-		{
-			f->eax = pid;
-			break;
-		}
-		child = thread_get_child(pid);
-		if (child == NULL)
-		{
-			printf("child doens't exist \n");
-			f->eax = -1;
-			break;
-		}
-
-		sema_down(&child->load_sema);
-		f->eax = pid;
+		f->eax = exec((const char *)*args[1]);
 		break;
 	}
 	case SYS_WAIT: /* arg 1 */
 	{
-		int child_pid;
-		int return_value;
-		struct thread * child;
 		//printf("system call 3\n");
 		arg_catcher(args, 2, f->esp);
-		child_pid = *args[1];
-
-		f->eax = process_wait(child_pid);
+		f->eax = wait(*args[1]);
 		break;
 	}
 	case SYS_CREATE: /* arg 2 */
@@ -457,6 +418,83 @@ syscall_handler (struct intr_frame *f UNUSED)
 		break;
 	}
 	}
+}
+
+void halt(void) NO_RETURN
+{
+	shutdown_power_off();
+}
+
+void exit(int status) NO_RETURN
+{
+	thread_current()->exit_status = status;
+	printf("%s: exit(%d)\n", thread_name(), status);
+	thread_exit();
+	for (int i = 3; i <= 128; i++)
+	{
+		struct file * target_file;
+		if (thread_current()->fd_table[i] != NULL)
+		{
+			target_file = thread_current()->fd_table[i];
+			file_close(target_file);
+			thread_current()->fd_table[i] = NULL;
+		}
+	}
+}
+
+pid_t exec(const char *file)
+{
+
+}
+
+int wait(pid_t)
+{
+
+}
+
+bool create(const char *file, unsigned initial_size)
+{
+
+}
+
+bool remove(const char *file)
+{
+
+}
+
+int open(const char *file)
+{
+
+}
+
+int filesize(int fd)
+{
+
+}
+
+int read(int fd, void *buffer, unsigned length)
+{
+
+}
+
+int write(int fd, const void *buffer, unsigned length)
+{
+
+}
+
+void seek(int fd, unsigned position)
+{
+
+}
+
+unsigned tell(int fd)
+{
+
+}
+
+void close(int fd)
+{
+
 }
 
 static void arg_catcher(uint32_t* args[], int num, void *esp)
