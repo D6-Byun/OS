@@ -11,6 +11,7 @@
 #include "threads/vaddr.h"
 #include "filesys/off_t.h"
 #include "threads/synch.h"
+#include "vm/page.h"
 
 struct file 
 	{
@@ -45,12 +46,28 @@ syscall_init (void)
   	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-void is_valid_addr(void *addr) {
+struct sup_page_entry* is_valid_addr(void *addr) {
 	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
 		exit(-1);
 	}
+	struct sup_page_entry* entry = sup_lookup_page(thread_current()->spt, addr);
+	return entry;
 }
-
+/*check is buffer is valid for syscall READ*/
+void check_valid_buffer(void *buffer, unsigned size, void *esp, bool write) {
+	for (int i = 0; i < size; i++) {
+		struct sup_page_entry* entry = is_valid_addr(buffer + i);
+		if (entry == NULL && entry->writable != true) {
+			exit(-1);
+		}
+	}
+}
+void check_valid_string(const void *str, void *esp) {
+	struct sup_page_entry *entry = is_valid_addr(str);
+	if (entry == NULL) {
+		exit(-1);
+	}
+}
 
 static void
 syscall_handler (struct intr_frame *f) 
@@ -96,15 +113,14 @@ syscall_handler (struct intr_frame *f)
 			f->eax = filesize((int)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_READ:
-			is_valid_addr(f->esp + 4);
-			is_valid_addr(f->esp + 8);
-			is_valid_addr(f->esp + 12);
+			check_valid_buffer(f->esp + 8,f->esp + 12,f->esp,);
 			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:
-			is_valid_addr(f->esp + 4);
+			/*is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
-			is_valid_addr(f->esp + 12);
+			is_valid_addr(f->esp + 12);*/
+			check_valid_string(f->esp + 8, f->esp);
 			f->eax = write((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8),(uintptr_t)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_SEEK:

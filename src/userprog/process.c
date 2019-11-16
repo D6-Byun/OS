@@ -18,6 +18,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
+#include "vm/page.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -92,7 +93,8 @@ start_process (void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
-  	//printf("start_process\n");
+	/* initialize sup_page_table */
+	thread_current()->spt = spt_create();
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -158,6 +160,7 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+  spt_destroy(cur->spt);
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -171,6 +174,7 @@ process_exit (void)
       cur->pagedir = NULL;
       pagedir_activate (NULL);
       pagedir_destroy (pd);
+
     }
 	sema_up(&(cur->sema_child));
 	sema_down(&(cur->sema_imsi));
@@ -453,43 +457,52 @@ static bool
 load_segment (struct file *file, off_t ofs, uint8_t *upage,
               uint32_t read_bytes, uint32_t zero_bytes, bool writable) 
 {
-  ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
-  ASSERT (pg_ofs (upage) == 0);
-  ASSERT (ofs % PGSIZE == 0);
+	ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
+	ASSERT (pg_ofs (upage) == 0);
+	ASSERT (ofs % PGSIZE == 0);
 
-  file_seek (file, ofs);
-  while (read_bytes > 0 || zero_bytes > 0) 
-    {
-      /* Calculate how to fill this page.
+	file_seek (file, ofs);
+	while (read_bytes > 0 || zero_bytes > 0) 
+		{
+		/* Calculate how to fill this page.
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
-      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-      size_t page_zero_bytes = PGSIZE - page_read_bytes;
+		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-      /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER);
-      if (kpage == NULL)
-        return false;
-
-      /* Load this page. */
-      if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
-        {
-          palloc_free_page (kpage);
-          return false; 
+		/* Get a page of memory.
+		uint8_t *kpage = palloc_get_page (PAL_USER);
+		if (kpage == NULL)
+			return false;
+		Load this page.
+		if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
+		{
+			palloc_free_page (kpage);
+			return false; 
         }
-      memset (kpage + page_read_bytes, 0, page_zero_bytes);
+		memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
-      /* Add the page to the process's address space. */
-      if (!install_page (upage, kpage, writable)) 
-        {
-          palloc_free_page (kpage);
-          return false; 
-        }
-
-      /* Advance. */
-      read_bytes -= page_read_bytes;
-      zero_bytes -= page_zero_bytes;
-      upage += PGSIZE;
+		Add the page to the process's address space.
+		if (!install_page (upage, kpage, writable)) 
+		{
+			palloc_free_page (kpage);
+			return false; 
+        }*/
+		/*vm_entry genereate*/
+		struct sup_page_entry *entry = (struct sup_page_entry *)malloc(sizeof(sup_page_entry));
+		entry->file = file;
+		entry->file_ofs = ofs;
+		entry->upage = upage;
+		entry->read_bytes = read_bytes;
+		entry->zero_bytes = zero_bytes;
+		entry->writable = writable;
+		entry->dirty = false;
+		sup_insert(thread_current()->spt, entry);
+		/* Advance. */
+		read_bytes -= page_read_bytes;
+		zero_bytes -= page_zero_bytes;
+		ofs += page_read_bytes;
+		upage += PGSIZE;
     }
   return true;
 }
@@ -499,53 +512,48 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 static bool
 setup_stack (void **esp, int argc, char *argv[]) 
 {
-  uint8_t *kpage, *nullp = (uint8_t)0;
-  bool success = false;
-  uintptr_t *addr[32];
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-  //printf("start stacking");
-  if (kpage != NULL) 
-    {
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-	  if (success) {
-		  *esp = PHYS_BASE;
-		  /*argv[i][...]*/
-		  for (int i = argc - 1; i >= 0; i--) {
-			  *esp -= (strlen(argv[i]) + 1);
-			 // printf("%d,\n",(strlen(argv[i]+1)));
-			  memcpy(*esp, argv[i], strlen(argv[i]) + 1);
-			  addr[i] = (uintptr_t*)*esp;
-		  }
-		  addr[argc] = (uintptr_t*)0;
-		  /*word-align*/
-		  while ((uintptr_t)*esp % 4 != 0) {
-			  *esp = *esp - 1;
-			  //printf("%d\n",(uintptr_t)*esp);
-			  //memmove(*esp,nullp,sizeof(*nullp));
-		  }
-			//printf("%d\n",(uintptr_t)*esp);
-		  /*argv[i]*/
-		  for (int i = argc; i >= 0; i--) {
-			  *esp = *esp - 4;
-			  *(uintptr_t **)*esp = addr[i];
-		  }
-		  /*argv*/
-		  *esp = *esp - 4;
-		  //printf("%d\n",(uintptr_t)*esp);
-		  *(uintptr_t **)*esp = *esp + 4;
-		  /*argc*/
-		  *esp = *esp - 4;
-		  	//printf("%d\n",(uintptr_t)*esp);
+	uint8_t *kpage, *nullp = (uint8_t)0;
+	bool success = false;
+	uintptr_t *addr[32];
+	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+	//printf("start stacking");
+	if (kpage != NULL) 
+	{
+		success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+		if (success) {
+			*esp = PHYS_BASE;
+			/*argv[i][...]*/
+			for (int i = argc - 1; i >= 0; i--) {
+				*esp -= (strlen(argv[i]) + 1);
+				memcpy(*esp, argv[i], strlen(argv[i]) + 1);
+				addr[i] = (uintptr_t*)*esp;
+			}
+			addr[argc] = (uintptr_t*)0;
+			/*word-align*/
+			while ((uintptr_t)*esp % 4 != 0) {
+				*esp = *esp - 1;
+			}
+			/*argv[i]*/
+			for (int i = argc; i >= 0; i--) {
+				*esp = *esp - 4;
+				*(uintptr_t **)*esp = addr[i];
+			}
+			/*argv*/
+			*esp = *esp - 4;
+			*(uintptr_t **)*esp = *esp + 4;
+			/*argc*/
+			*esp = *esp - 4;
 			*(int *)*esp = argc;
-		  /*ret addr*/
-		  *esp = *esp - 4;
-		  *(int *)*esp = 0;
-
+			/*ret addr*/
+			*esp = *esp - 4;
+			*(int *)*esp = 0;
 	  }
       else
         palloc_free_page (kpage);
     }
-  //printf("Stack dump check\n");
+	/*entry genereate*/
+	struct sup_page_entry *entry = (sup_page_entry *)malloc(sizeof(sup_page_entry));
+	sup_insert(thread_current()->spt, entry);
   
   //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
   return success;
@@ -569,4 +577,12 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
+}
+
+bool
+handle_mm_fault(struct sup_page_entry *spte) {
+	void * paddr = palloc_get_page(0);
+	bool isload = load_file(paddr, spte);
+	bool isinstall = install_page(spte->upage, paddr, spte->writable);
+	return (isload && isinstall);
 }

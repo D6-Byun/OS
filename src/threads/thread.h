@@ -5,6 +5,7 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/synch.h"
+#include "vm/page.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -107,9 +108,12 @@ struct thread
 	struct semaphore lock_imsi;
 	bool isexit;
 #endif
-
+	
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
+
+	/*FOR VM*/
+	struct sup_page_table *spt;
   };
 
 /* If false (default), use round-robin scheduler.
