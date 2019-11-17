@@ -553,6 +553,16 @@ setup_stack (void **esp, int argc, char *argv[])
     }
 	/*entry genereate*/
 	struct sup_page_entry *entry = (sup_page_entry *)malloc(sizeof(sup_page_entry));
+	entry->file = NULL;
+	entry->helem = NULL;
+	entry->file_ofs = (off_t)0;
+	entry->upage = NULL;
+	entry->kpage = NULL;
+	entry->read_bytes = 0;
+	entry->zero_bytes = PGSIZE;
+	entry->writable = true;
+	entry->dirty = false;
+		
 	sup_insert(thread_current()->spt, entry);
   
   //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
