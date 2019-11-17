@@ -1,12 +1,9 @@
-
+#include "filesys/off_t.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <hash.h>
-#include "filesys/off_t.h"
-#include "threads/vaddr.h"
-#include "filesys/file.h"
-#include "threads/malloc.h"
-#include <string.h>
+#ifndef _PAGE_H_
+#define _PAGE_H_
 
 
 struct sup_page_table {
@@ -36,3 +33,8 @@ void sup_set_dirty(struct sup_page_table *spt, void *page, bool dirty);
 bool sup_get_dirty(struct sup_page_table *spt, void *page);
 bool sup_insert(struct sup_page_table *spt, struct sup_page_entry *spte);
 bool load_file(void *kaddr, struct sup_page_entry *spte);
+
+
+
+
+#endif

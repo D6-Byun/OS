@@ -11,7 +11,6 @@
 #include "threads/vaddr.h"
 #include "filesys/off_t.h"
 #include "threads/synch.h"
-#include "vm/page.h"
 
 struct file 
 	{
@@ -57,7 +56,7 @@ struct sup_page_entry* is_valid_addr(void *addr) {
 void check_valid_buffer(void *buffer, unsigned size, void *esp, bool write) {
 	for (int i = 0; i < size; i++) {
 		struct sup_page_entry* entry = is_valid_addr(buffer + i);
-		if (entry == NULL && entry->writable != true) {
+		if (entry == NULL || entry->writable != write) {
 			exit(-1);
 		}
 	}
@@ -113,7 +112,7 @@ syscall_handler (struct intr_frame *f)
 			f->eax = filesize((int)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_READ:
-			check_valid_buffer(f->esp + 8,f->esp + 12,f->esp,);
+			check_valid_buffer(f->esp + 8,f->esp + 12,f->esp,true);
 			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:

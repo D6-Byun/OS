@@ -1,23 +1,26 @@
 #include "vm/page.h"
-
+#include "threads/vaddr.h"
+#include "filesys/file.h"
+#include "threads/malloc.h"
+#include <string.h>
 
 /*For build hash
 it get elem e then return upage of entry
 */
-static hash_hash_func 
+static unsigned 
 spt_hash_func(const struct hash_elem *e, void* aux) {
-	struct sup_page_entry *spe = hash_entry(e, struct sup_page_entry, e);
+	struct sup_page_entry *spe = hash_entry(e, struct sup_page_entry, helem);
 	return hash_int((int)spe->upage);
 }
 
-static hash_less_func 
+static bool 
 spt_less_func(const struct hash_elem *a, const struct hash_elem *b, void* aux) {
-	struct sup_page_entry *a_spe = hash_entry(a, struct sup_page_entry, a);
-	struct sup_page_entry *b_spe = hash_entry(b, struct sup_page_entry, b);
+	struct sup_page_entry *a_spe = hash_entry(a, struct sup_page_entry, helem);
+	struct sup_page_entry *b_spe = hash_entry(b, struct sup_page_entry, helem);
 	return a_spe->upage < b_spe->upage;
 }
 
-static hash_action_func spt_destroy_func(const struct hash_elem *e, void *aux);
+//static hash_action_func spt_destroy_func(const struct hash_elem *e, void *aux);
 
 struct sup_page_table *
 spt_create(void) {
@@ -25,12 +28,13 @@ spt_create(void) {
 	hash_init(&spt ->hash_brown,spt_hash_func,spt_less_func, NULL);
 	return spt;
 }
-
+/*
 void spt_destroy(struct sup_page_table *spt) {
 	hash_destroy(&spt ->hash_brown, spt_destroy_func);
 	if(spt != NULL)
 		free(spt);
 }
+*/
 /*
 Lookup the supplemental page table
 Return page table entry which has user page addr.
@@ -42,7 +46,7 @@ struct sup_page_entry *sup_lookup_page(struct sup_page_table *spt, void *page) {
 	struct hash_elem *e = hash_find(&spt->hash_brown, &temp.helem);
 	if (e == NULL) 
 		return NULL;
-	return hash_entry(e, struct sup_page_entry, e);
+	return hash_entry(e, struct sup_page_entry, helem);
 }
 /*
 Find entry which has page as upage
@@ -64,7 +68,7 @@ bool sup_get_dirty(struct sup_page_table *spt, void *page) {
 /*insert SPTE in SPT return TRUE, 
 if inserting fails return FALSE*/
 bool sup_insert(struct sup_page_table *spt, struct sup_page_entry *spte) {
-	struct hash_elem *elem = hash_insert(spt->hash_brown, spte->helem);
+	struct hash_elem *elem = hash_insert(&spt->hash_brown, &spte->helem);
 	if (elem == NULL) {
 		return false;
 	}
@@ -73,7 +77,7 @@ bool sup_insert(struct sup_page_table *spt, struct sup_page_entry *spte) {
 /*insert SPTE in SPT return TRUE,
 if inserting fails return FALSE*/
 bool sup_delete(struct sup_page_table *spt, struct sup_page_entry *spte) {
-	struct hash_elem *elem = hash_delete(spt->hash_brown, spte->helem);
+	struct hash_elem *elem = hash_delete(&spt->hash_brown, &spte->helem);
 	if (elem == NULL) {
 		return false;
 	}

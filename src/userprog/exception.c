@@ -5,7 +5,6 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
-#include "vm/page.h"
 #include "userprog/process.h"
 
 /* Number of page faults processed. */

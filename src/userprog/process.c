@@ -160,7 +160,7 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
-  spt_destroy(cur->spt);
+  //spt_destroy(cur->spt);
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -489,7 +489,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 			return false; 
         }*/
 		/*vm_entry genereate*/
-		struct sup_page_entry *entry = (struct sup_page_entry *)malloc(sizeof(sup_page_entry));
+		struct sup_page_entry *entry = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
 		entry->file = file;
 		entry->file_ofs = ofs;
 		entry->upage = upage;
@@ -552,9 +552,9 @@ setup_stack (void **esp, int argc, char *argv[])
         palloc_free_page (kpage);
     }
 	/*entry genereate*/
-	struct sup_page_entry *entry = (sup_page_entry *)malloc(sizeof(sup_page_entry));
+	struct sup_page_entry *entry = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
 	entry->file = NULL;
-	entry->helem = NULL;
+	//entry->helem = 
 	entry->file_ofs = (off_t)0;
 	entry->upage = NULL;
 	entry->kpage = NULL;
@@ -589,8 +589,7 @@ install_page (void *upage, void *kpage, bool writable)
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
 }
 
-bool
-handle_mm_fault(struct sup_page_entry *spte) {
+bool handle_mm_fault(struct sup_page_entry *spte) {
 	void * paddr = palloc_get_page(0);
 	if (paddr == NULL) {
 		return false;
