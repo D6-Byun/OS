@@ -152,7 +152,7 @@ page_fault (struct intr_frame *f)
   
   /* when kernel thread terminates */
   if(!user || is_kernel_vaddr(fault_addr)){
-	exit(-1);
+	exit(-113);
 }
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to

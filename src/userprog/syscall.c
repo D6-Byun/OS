@@ -47,7 +47,7 @@ syscall_init (void)
 
 struct sup_page_entry* is_valid_addr(void *addr) {
 	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
-		exit(-1);
+		exit(-10);
 	}
 	struct sup_page_entry* entry = sup_lookup_page(thread_current()->spt, addr);
 	return entry;
@@ -57,14 +57,14 @@ void check_valid_buffer(void *buffer, unsigned size, void *esp, bool write) {
 	for (int i = 0; i < size; i++) {
 		struct sup_page_entry* entry = is_valid_addr(buffer + i);
 		if (entry == NULL || entry->writable != write) {
-			exit(-1);
+			exit(-11);
 		}
 	}
 }
 void check_valid_string(const void *str, void *esp) {
 	struct sup_page_entry *entry = is_valid_addr(str);
 	if (entry == NULL) {
-		exit(-1);
+		exit(-12);
 	}
 }
 
@@ -154,7 +154,7 @@ void exit(int status) {
 pid_t exec(const char *cmd_line) {
 	//hex_dump((uintptr_t)cmd_line,cmd_line,64,true);
 	if(cmd_line == NULL){
-		exit(-1);
+		exit(-13);
 	}
 	return process_execute(cmd_line);
 }
@@ -163,13 +163,13 @@ int wait(pid_t pid) {
 }
 bool create(const char *file, unsigned initial_size) {
 	if(file == NULL){
-		exit(-1);
+		exit(-14);
 	}
 	return filesys_create(file, initial_size);
 }
 bool remove(const char *file) {
 	if(file == NULL){
-		exit(-1);
+		exit(-15);
 	}
 	return filesys_remove(file);
 }
@@ -177,7 +177,7 @@ int open(const char *file) {
 	struct file *openfile;
 	int retval;
 	if(file == NULL){
-		exit(-1);
+		exit(-16);
 	}
 	is_valid_addr(file);
 	lock_acquire(&lock_imsi2);
@@ -204,7 +204,7 @@ int open(const char *file) {
 int filesize(int fd) {
 	//printf("filesize start\n");
 	if(thread_current()->files[fd] == NULL){
-		exit(-1);
+		exit(-17);
 	}
 	//printf("file length : %d\n",file_length(thread_current()->files[fd]));
 	return file_length(thread_current()->files[fd]);
@@ -223,7 +223,7 @@ int read(int fd, void *buffer, unsigned length) {
 	else if(fd > 2){
 		if (thread_current()->files[fd] == NULL) {
 			lock_release(&lock_imsi2);
-			exit(-1);
+			exit(-18);
 		}
 		i = file_read(thread_current()->files[fd], buffer, length);
 	}
@@ -244,7 +244,7 @@ int write(int fd, const void *buffer, unsigned length) {
 	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL){
 			lock_release(&lock_imsi2);
-			exit(-1);
+			exit(-19);
 		}
 		if(thread_current()->files[fd]->deny_write){
 			file_deny_write(thread_current()->files[fd]);
@@ -259,17 +259,17 @@ int write(int fd, const void *buffer, unsigned length) {
 }
 void seek(int fd, unsigned position) {
 	if(thread_current()->files[fd] == NULL)
-		exit(-1);
+		exit(-110);
 	file_seek(thread_current()->files[fd],position);
 }
 unsigned tell(int fd) {
 	if(thread_current()->files[fd] == NULL)
-		exit(-1);
+		exit(-111);
 	return file_tell(thread_current()->files[fd]);
 }
 void close(int fd) {
 	if(thread_current()->files[fd] == NULL)
-		exit(-1);
+		exit(-112);
 	
 	file_close(thread_current()->files[fd]);
 	thread_current()->files[fd] = NULL;
