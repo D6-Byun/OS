@@ -3,6 +3,7 @@
 #include "filesys/file.h"
 #include "threads/malloc.h"
 #include <string.h>
+#include "threads/thread.h"
 
 /*For build hash
 it get elem e then return upage of entry
@@ -20,7 +21,10 @@ spt_less_func(const struct hash_elem *a, const struct hash_elem *b, void* aux) {
 	return a_spe->upage < b_spe->upage;
 }
 
-//static hash_action_func spt_destroy_func(const struct hash_elem *e, void *aux);
+static void spt_destroy_func(const struct hash_elem *e, void *aux){
+	thread_current()->spt->hash_brown.elem_cnt--;
+	list_remove (&e->list_elem);
+}
 
 struct sup_page_table *
 spt_create(void) {
@@ -28,13 +32,13 @@ spt_create(void) {
 	hash_init(&spt ->hash_brown,spt_hash_func,spt_less_func, NULL);
 	return spt;
 }
-/*
+
 void spt_destroy(struct sup_page_table *spt) {
 	hash_destroy(&spt ->hash_brown, spt_destroy_func);
 	if(spt != NULL)
 		free(spt);
 }
-*/
+
 /*
 Lookup the supplemental page table
 Return page table entry which has user page addr.
@@ -89,5 +93,7 @@ bool load_file(void *kaddr, struct sup_page_entry *spte) {
 	bool isread = file_read_at(spte->file, kaddr, (off_t)spte->read_bytes, spte->file_ofs);
 	if (isread) {
 		memset(kaddr + (spte->read_bytes), 0, spte->zero_bytes);
+		return true;
 	}
+	return false;
 }
