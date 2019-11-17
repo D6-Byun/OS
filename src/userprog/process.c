@@ -592,9 +592,18 @@ install_page (void *upage, void *kpage, bool writable)
 bool handle_mm_fault(struct sup_page_entry *spte) {
 	void * paddr = palloc_get_page(0);
 	if (paddr == NULL) {
+		printf("Page allocation failed.\n");
 		return false;
 	}
 	bool isload = load_file(paddr, spte);
 	bool isinstall = install_page(spte->upage, paddr, spte->writable);
-	return (isload && isinstall);
+	if(isload && isinstall){
+		return true;
+	}
+	if(!isload){
+		printf("load failed\n");
+		return false;
+	}
+	printf("install failed\n");
+	return false;
 }

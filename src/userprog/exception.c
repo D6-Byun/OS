@@ -163,7 +163,7 @@ page_fault (struct intr_frame *f)
 	  struct sup_page_entry *entry = sup_lookup_page(cur->spt, fault_addr);
 	  bool isload = handle_mm_fault(entry);
 	  if (!isload) {
-		  PANIC("SEGMENTATION FAULT");
+		  printf("SEGMENTATION FAULT\n");
 	  }
   }
   else {
