@@ -30,7 +30,10 @@ struct spt_entry {
 };
 
 struct spt * spt_init(void);
-bool insert_spt_entry(struct hash, struct spt_entry);
-bool delete_spt_entry(struct hash, struct spt_entry);
+bool insert_spt_entry(struct hash*, struct spt_entry*);
+bool delete_spt_entry(struct hash*, struct spt_entry*);
+
+struct spt_entry * find_spt_elem(void *);
+void spt_destroy(struct hash *);
 
 #endif // !VM_PAGE_H_

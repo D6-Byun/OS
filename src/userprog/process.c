@@ -163,6 +163,8 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+  spt_destroy(&cur->spt.hash_brown);
+
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -470,13 +472,16 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
          and zero the final PAGE_ZERO_BYTES bytes. */
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
+	  struct spt_entry * spte;
 
-      /* Get a page of memory. */
+	  // Part of Project 2
+	  /* 
+      // Get a page of memory.
       uint8_t *kpage = palloc_get_page (PAL_USER);
       if (kpage == NULL)
         return false;
 
-      /* Load this page. */
+      // Load this page.
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
           palloc_free_page (kpage);
@@ -484,14 +489,29 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
-      /* Add the page to the process's address space. */
+      // Add the page to the process's address space.
       if (!install_page (upage, kpage, writable)) 
         {
           palloc_free_page (kpage);
           return false; 
         }
-
+	  */
       /* Advance. */
+
+	  spte = (struct spt_entry *) malloc(sizeof(struct spt_entry));
+	  spte->vaddr = upage;
+	  spte->writable = writable;
+	  spte->file = file;
+	  spte->offset = ofs;
+	  spte->read_bytes = read_bytes;
+	  spte->zero_bytes = zero_bytes;
+
+	  //spte->mmap_elem = ;
+	  //spte=>swap_slot = ;
+
+	  insert_spt_entry(&thread_current()->spt.hash_brown,spte);
+
+
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
       upage += PGSIZE;
