@@ -97,3 +97,16 @@ bool load_file(void *kaddr, struct sup_page_entry *spte) {
 	}
 	return false;
 }
+
+struct sup_page_entry add_entry(struct file *file, off_t ofs,void *upage, void *kpage, uint32_t read_bytes, uint32_t zero_bytes, bool writable) {
+	struct sup_page_entry *entry = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
+	entry->file = file;
+	entry->file_ofs = ofs;
+	entry->kpage = kpage;
+	entry->upage = upage;
+	entry->read_bytes = read_bytes;
+	entry->zero_bytes = zero_bytes;
+	entry->writable = writable;
+	entry->dirty = false;
+	sup_insert(thread_current()->spt, entry);
+}

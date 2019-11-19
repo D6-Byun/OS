@@ -5,6 +5,13 @@
 #ifndef _PAGE_H_
 #define _PAGE_H_
 
+struct mmap_file {
+	int mapid;
+	struct file *file;
+	struct list_elem elem;
+	struct list spte_list;
+};
+
 
 struct sup_page_table {
 
@@ -23,6 +30,9 @@ struct sup_page_entry{
 	uint32_t read_bytes, zero_bytes; //read, zero bytes, PGsize - read = zero
 	bool writable; //True: can write, False: can't write
 	bool dirty; //True: fixed, False: Original
+
+	struct list_elem mmap_elem;
+
 	
 };
 
@@ -33,6 +43,7 @@ void sup_set_dirty(struct sup_page_table *spt, void *page, bool dirty);
 bool sup_get_dirty(struct sup_page_table *spt, void *page);
 bool sup_insert(struct sup_page_table *spt, struct sup_page_entry *spte);
 bool load_file(void *kaddr, struct sup_page_entry *spte);
+struct sup_page_entry add_entry(struct file *file, off_t ofs, void *upage, void *kpage, uint32_t read_bytes, uint32_t zero_bytes, bool writable);
 
 
 

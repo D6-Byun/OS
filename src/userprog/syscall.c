@@ -112,13 +112,14 @@ syscall_handler (struct intr_frame *f)
 			f->eax = filesize((int)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_READ:
+			is_valid_addr(f->esp + 4);
 			check_valid_buffer(f->esp + 8,f->esp + 12,f->esp,true);
 			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:
-			/*is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
-			is_valid_addr(f->esp + 12);*/
+			is_valid_addr(f->esp + 12);
 			check_valid_string(f->esp + 8, f->esp);
 			f->eax = write((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8),(uintptr_t)*(uint32_t *)(f->esp + 12));
 			break;
@@ -273,4 +274,29 @@ void close(int fd) {
 	
 	file_close(thread_current()->files[fd]);
 	thread_current()->files[fd] = NULL;
+}
+int mmap(int fd, void * addr) {
+	struct mmap_file mfile;
+	int fmapid;
+	if (fd > 2) {
+		is_valid_addr(addr);
+		struct file *memfiles = thread_current()->files[fd];
+		file_reopen(thread_current()->files[fd]);
+		/*mapid allocation*/
+		fmapid = ;
+		mfile.mapid = fmapid;
+		mfile.file = memfiles;
+		list_init(&mfile.spte_list);
+		struct sup_page_entry entry;
+
+	}
+	else {
+		printf("wrong file descripter.\n");
+		exit(-1);
+	}
+}
+void munmap(int mapping) {
+	while(thread_current()->mmap)
+
+
 }

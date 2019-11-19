@@ -114,6 +114,7 @@ struct thread
 
 	/*FOR VM*/
 	struct sup_page_table *spt;
+	struct mmap_file *mmap_t;
   };
 
 /* If false (default), use round-robin scheduler.
