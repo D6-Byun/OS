@@ -18,6 +18,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
+#include "vm/page.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -94,6 +95,10 @@ start_process (void *file_name_)
 	bool success;
   	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
+	struct thread *cur = thread_current();
+
+	cur->spt = spt_init(); /*create spt in current thread*/
+	
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
