@@ -107,6 +107,7 @@ struct thread
 	int exit;							/*exit status*/
 	struct semaphore lock_imsi;
 	bool isexit;
+	uint8_t *cur_esp;
 #endif
 	
     /* Owned by thread.c. */
@@ -114,7 +115,7 @@ struct thread
 
 	/*FOR VM*/
 	struct sup_page_table *spt;
-	struct mmap_file *mmap_t;
+	struct list mmap_list;
   };
 
 /* If false (default), use round-robin scheduler.

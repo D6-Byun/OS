@@ -12,7 +12,7 @@ static long long page_fault_cnt;
 
 static void kill (struct intr_frame *);
 static void page_fault (struct intr_frame *);
-
+static void fail_to_load(struct intr_frame *);
 /* Registers handlers for interrupts that can be caused by user
    programs.
 
@@ -161,6 +161,9 @@ page_fault (struct intr_frame *f)
 
   if (not_present) {
 	  struct sup_page_entry *entry = sup_lookup_page(cur->spt, fault_addr);
+	  if(entry == NULL){
+	  	fail_to_load(f);
+	  }
 	  bool isload = handle_mm_fault(entry);
 	  if (!isload) {
 		  printf("SEGMENTATION FAULT\n");
@@ -176,4 +179,9 @@ page_fault (struct intr_frame *f)
   }
 
 }
-
+static
+void fail_to_load(struct intr_frame *f){
+	printf("お前わも死んでいる\n");
+	printf("NANIIIIIIIIIIIII\n");
+	kill(f);
+}

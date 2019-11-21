@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <hash.h>
+#include "threads/palloc.h"
 #ifndef _PAGE_H_
 #define _PAGE_H_
 
@@ -43,7 +44,7 @@ void sup_set_dirty(struct sup_page_table *spt, void *page, bool dirty);
 bool sup_get_dirty(struct sup_page_table *spt, void *page);
 bool sup_insert(struct sup_page_table *spt, struct sup_page_entry *spte);
 bool load_file(void *kaddr, struct sup_page_entry *spte);
-struct sup_page_entry add_entry(struct file *file, off_t ofs, void *upage, void *kpage, uint32_t read_bytes, uint32_t zero_bytes, bool writable);
+bool add_entry(struct sup_page_table * spt, struct file *file, off_t ofs, void *upage, void *kpage, uint32_t read_bytes, uint32_t zero_bytes, bool writable);
 
 
 

@@ -76,6 +76,7 @@ syscall_handler (struct intr_frame *f)
 	//printf("*f->esp: %d\n",*(int*)f->esp);
 	//hex_dump((uintptr_t)f->esp,f->esp,24,true);
 	is_valid_addr(f->esp);
+	thread_current()->cur_esp = f->esp;
 	switch (*(uint32_t *)f->esp) {
 		case SYS_HALT:
 			shutdown_power_off();
@@ -136,6 +137,21 @@ syscall_handler (struct intr_frame *f)
 			is_valid_addr(f->esp + 4);
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
+		case SYS_MMAP:
+			{
+				is_valid_addr(f->esp + 4);
+				is_valid_addr(f->esp + 8);
+				f->eax = mmap((int)*(uint32_t *)f->esp + 4,(void *)*(uint32_t *)f->esp + 8);
+				break;
+			}
+		/*case SYS_MUNMAP:
+			{
+				is_valid_addr(f->esp + 4);
+				munmap((mapid_t)*(uint32_t *) f->esp + 4);
+				break;
+			}*/
+		default:
+			printf("Not implemented system call: %d\n", *(uint32_t *)f->esp);
 	}
 }
 
@@ -275,28 +291,41 @@ void close(int fd) {
 	file_close(thread_current()->files[fd]);
 	thread_current()->files[fd] = NULL;
 }
-int mmap(int fd, void * addr) {
-	struct mmap_file mfile;
-	int fmapid;
-	if (fd > 2) {
-		is_valid_addr(addr);
-		struct file *memfiles = thread_current()->files[fd];
-		file_reopen(thread_current()->files[fd]);
-		/*mapid allocation*/
-		fmapid = ;
-		mfile.mapid = fmapid;
-		mfile.file = memfiles;
-		list_init(&mfile.spte_list);
-		struct sup_page_entry entry;
 
+mapid_t mmap(int fd, void * addr) {
+	struct mmap_file *mfile;
+	int mapid;
+	struct thread *cur = thread_current();
+	if(addr == NULL || fd < 2){
+		return -1;
 	}
-	else {
-		printf("wrong file descripter.\n");
-		exit(-1);
+	struct file *memfiles = thread_current()->files[fd];
+	if(memfiles == NULL){
+		return -1;
 	}
-}
+	file_reopen(memfiles);
+	/*mapid allocation*/
+	if(!list_empty(&cur->mmap_list)){
+		mapid = list_entry(list_back(&cur->mmap_list), struct mmap_file, elem)->mapid + 1;
+	}else{
+		mapid = 1;
+	}
+	/*mmap_file construct*/
+	mfile = (struct mmap_file *)malloc(sizeof(struct mmap_file));
+	mfile->mapid = mapid;
+	mfile->file = memfiles;
+	list_push_back(&cur->mmap_list, &mfile->elem);
+	/*sup page table entry construct*/
+	for(int ofs = 0; ofs < file_length(memfiles); ofs+= PGSIZE){
+		void *upage = addr + ofs;
+		uint32_t read_bytes = (ofs + PGSIZE < file_length(memfiles)? PGSIZE: file_length(memfiles) - ofs);
+		uint32_t zero_bytes = PGSIZE - read_bytes;
+		add_entry(cur->spt, memfiles,ofs,upage,NULL,read_bytes,zero_bytes,true);
+	}	
+	return mapid;
+}/*
 void munmap(int mapping) {
 	while(thread_current()->mmap)
 
 
-}
+}*/

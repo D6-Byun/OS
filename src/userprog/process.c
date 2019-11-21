@@ -460,8 +460,10 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
 	ASSERT(pg_ofs(upage) == 0);
 	ASSERT(ofs % PGSIZE == 0);
-
+	
 	file_seek(file, ofs);
+	printf("initial bytes: %d, %d\n", read_bytes, zero_bytes);
+	printf("page size : %d\n", PGSIZE);
 	while (read_bytes > 0 || zero_bytes > 0)
 	{
 		/* Calculate how to fill this page.
@@ -490,8 +492,9 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		}*/
 
 		/*vm_entry genereate*/
-		add_entry(file, ofs, upage, NULL, read_bytes, zero_bytes, writable);
-
+		add_entry(thread_current()->spt,file, ofs % 4096, upage, NULL, page_read_bytes, page_zero_bytes, writable);
+		//for DEBUG
+		printf("entry 's read bytes: %d \nentry's zero bytes: %d \ncheck offset: %d\n", read_bytes, zero_bytes, ofs % 4096);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
@@ -546,8 +549,8 @@ setup_stack(void **esp, int argc, char *argv[])
 			palloc_free_page(kpage);
 			//swap_out;
 	}
-	/*entry genereate*/
-	add_entry(NULL, 0, ((uint8_t *)PHYS_BASE) - PGSIZE, kpage, 0, PGSIZE, true);
+	/*entry generate*/
+	add_entry(thread_current()->spt,NULL, 0, ((uint8_t *)PHYS_BASE) - PGSIZE, kpage, 0, PGSIZE, true);
 
 	//hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
 	return success;
