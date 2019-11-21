@@ -49,7 +49,7 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 	return true;
 }
 
-struct spt_entry * find_spt_elem(void *vaddr)
+struct spt_entry * find_spt_entry(void *vaddr)
 {
 	struct spt_entry tem_entry;
 	tem_entry.vaddr = pg_round_down(vaddr);

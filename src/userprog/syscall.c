@@ -1,5 +1,6 @@
 #include "userprog/syscall.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
@@ -11,6 +12,7 @@
 #include "threads/vaddr.h"
 #include "filesys/off_t.h"
 #include "threads/synch.h"
+#include "vm/page.h"
 
 struct file 
 	{
@@ -21,6 +23,8 @@ struct file
 
 typedef int pid_t;
 
+void check_valid_buffer(void*, unsigned, void*, bool);
+void check_valid_string(const void *, void*);
 static void syscall_handler (struct intr_frame *);
 void halt(void) NO_RETURN;
 void exit(int status) NO_RETURN;
@@ -45,10 +49,31 @@ syscall_init (void)
   	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-void is_valid_addr(void *addr) {
+struct spt_entry * is_valid_addr(void *addr) {
+	struct spt_entry * search_entry;
 	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
 		exit(-1);
 	}
+	search_entry = find_spt_entry(addr);
+	if (search_entry != NULL)
+	{
+		return search_entry;
+	}
+}
+
+void check_valid_buffer(void* buffer, unsigned size, void* esp, bool to_write)
+{
+	void * temp_buffer = buffer;
+	while (size >= 0)
+	{
+		is_valid_addr(temp_buffer);
+		size = size - PGSIZE;
+		temp_buffer = temp_buffer + PGSIZE;
+	}
+}
+void check_valid_string(const void *str, void* esp)
+{
+
 }
 
 

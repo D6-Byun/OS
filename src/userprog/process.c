@@ -505,7 +505,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	  spte->offset = ofs;
 	  spte->read_bytes = read_bytes;
 	  spte->zero_bytes = zero_bytes;
+	  spte->is_loaded = false;
 
+	  //spte->kpage = ;
 	  //spte->mmap_elem = ;
 	  //spte=>swap_slot = ;
 
@@ -527,6 +529,7 @@ setup_stack (void **esp, int argc, char *argv[])
   uint8_t *kpage, *nullp = (uint8_t)0;
   bool success = false;
   uintptr_t *addr[32];
+  struct spt_entry *stack_entry;
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   //printf("start stacking");
   if (kpage != NULL) 
@@ -570,6 +573,17 @@ setup_stack (void **esp, int argc, char *argv[])
       else
         palloc_free_page (kpage);
     }
+  stack_entry = (struct spt_entry*) palloc_get_page(PAL_USER | PAL_ZERO);
+  stack_entry->file = NULL;
+  stack_entry->is_loaded = false;
+  stack_entry->offset = 0;
+  stack_entry->read_bytes = 0;
+  stack_entry->zero_bytes = PGSIZE;
+  stack_entry->upage = (uint8_t * )(PHYS_BASE - PGSIZE);
+  stack_entry->kpage = kpage;
+  stack_entry->writable = true;
+
+
   //printf("Stack dump check\n");
   
   //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);

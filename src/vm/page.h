@@ -12,7 +12,8 @@ struct spt
 };
 
 struct spt_entry {
-	void *vaddr;         //virtual address section
+	uint8_t * upage;         //virtual address section
+	uint8_t * kpage;     //kernel page, is it necessary?
 	bool writable;
 	bool is_loaded;      //flag indicates connection of physical memory
 	struct file* file;
@@ -33,7 +34,7 @@ struct spt * spt_init(void);
 bool insert_spt_entry(struct hash*, struct spt_entry*);
 bool delete_spt_entry(struct hash*, struct spt_entry*);
 
-struct spt_entry * find_spt_elem(void *);
+struct spt_entry * find_spt_entry(void *);
 void spt_destroy(struct hash *);
 
 #endif // !VM_PAGE_H_
