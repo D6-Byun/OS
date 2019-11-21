@@ -1,7 +1,6 @@
 #include "vm/page.h"
 #include "threads/vaddr.h"
 #include "filesys/file.h"
-#include "threads/malloc.h"
 #include <string.h>
 #include "threads/thread.h"
 
@@ -90,7 +89,10 @@ bool sup_delete(struct sup_page_table *spt, struct sup_page_entry *spte) {
 
 /*load the file to physical page*/
 bool load_file(void *kaddr, struct sup_page_entry *spte) {
-	void * paddr = palloc_get_page(0);	
+	void * paddr = alloc_frame(PAL_USER);
+	if (paddr == NULL) {
+		return false;
+	}
 	printf("read_bytes: %d\n",(off_t)spte->read_bytes);
 	printf("offset: %d\n", spte->file_ofs);
 	file_seek(spte->file, spte->file_ofs);

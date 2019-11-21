@@ -582,7 +582,17 @@ bool handle_mm_fault(struct sup_page_entry *spte) {
 		printf("Page allocation failed.\n");
 		return false;
 	}
-	bool isload = load_file(paddr, spte);
+	switch (spte->type) {
+		case VM_BIN:
+			bool isload = load_file(paddr, spte);
+			break;
+		case VM_FILE:
+			break;
+		case VM_ANON:
+			break;
+		default:
+			break;
+	}
 	bool isinstall = install_page(spte->upage, paddr, spte->writable);
 	if (isload && isinstall) {
 		return true;
