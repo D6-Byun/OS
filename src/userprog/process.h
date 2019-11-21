@@ -8,4 +8,6 @@ int process_wait (tid_t);
 void process_exit (void);
 void process_activate (void);
 
+bool handle_fault(struct spt_entry *);
+
 #endif /* userprog/process.h */
