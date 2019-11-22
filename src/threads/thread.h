@@ -109,15 +109,15 @@ struct thread
 	bool isexit;
 	uint8_t *cur_esp;
 #endif
-	
+
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
-
+#ifdef VM
 	/*FOR VM*/
 	struct sup_page_table *spt;
 	struct list mmap_list;
   };
-
+#endif
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */

@@ -19,6 +19,7 @@
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
 #include "vm/page.h"
+#include "vm/frame.h"
 
 static thread_func start_process NO_RETURN;
 static bool load(const char *cmdline, void(**eip) (void), void **esp);
@@ -95,6 +96,7 @@ start_process(void *file_name_)
 	bool success;
 	/* initialize sup_page_table */
 	thread_current()->spt = spt_create();
+	lru_init();
 	/* Initialize interrupt frame and load executable. */
 	memset(&if_, 0, sizeof if_);
 	if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -392,7 +394,7 @@ done:
 
 /* load() helpers. */
 
-static bool install_page(void *upage, void *kpage, bool writable);
+bool install_page(void *upage, void *kpage, bool writable);
 
 /* Checks whether PHDR describes a valid, loadable segment in
    FILE and returns true if so, false otherwise. */
@@ -565,7 +567,7 @@ setup_stack(void **esp, int argc, char *argv[])
    with palloc_get_page().
    Returns true on success, false if UPAGE is already mapped or
    if memory allocation fails. */
-static bool
+bool
 install_page(void *upage, void *kpage, bool writable)
 {
 	struct thread *t = thread_current();
@@ -577,14 +579,11 @@ install_page(void *upage, void *kpage, bool writable)
 }
 
 bool handle_mm_fault(struct sup_page_entry *spte) {
-	void * paddr = palloc_get_page(0);
-	if (paddr == NULL) {
-		printf("Page allocation failed.\n");
-		return false;
-	}
+	//struct frame_entry *paddr = frame_alloc(PAL_USER,spte);
+	bool isload = false;
 	switch (spte->type) {
 		case VM_BIN:
-			bool isload = load_file(paddr, spte);
+			isload = load_file(spte);
 			break;
 		case VM_FILE:
 			break;
@@ -593,15 +592,10 @@ bool handle_mm_fault(struct sup_page_entry *spte) {
 		default:
 			break;
 	}
-	bool isinstall = install_page(spte->upage, paddr, spte->writable);
-	if (isload && isinstall) {
+	if (isload) {
 		return true;
 	}
-	if (!isload) {
-		printf("load failed\n");
-		return false;
-	}
-	printf("install failed\n");
+	printf("load failed\n");
 	return false;
 }
 

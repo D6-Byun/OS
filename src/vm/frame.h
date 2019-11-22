@@ -1,9 +1,11 @@
-#include <stdio.h>
-#include <list.h>
-#include "vm/page.h"
-#include "userprog/pagedir.h"
-#include "threads/synch.h"
+#ifndef VM_FRAME_H
+#define VM_FRAME_H
 
+//#include <stdio.h>
+#include <list.h>
+#include "threads/synch.h"
+#include "threads/palloc.h"
+#include "vm/page.h"
 struct frame_entry {
 
 	void * kaddr;
@@ -12,6 +14,8 @@ struct frame_entry {
 	struct list_elem lru;
 
 };
-
-struct frame_entry *alloc_frame(enum palloc_flags flags);
+void lru_init();
+void *frame_alloc(enum palloc_flags flags,struct sup_page_entry *spte);
 void free_frame_entry(void *kaddr);
+
+#endif

@@ -1,9 +1,13 @@
-#include "vm/page.h"
 #include "threads/vaddr.h"
+#include "threads/malloc.h"
+#include "threads/palloc.h"
 #include "filesys/file.h"
 #include <string.h>
+#include <hash.h>
 #include "threads/thread.h"
-
+#include "userprog/process.h"
+#include "vm/frame.h"
+#include "vm/page.h"
 /*For build hash
 it get elem e then return upage of entry
 */
@@ -88,22 +92,33 @@ bool sup_delete(struct sup_page_table *spt, struct sup_page_entry *spte) {
 }
 
 /*load the file to physical page*/
-bool load_file(void *kaddr, struct sup_page_entry *spte) {
-	void * paddr = alloc_frame(PAL_USER);
+bool load_file(struct sup_page_entry *spte) {
+	if(spte->is_loaded){
+		printf("is already loaded");
+		return false;
+	}
+	
+	void * paddr = frame_alloc(PAL_USER,spte);
 	if (paddr == NULL) {
 		return false;
 	}
 	printf("read_bytes: %d\n",(off_t)spte->read_bytes);
-	printf("offset: %d\n", spte->file_ofs);
-	file_seek(spte->file, spte->file_ofs);
-	off_t isread = file_read(spte->file, paddr, (off_t)spte->read_bytes);
-	//off_t  isread = file_read_at(spte->file, kaddr, (off_t)spte->read_bytes, spte->file_ofs);
+	//printf("offset: %d\n", spte->file_ofs);
+	//file_seek(spte->file, spte->file_ofs);
+	//off_t isread = file_read(spte->file, kaddr, (off_t)spte->read_bytes);
+	off_t  isread = file_read_at(spte->file, paddr, (off_t)spte->read_bytes, spte->file_ofs);
 	printf("isread = %d\n",isread);
 	printf("Check Page Size: %d\n", spte->zero_bytes + spte->read_bytes);
 	if (isread != spte->read_bytes){
+		free_frame_entry(paddr);
 		return false;
 	}
-	memset(kaddr + isread, 0, spte->zero_bytes);
+	memset(paddr + isread, 0, spte->zero_bytes);
+	if(!install_page(spte->upage, paddr, spte->writable)){
+		free_frame_entry(paddr);
+		return false;
+	}
+	spte->is_loaded = true;
 	return true;
 }
 
@@ -117,6 +132,8 @@ bool add_entry(struct sup_page_table *spt,struct file *file, off_t ofs,void *upa
 	entry->zero_bytes = zero_bytes;
 	entry->writable = writable;
 	entry->dirty = false;
+	entry->is_loaded = false;
+	entry->type = VM_BIN;
 	if(sup_insert(spt, entry) == false){
 		return false;
 	}

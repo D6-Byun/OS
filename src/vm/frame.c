@@ -1,4 +1,11 @@
 #include "vm/frame.h"
+#include <list.h>
+//#include "vm/page.h"
+#include "threads/thread.h"
+#include "threads/malloc.h"
+#include "threads/palloc.h"
+#include "userprog/pagedir.h"
+#include "threads/vaddr.h"
 
 /* list for swapping algorithm*/
 static struct list lru_list;
@@ -11,15 +18,14 @@ void lru_init() {
 }
 
 void add_frame_to_lru_list(struct frame_entry *f_table) {
-	list_push_back(&lru_list, &f_table->lru);
+	list_push_back(&lru_list, &f_table->lru);	
 }
-
 void del_frame_to_lru_list(struct frame_entry *f_table) {
 	if(f_table->lru.next != NULL && f_table->lru.prev != NULL)
 		list_remove(&f_table->lru);
 }
 
-struct frame_entry *alloc_frame(enum palloc_flags flags) {
+void *frame_alloc(enum palloc_flags flags,struct sup_page_entry *spte){
 	void * frame_addr = palloc_get_page(PAL_USER|flags);
 	if (frame_addr == NULL) {
 
@@ -30,7 +36,7 @@ struct frame_entry *alloc_frame(enum palloc_flags flags) {
 	}
 	frame->thread = thread_current();
 	frame->kaddr = frame_addr;
-	frame->spte = NULL;
+	frame->spte = spte;
 	add_frame_to_lru_list(frame);
 	return frame_addr;
 }
