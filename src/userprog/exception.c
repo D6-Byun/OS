@@ -158,6 +158,7 @@ page_fault (struct intr_frame *f)
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
   struct thread * cur = thread_current();
+  
 
   if (not_present) {
 	  struct sup_page_entry *entry = sup_lookup_page(cur->spt, fault_addr);

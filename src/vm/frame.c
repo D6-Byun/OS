@@ -45,6 +45,7 @@ void *frame_alloc(enum palloc_flags flags,struct sup_page_entry *spte){
 void free_frame(struct frame_entry *frame) {
 	del_frame_to_fifo_list(frame);
 	free(frame);
+	ASSERT(pg_ofs(pages) == 0);
 	palloc_free_page(frame->kaddr);
 
 }
