@@ -36,12 +36,11 @@ void seek(int fd, unsigned position);
 unsigned tell(int fd);
 void close(int fd);
 
-struct lock lock_imsi2;
+struct lock file_lock;
 	
 void
 syscall_init (void) 
 {
-	lock_init(&lock_imsi2);
 	lock_init(&file_lock);
   	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
@@ -205,7 +204,7 @@ int open(const char *file) {
 		exit(-16);
 	}
 	is_valid_addr(file);
-	lock_acquire(&lock_imsi2);
+	lock_acquire(&file_lock);
 	openfile = filesys_open(file);
 	if(openfile == NULL){
 		retval = -1;
@@ -223,7 +222,7 @@ int open(const char *file) {
 		}
 	}
 	//printf("-1\n");
-	lock_release(&lock_imsi2);
+	lock_release(&file_lock);
 	return retval;
 }
 int filesize(int fd) {
@@ -237,7 +236,7 @@ int filesize(int fd) {
 int read(int fd, void *buffer, unsigned length) {
 	int i = 0;
 	is_valid_addr(buffer);
-	lock_acquire(&lock_imsi2);
+	lock_acquire(&file_lock);
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
 			if (((char *)buffer)[i] == '\0') {
@@ -247,20 +246,20 @@ int read(int fd, void *buffer, unsigned length) {
 	}
 	else if(fd > 2){
 		if (thread_current()->files[fd] == NULL) {
-			lock_release(&lock_imsi2);
+			lock_release(&file_lock);
 			exit(-18);
 		}
 		i = file_read(thread_current()->files[fd], buffer, length);
 	}
 
 	//printf("%d\n",i);
-	lock_release(&lock_imsi2);
+	lock_release(&file_lock);
 	return i;
 }
 int write(int fd, const void *buffer, unsigned length) {
 	int retval;
 	is_valid_addr(buffer);
-	lock_acquire(&lock_imsi2);
+	lock_acquire(&file_lock);
 	if (fd == 1) {
 		putbuf(buffer,length);
 		//printf("size = %d\n",length);
@@ -268,7 +267,7 @@ int write(int fd, const void *buffer, unsigned length) {
 	}
 	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL){
-			lock_release(&lock_imsi2);
+			lock_release(&file_lock);
 			exit(-19);
 		}
 		if(thread_current()->files[fd]->deny_write){
@@ -279,7 +278,7 @@ int write(int fd, const void *buffer, unsigned length) {
 	}else{
 		retval = -1;
 	}
-	lock_release(&lock_imsi2);
+	lock_release(&file_lock);
 	return retval;	
 }
 void seek(int fd, unsigned position) {
