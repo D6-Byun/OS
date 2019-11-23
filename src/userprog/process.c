@@ -70,6 +70,7 @@ process_execute(const char *file_name)
 	tid = thread_create(hongkong, PRI_DEFAULT, start_process, fn_copy);
 	sema_down(&(thread_current()->lock_imsi));
 	if (tid == TID_ERROR) {
+		ASSERT(pg_ofs(pages) == 0);
 		palloc_free_page(fn_copy);
 	}
 	/*for(child_e = list_next(list_begin(&(thread_current()->child)));child_e != list_end(&(thread_current()->child));child_e = list_next(&child_e)){
@@ -105,6 +106,7 @@ start_process(void *file_name_)
 	success = load(file_name, &if_.eip, &if_.esp);
 
 	/* If load failed, quit. */
+	ASSERT(pg_ofs(pages) == 0);
 	palloc_free_page(file_name);
 	sema_up(&(thread_current()->pthread->lock_imsi));
 	if (!success) {
