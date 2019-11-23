@@ -18,9 +18,11 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
+#include "vm/frame.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
+static void arg_stack(int argc, char *argv[], void **esp);
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
@@ -88,18 +90,31 @@ process_execute (const char *file_name)
 static void
 start_process (void *file_name_)
 {
-	char *save_ptr;
+	int argc = 1;
+  	char *argv[32];
+  	char *save_ptr;
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
-  	//printf("start_process\n");
+  	frame_init();
+	//printf("start_process\n");
+	argv[0] = strtok_r(file_name, " ", &save_ptr);
+		while (1) {
+			argv[argc] = strtok_r(NULL, " ",&save_ptr);	
+			if (argv[argc] == NULL)	
+				break;
+			argc++;
+			//printf("%d\n",argc);
+  		}
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (file_name, &if_.eip, &if_.esp);
-  
+	if(success){
+		arg_stack(argc, argv, &if_.esp);
+	}  
   /* If load failed, quit. */
   palloc_free_page (file_name);
   sema_up(&(thread_current()->pthread->lock_imsi));
@@ -255,7 +270,7 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp,int argc,char *argv[]);
+static bool setup_stack (void **esp);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
@@ -273,19 +288,10 @@ load (const char *file_name, void (**eip) (void), void **esp)
   struct file *file = NULL;
   off_t file_ofs;
   bool success = false;
-  int i, argc = 1;
-  char *argv[32];
-  char *token, *save_ptr;
+  int i;
 	//printf("start loading\n");
 	//hex_dump((uintptr_t)file_name,file_name,100,true);
-	argv[0] = strtok_r(file_name, " ", &save_ptr);
-		while (1) {
-			argv[argc] = strtok_r(NULL, " ",&save_ptr);	
-			if (argv[argc] == NULL)	
-				break;
-			argc++;
-			//printf("%d\n",argc);
-  		}
+
 	 /* Allocate and activate page directory. */
   	t->pagedir = pagedir_create ();
     if (t->pagedir == NULL) 
@@ -372,7 +378,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
         }
     }
   /* Set up stack. */
-  if (!setup_stack (esp,argc,argv))
+  if (!setup_stack (esp))
     goto done;
 
   /* Start address. */
@@ -467,14 +473,14 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
       /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER);
+      uint8_t *kpage = frame_alloc(PAL_USER,upage);
       if (kpage == NULL)
         return false;
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
-          palloc_free_page (kpage);
+          frame_free(kpage);
           return false; 
         }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
@@ -482,7 +488,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
         {
-          palloc_free_page (kpage);
+          frame_free(kpage);
           return false; 
         }
 
@@ -490,6 +496,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
       upage += PGSIZE;
+	  ofs += PGSIZE;
     }
   return true;
 }
@@ -497,53 +504,22 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp, int argc, char *argv[]) 
+setup_stack (void **esp) 
 {
-  uint8_t *kpage, *nullp = (uint8_t)0;
+  uint8_t *kpage;
   bool success = false;
-  uintptr_t *addr[32];
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+
+  kpage = frame_alloc (PAL_USER | PAL_ZERO, PHYS_BASE - PGSIZE);
   //printf("start stacking");
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 	  if (success) {
 		  *esp = PHYS_BASE;
-		  /*argv[i][...]*/
-		  for (int i = argc - 1; i >= 0; i--) {
-			  *esp -= (strlen(argv[i]) + 1);
-			 // printf("%d,\n",(strlen(argv[i]+1)));
-			  memcpy(*esp, argv[i], strlen(argv[i]) + 1);
-			  addr[i] = (uintptr_t*)*esp;
-		  }
-		  addr[argc] = (uintptr_t*)0;
-		  /*word-align*/
-		  while ((uintptr_t)*esp % 4 != 0) {
-			  *esp = *esp - 1;
-			  //printf("%d\n",(uintptr_t)*esp);
-			  //memmove(*esp,nullp,sizeof(*nullp));
-		  }
-			//printf("%d\n",(uintptr_t)*esp);
-		  /*argv[i]*/
-		  for (int i = argc; i >= 0; i--) {
-			  *esp = *esp - 4;
-			  *(uintptr_t **)*esp = addr[i];
-		  }
-		  /*argv*/
-		  *esp = *esp - 4;
-		  //printf("%d\n",(uintptr_t)*esp);
-		  *(uintptr_t **)*esp = *esp + 4;
-		  /*argc*/
-		  *esp = *esp - 4;
-		  	//printf("%d\n",(uintptr_t)*esp);
-			*(int *)*esp = argc;
-		  /*ret addr*/
-		  *esp = *esp - 4;
-		  *(int *)*esp = 0;
-
+ 
 	  }
       else
-        palloc_free_page (kpage);
+        frame_free(kpage);
     }
   //printf("Stack dump check\n");
   
@@ -569,4 +545,44 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
+}
+
+static void arg_stack(int argc, char *argv[], void **esp){
+	
+	uintptr_t *addr[32];
+	/*argv[i][...]*/
+	for (int i = argc - 1; i >= 0; i--) {
+		*esp -= (strlen(argv[i]) + 1);
+		// printf("%d,\n",(strlen(argv[i]+1)));
+		 memcpy(*esp, argv[i], strlen(argv[i]) + 1);
+		addr[i] = (uintptr_t*)*esp;
+	}
+	/*For argv[argc] == NULL*/
+	addr[argc] = (uintptr_t*)0;
+	
+	/*word-align*/
+	while ((uintptr_t)*esp % 4 != 0) {
+		*esp = *esp - 1;
+	}
+	//printf("%d\n",(uintptr_t)*esp);
+	
+	/*argv[i]*/
+	for (int i = argc; i >= 0; i--) {
+		*esp = *esp - 4;
+		*(uintptr_t **)*esp = addr[i];
+	}
+	
+	/*argv*/
+	*esp = *esp - 4;
+	//printf("%d\n",(uintptr_t)*esp);
+	*(uintptr_t **)*esp = *esp + 4;
+	
+	/*argc*/
+	*esp = *esp - 4;
+	//printf("%d\n",(uintptr_t)*esp);
+	*(int *)*esp = argc;
+	
+	/*ret addr*/
+	*esp = *esp - 4;
+	*(int *)*esp = 0;
 }
