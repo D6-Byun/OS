@@ -9,9 +9,9 @@
 
 
 
-#define VM_BIN 0
-#define VM_FILE 1
-#define VM_ANON 2
+#define VM_FILE 0 //
+#define VM_MMAP 1 //mmap
+#define VM_SWAP 2 //swap
 
 
 struct mmap_file {

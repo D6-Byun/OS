@@ -462,7 +462,7 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
 	ASSERT(pg_ofs(upage) == 0);
 	ASSERT(ofs % PGSIZE == 0);
-	
+
 	file_seek(file, ofs);
 	printf("initial bytes: %d, %d\n", read_bytes, zero_bytes);
 	printf("page size : %d\n", PGSIZE);
@@ -494,9 +494,11 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		}*/
 
 		/*vm_entry genereate*/
-		add_entry(thread_current()->spt,file, ofs % 4096, upage, NULL, page_read_bytes, page_zero_bytes, writable);
+		if (!add_entry(thread_current()->spt, file, ofs, upage, NULL, page_read_bytes, page_zero_bytes, writable) {
+			return false;
+		}
 		//for DEBUG
-		printf("entry 's read bytes: %d \nentry's zero bytes: %d \ncheck offset: %d\n", read_bytes, zero_bytes, ofs % 4096);
+		printf("entry 's read bytes: %d \nentry's zero bytes: %d \ncheck offset: %d\n", read_bytes, zero_bytes, ofs);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
@@ -514,45 +516,37 @@ setup_stack(void **esp, int argc, char *argv[])
 	uint8_t *kpage, *nullp = (uint8_t)0;
 	bool success = false;
 	uintptr_t *addr[32];
-	kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 	//printf("start stacking");
-	if (kpage != NULL)
-	{
-		success = install_page(((uint8_t *)PHYS_BASE) - PGSIZE, kpage, true);
-		if (success) {
-			*esp = PHYS_BASE;
-			/*argv[i][...]*/
-			for (int i = argc - 1; i >= 0; i--) {
-				*esp -= (strlen(argv[i]) + 1);
-				memcpy(*esp, argv[i], strlen(argv[i]) + 1);
-				addr[i] = (uintptr_t*)*esp;
-			}
-			addr[argc] = (uintptr_t*)0;
-			/*word-align*/
-			while ((uintptr_t)*esp % 4 != 0) {
-				*esp = *esp - 1;
-			}
-			/*argv[i]*/
-			for (int i = argc; i >= 0; i--) {
-				*esp = *esp - 4;
-				*(uintptr_t **)*esp = addr[i];
-			}
-			/*argv*/
-			*esp = *esp - 4;
-			*(uintptr_t **)*esp = *esp + 4;
-			/*argc*/
-			*esp = *esp - 4;
-			*(int *)*esp = argc;
-			/*ret addr*/
-			*esp = *esp - 4;
-			*(int *)*esp = 0;
+	success = grow_stack(((uint8_t *)PHYS_BASE) - PGSIZE);
+	if (success) {
+		*esp = PHYS_BASE;
+		/*argv[i][...]*/
+		for (int i = argc - 1; i >= 0; i--) {
+			*esp -= (strlen(argv[i]) + 1);
+			memcpy(*esp, argv[i], strlen(argv[i]) + 1);
+			addr[i] = (uintptr_t*)*esp;
 		}
-		else
-			palloc_free_page(kpage);
-			//swap_out;
+		addr[argc] = (uintptr_t*)0;
+		/*word-align*/
+		while ((uintptr_t)*esp % 4 != 0) {
+			*esp = *esp - 1;
+		}
+		/*argv[i]*/
+		for (int i = argc; i >= 0; i--) {
+			*esp = *esp - 4;
+			*(uintptr_t **)*esp = addr[i];
+		}
+		/*argv*/
+		*esp = *esp - 4;
+		*(uintptr_t **)*esp = *esp + 4;
+		/*argc*/
+		*esp = *esp - 4;
+		*(int *)*esp = argc;
+		/*ret addr*/
+		*esp = *esp - 4;
+		*(int *)*esp = 0;
 	}
 	/*entry generate*/
-	add_entry(thread_current()->spt,NULL, 0, ((uint8_t *)PHYS_BASE) - PGSIZE, kpage, 0, PGSIZE, true);
 
 	//hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
 	return success;
@@ -582,21 +576,52 @@ bool handle_mm_fault(struct sup_page_entry *spte) {
 	//struct frame_entry *paddr = frame_alloc(PAL_USER,spte);
 	bool isload = false;
 	switch (spte->type) {
-		case VM_BIN:
-			isload = load_file(spte);
-			break;
-		case VM_FILE:
-			break;
-		case VM_ANON:
-			break;
-		default:
-			break;
+	case VM_FILE:
+		isload = load_file(spte);
+		break;
+	case VM_MMAP:
+		isload = load_file(spte);
+		break;
+	case VM_SWAP:
+		//isload = load_swap(spte);
+		break;
+	default:
+		break;
 	}
 	if (isload) {
 		return true;
 	}
-	printf("load failed\n");
+	printf("LOAD FAILED.\n");
 	return false;
 }
 
+bool grow_stack(void *upage) {
+	/*1 << 23 == Maximum of stack == 8MB*/
+	if ((uint8_t *)PHYS_BASE - pg_round_down(upage) > (1 << 23)) {
+		printf("OVER MAX STACK SIZE.\n");
+		return false;
+	}
+	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
+	if (spte == NULL) {
+		return false;
+	}
+	spte->upage = upage;
+	spte->dirty = false;
+	spte->writable = true;
+	spte->is_loaded = false;
+	spte->type = VM_SWAP;
+
+	void *frame = frame_alloc(PAL_USER, spte);
+	if (frame == NULL) {
+		free(spte);
+		return false;
+	}
+	if (!install_page(upage, frame, true)) {
+		free(spte);
+		frame_free(frame);
+		return false;
+	}
+	return(sup_insert(thread_current()->spt, spte));
+
+}
 

@@ -97,18 +97,20 @@ bool load_file(struct sup_page_entry *spte) {
 		printf("is already loaded");
 		return false;
 	}
-	
-	void * paddr = frame_alloc(PAL_USER,spte);
+	enum palloc_flags flag = PAL_USER;
+	if (spte->read_bytes == 0) {
+		flag = PAL_ZERO;
+	}
+
+	void * paddr = frame_alloc(flag,spte);
 	if (paddr == NULL) {
 		return false;
 	}
 	printf("read_bytes: %d\n",(off_t)spte->read_bytes);
 	//printf("offset: %d\n", spte->file_ofs);
-	//file_seek(spte->file, spte->file_ofs);
-	//off_t isread = file_read(spte->file, kaddr, (off_t)spte->read_bytes);
 	off_t  isread = file_read_at(spte->file, paddr, (off_t)spte->read_bytes, spte->file_ofs);
 	printf("isread = %d\n",isread);
-	printf("Check Page Size: %d\n", spte->zero_bytes + spte->read_bytes);
+	//printf("Check Page Size: %d\n", spte->zero_bytes + spte->read_bytes);
 	if (isread != spte->read_bytes){
 		free_frame_entry(paddr);
 		return false;

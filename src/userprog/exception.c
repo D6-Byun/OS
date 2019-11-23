@@ -170,12 +170,13 @@ page_fault (struct intr_frame *f)
 	  }
   }
   else {
-	  printf("Page fault at %p: %s error %s page in %s context.\n",
+	  fail_to_load();
+	  /*printf("Page fault at %p: %s error %s page in %s context.\n",
 		  fault_addr,
 		  not_present ? "not present" : "rights violation",
 		  write ? "writing" : "reading",
 		  user ? "user" : "kernel");
-	  kill(f);
+	  kill(f);*/
   }
 
 }
