@@ -170,7 +170,7 @@ page_fault (struct intr_frame *f)
 	  }
   }
   else {
-	  fail_to_load();
+	  fail_to_load(f);
 	  /*printf("Page fault at %p: %s error %s page in %s context.\n",
 		  fault_addr,
 		  not_present ? "not present" : "rights violation",

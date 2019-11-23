@@ -61,13 +61,13 @@ void free_frame_entry(void *kaddr) {
 	lock_release(&frame_lock);
 }
 
-void *frmae_evict(enum palloc_flags flags) {
+void *frame_evict(enum palloc_flags flags) {
 	lock_acquire(&frame_lock);
 	/*1. Choose a frame to evict, using fifo algorithm*/
 	struct list_elem *e = list_begin(&fifo_list);
 	struct frame_entry *entry = list_entry(e, struct frame_entry, fifo);
 	/*2. remove references to the frame from any page tables*/
-	entry->spte->isloaded = false;
+	entry->spte->is_loaded = false;
 	del_frame_to_fifo_list(entry->kaddr);
 	pagedir_clear_page(entry->thread->pagedir, entry->spte->upage);
 	palloc_free_page(entry->kaddr);

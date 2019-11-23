@@ -135,7 +135,7 @@ bool add_entry(struct sup_page_table *spt,struct file *file, off_t ofs,void *upa
 	entry->writable = writable;
 	entry->dirty = false;
 	entry->is_loaded = false;
-	entry->type = VM_BIN;
+	entry->type = VM_FILE;
 	if(sup_insert(spt, entry) == false){
 		return false;
 	}

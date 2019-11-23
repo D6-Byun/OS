@@ -96,7 +96,7 @@ start_process(void *file_name_)
 	bool success;
 	/* initialize sup_page_table */
 	thread_current()->spt = spt_create();
-	lru_init();
+	fifo_init();
 	/* Initialize interrupt frame and load executable. */
 	memset(&if_, 0, sizeof if_);
 	if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -494,7 +494,7 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		}*/
 
 		/*vm_entry genereate*/
-		if (!add_entry(thread_current()->spt, file, ofs, upage, NULL, page_read_bytes, page_zero_bytes, writable) {
+		if (!add_entry(thread_current()->spt, file, ofs, upage, NULL, page_read_bytes, page_zero_bytes, writable)) {
 			return false;
 		}
 		//for DEBUG
@@ -508,6 +508,7 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 	return true;
 }
 
+bool grow_stack(void *);
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
@@ -597,7 +598,7 @@ bool handle_mm_fault(struct sup_page_entry *spte) {
 
 bool grow_stack(void *upage) {
 	/*1 << 23 == Maximum of stack == 8MB*/
-	if ((uint8_t *)PHYS_BASE - pg_round_down(upage) > (1 << 23)) {
+	if ((uint8_t *)(PHYS_BASE - pg_round_down(upage)) > (1 << 23)) {
 		printf("OVER MAX STACK SIZE.\n");
 		return false;
 	}
@@ -618,7 +619,7 @@ bool grow_stack(void *upage) {
 	}
 	if (!install_page(upage, frame, true)) {
 		free(spte);
-		frame_free(frame);
+		free_frame_entry(frame);
 		return false;
 	}
 	return(sup_insert(thread_current()->spt, spte));
