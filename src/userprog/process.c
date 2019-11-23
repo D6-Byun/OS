@@ -164,6 +164,9 @@ process_exit(void)
 
 	/* Destroy the current process's page directory and switch back
 	   to the kernel-only page directory. */
+	for(int i = 0; i++; i < 128){
+		file_close(thread_current()->files[i]);
+	}
 	spt_destroy(cur->spt);
 	pd = cur->pagedir;
 	if (pd != NULL)
@@ -390,7 +393,7 @@ load(const char *file_name, void(**eip) (void), void **esp)
 
 done:
 	/* We arrive here whether the load is successful or not. */
-	file_close(file);
+	//file_close(file);
 	return success;
 }
 
@@ -466,8 +469,8 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT(ofs % PGSIZE == 0);
 
 	file_seek(file, ofs);
-	printf("initial bytes: %d, %d\n", read_bytes, zero_bytes);
-	printf("page size : %d\n", PGSIZE);
+	//printf("initial bytes: %d, %d\n", read_bytes, zero_bytes);
+	//printf("page size : %d\n", PGSIZE);
 	while (read_bytes > 0 || zero_bytes > 0)
 	{
 		/* Calculate how to fill this page.
@@ -500,7 +503,7 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 			return false;
 		}
 		//for DEBUG
-		printf("entry 's read bytes: %d \nentry's zero bytes: %d \ncheck offset: %d\n", read_bytes, zero_bytes, ofs);
+		//printf("entry 's read bytes: %d \nentry's zero bytes: %d \ncheck offset: %d\n", read_bytes, zero_bytes, ofs);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
@@ -578,6 +581,10 @@ install_page(void *upage, void *kpage, bool writable)
 bool handle_mm_fault(struct sup_page_entry *spte) {
 	//struct frame_entry *paddr = frame_alloc(PAL_USER,spte);
 	bool isload = false;
+	spte->pin = true;
+	if(spte->is_loaded){
+		return false;
+	}
 	switch (spte->type) {
 	case VM_FILE:
 		isload = load_file(spte);

@@ -36,19 +36,18 @@ void *frame_alloc(enum palloc_flags flags,struct sup_page_entry *spte){
 	if (frame == NULL) {
 		return NULL;
 	}
-	printf("alloc page: %d\n",frame_addr);
+	printf("alloc page: %x\n",frame_addr);
 	frame->thread = thread_current();
 	frame->kaddr = frame_addr;
 	frame->spte = spte;
 	add_frame_to_fifo_list(frame);
 	return frame_addr;
 }
-void free_frame(struct frame_entry *frame) {
+void free_frame(struct frame_entry *frame, void *kaddr) {
 	del_frame_to_fifo_list(frame);
 	free(frame);
-	printf("free page: %d\n",frame->kaddr);
-	ASSERT(pg_ofs(frame->kaddr) == 0);
-	palloc_free_page(frame->kaddr);
+	ASSERT(pg_ofs(kaddr) == 0);
+	palloc_free_page(kaddr);
 
 }
 
@@ -58,7 +57,7 @@ void free_frame_entry(void *kaddr) {
 	for (e = list_begin(&fifo_list); e != list_end(&fifo_list); e = list_next(e)) {
 		struct frame_entry *frame = list_entry(e, struct frame_entry, fifo);
 		if (frame->kaddr == kaddr) {
-			free_frame(frame);
+			free_frame(frame,kaddr);
 		}
 	}
 	lock_release(&frame_lock);

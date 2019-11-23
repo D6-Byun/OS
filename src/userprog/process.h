@@ -4,7 +4,9 @@
 #include "threads/thread.h"
 
 #define STACK_HEURISTIC 32
-typedef int mapid_t; 
+typedef int mapid_t;
+
+struct lock file_lock;
 
 tid_t process_execute (const char *file_name);
 int process_wait (tid_t);

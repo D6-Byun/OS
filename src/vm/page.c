@@ -97,29 +97,34 @@ bool sup_delete(struct sup_page_table *spt, struct sup_page_entry *spte) {
 
 /*load the file to physical page*/
 bool load_file(struct sup_page_entry *spte) {
-	if(spte->is_loaded){
-		printf("is already loaded");
-		return false;
-	}
 	enum palloc_flags flag = PAL_USER;
 	if (spte->read_bytes == 0) {
 		flag |= PAL_ZERO;
 	}
-
 	void * paddr = frame_alloc(flag,spte);
 	if (paddr == NULL) {
 		return false;
 	}
-	printf("read_bytes: %d\n",(off_t)spte->read_bytes);
-	//printf("offset: %d\n", spte->file_ofs);
-	off_t  isread = file_read_at(spte->file, paddr, (off_t)spte->read_bytes, spte->file_ofs);
-	printf("isread = %d\n",isread);
-	//printf("Check Page Size: %d\n", spte->zero_bytes + spte->read_bytes);
-
-	memset(paddr + spte->read_bytes, 0, spte->zero_bytes);
+	if(spte->read_bytes > 0){
+		printf("read_bytes: %d\n",(off_t)spte->read_bytes);
+		printf("offset: %d\n", spte->file_ofs);
+		lock_acquire(&file_lock);
+		off_t  isread = file_read_at(spte->file, paddr, (off_t)spte->read_bytes, spte->file_ofs);
+		if(isread != (off_t)spte->read_bytes){
+			lock_release(&file_lock);
+			printf("%d bytes expected but %d loaded\n",spte->read_bytes, isread);
+			free_frame_entry(paddr);
+			return false;
+		}
+		//printf("isread = %d\n",isread);
+		//printf("Check Page Size: %d\n", spte->zero_bytes + spte->read_bytes);
+		lock_release(&file_lock);
+		memset(paddr + spte->read_bytes, 0, spte->zero_bytes);
+	}
 	if(!install_page(spte->upage, paddr, spte->writable)){
 		ASSERT(pg_ofs(paddr) == 0);
 		free_frame_entry(paddr);
+		printf("Install failed\n");
 		return false;
 	}
 	spte->is_loaded = true;
