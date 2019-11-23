@@ -3,6 +3,7 @@
 
 #include "threads/thread.h"
 
+#define STACK_HEURISTIC 32
 typedef int mapid_t; 
 
 tid_t process_execute (const char *file_name);

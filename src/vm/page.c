@@ -25,8 +25,12 @@ spt_less_func(const struct hash_elem *a, const struct hash_elem *b, void* aux) {
 }
 
 static void spt_destroy_func(const struct hash_elem *e, void *aux){
-	thread_current()->spt->hash_brown.elem_cnt--;
-	list_remove (&e->list_elem);
+	struct sup_page_entry *spte = hash_entry(e, struct sup_page_entry, helem);
+	if(spte->is_loaded){
+		free_frame_entry(pagedir_get_page(thread_current()->pagedir, spte->upage));
+		pagedir_clear_page(thread_current()->pagedir,spte->upage);
+	}
+	free(spte);
 }
 
 struct sup_page_table *
@@ -37,7 +41,7 @@ spt_create(void) {
 }
 
 void spt_destroy(struct sup_page_table *spt) {
-	hash_destroy(&spt ->hash_brown, spt_destroy_func);
+	hash_destroy(&spt-> hash_brown, spt_destroy_func);
 	if(spt != NULL)
 		free(spt);
 }
@@ -99,7 +103,7 @@ bool load_file(struct sup_page_entry *spte) {
 	}
 	enum palloc_flags flag = PAL_USER;
 	if (spte->read_bytes == 0) {
-		flag = PAL_ZERO;
+		flag |= PAL_ZERO;
 	}
 
 	void * paddr = frame_alloc(flag,spte);
@@ -111,12 +115,10 @@ bool load_file(struct sup_page_entry *spte) {
 	off_t  isread = file_read_at(spte->file, paddr, (off_t)spte->read_bytes, spte->file_ofs);
 	printf("isread = %d\n",isread);
 	//printf("Check Page Size: %d\n", spte->zero_bytes + spte->read_bytes);
-	if (isread != spte->read_bytes){
-		free_frame_entry(paddr);
-		return false;
-	}
-	memset(paddr + isread, 0, spte->zero_bytes);
+
+	memset(paddr + spte->read_bytes, 0, spte->zero_bytes);
 	if(!install_page(spte->upage, paddr, spte->writable)){
+		ASSERT(pg_ofs(paddr) == 0);
 		free_frame_entry(paddr);
 		return false;
 	}

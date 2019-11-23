@@ -151,34 +151,34 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
   
   /* when kernel thread terminates */
-  if(!user || is_kernel_vaddr(fault_addr)){
-	exit(-113);
-}
+  	if(!user || is_kernel_vaddr(fault_addr)){
+		exit(-113);
+	}
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
-  struct thread * cur = thread_current();
+  	struct thread * cur = thread_current();
   
-
-  if (not_present) {
-	  struct sup_page_entry *entry = sup_lookup_page(cur->spt, fault_addr);
-	  if(entry == NULL){
-	  	fail_to_load(f);
-	  }
-	  bool isload = handle_mm_fault(entry);
-	  if (!isload) {
+	bool isload = false;
+	if (not_present) {
+		struct sup_page_entry *entry = sup_lookup_page(cur->spt, fault_addr);
+	  	if(entry){
+	  		isload = handle_mm_fault(entry);
+			entry->pin = false;
+		}else if(fault_addr >= f->esp - STACK_HEURISTIC){
+			grow_stack(fault_addr);
+		}
+	} 
+	if (!isload) {
 		  printf("SEGMENTATION FAULT\n");
-	  }
-  }
-  else {
-	  fail_to_load(f);
+		  fail_to_load(f);
+	}
 	  /*printf("Page fault at %p: %s error %s page in %s context.\n",
 		  fault_addr,
 		  not_present ? "not present" : "rights violation",
 		  write ? "writing" : "reading",
 		  user ? "user" : "kernel");
 	  kill(f);*/
-  }
 
 }
 static

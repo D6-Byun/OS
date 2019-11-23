@@ -36,6 +36,7 @@ void *frame_alloc(enum palloc_flags flags,struct sup_page_entry *spte){
 	if (frame == NULL) {
 		return NULL;
 	}
+	printf("alloc page: %d\n",frame_addr);
 	frame->thread = thread_current();
 	frame->kaddr = frame_addr;
 	frame->spte = spte;
@@ -45,6 +46,7 @@ void *frame_alloc(enum palloc_flags flags,struct sup_page_entry *spte){
 void free_frame(struct frame_entry *frame) {
 	del_frame_to_fifo_list(frame);
 	free(frame);
+	printf("free page: %d\n",frame->kaddr);
 	ASSERT(pg_ofs(frame->kaddr) == 0);
 	palloc_free_page(frame->kaddr);
 

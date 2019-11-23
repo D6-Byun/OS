@@ -608,7 +608,7 @@ bool grow_stack(void *upage) {
 	if (spte == NULL) {
 		return false;
 	}
-	spte->upage = upage;
+	spte->upage = pg_round_down(upage);
 	spte->dirty = false;
 	spte->writable = true;
 	spte->is_loaded = false;
@@ -621,6 +621,7 @@ bool grow_stack(void *upage) {
 	}
 	if (!install_page(upage, frame, true)) {
 		free(spte);
+		ASSERT(pg_ofs(frame) == 0);
 		free_frame_entry(frame);
 		return false;
 	}
