@@ -38,11 +38,12 @@ struct sup_page_entry{
 	uint8_t type;
 	
 	bool is_loaded; //if it is loaded then true;
-	
+	bool pin; //true: must not be evicted, false: can evicted (4.3.5)
+
 	uint32_t read_bytes, zero_bytes; //read, zero bytes, PGsize - read = zero
 	bool writable; //True: can write, False: can't write
 	bool dirty; //True: fixed, False: Original
-	
+
 	struct list_elem mmap_elem;
 
 	
