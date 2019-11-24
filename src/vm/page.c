@@ -5,7 +5,7 @@
 #include "threads/malloc.h"
 
 static unsigned spt_hash_func(const struct hash_elem, void *)
-static bool spt_less_func(const struct hast_elem, const struct hast_elem, void *)
+static bool spt_less_func(const struct hash_elem, const struct hash_elem, void *)
 static void spt_entry_destroy(struct hash_elem *, void *)
 
 struct spt* spt_init(void)
