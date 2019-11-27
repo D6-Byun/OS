@@ -29,7 +29,7 @@ struct sup_page_entry{
 
 
 struct sup_page_table *spt_create(void);
-void sup_destroy(struct sup_page_table *spt);
+void spt_destroy(struct sup_page_table *spt);
 struct sup_page_entry *spt_lookup(struct sup_page_table *spt, void *upage);
 bool sup_load_file(struct sup_page_entry *spte);
 bool sup_load_mmap(struct sup_page_entry *spte);

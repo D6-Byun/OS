@@ -48,12 +48,6 @@ void spt_destroy(struct sup_page_table *spt){
 	free(spt);
 }
 
-
-sup_page_table * sup_create(void)
-{
-	return NULL;
-}
-
 struct sup_page_entry *spt_lookup(struct sup_page_table *spt, void *upage){
 	struct sup_page_entry spte;
 	spte.upage = pg_round_down(upage);
