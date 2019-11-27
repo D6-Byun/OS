@@ -7,8 +7,8 @@
 
 static struct hash frame_table;
 
-static unsigned frame_hash_func(const struct hash_elem, void *)
-static bool frame_less_func(const struct hash_elem, const struct hash_elem, void *)
+static unsigned frame_hash_func(const struct hash_elem, void *);
+static bool frame_less_func(const struct hash_elem, const struct hash_elem, void *);
 
 struct frame_table * frame_init(void)
 {
