@@ -7,6 +7,8 @@
 #include <hash.h>
 #include "filesys/off_t.h"
 
+
+
 struct frame_table
 {
 	struct hash frame_hash;
@@ -19,7 +21,11 @@ struct frame_entry {
 };
 
 struct frame_table * frame_init(void);
-bool insert_frame_entry(struct hash*, struct frame_entry*);
-bool delete_frame_entry(struct hash*, struct frame_entry*);
+bool insert_frame_entry(struct frame_entry*);
+bool delete_frame_entry(struct frame_entry*);
+
+struct frame_entry * create_f_entry(enum palloc_flags, uint8_t *);
+void free_frame_table(void);
+void free_frame_entry(struct hash_elem *, void *);
 
 #endif

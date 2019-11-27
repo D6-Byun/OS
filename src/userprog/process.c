@@ -18,6 +18,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
+#include "vm/frame.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -92,6 +93,7 @@ start_process (void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
+	frame_init();
   	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
@@ -467,7 +469,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
       /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER);
+	  struct frame_entry * new_frame = create_f_entry(0, upage);
+      //uint8_t *kpage = palloc_get_page (PAL_USER);
+	  uint8_t *kpage = new_frame->kpage;
       if (kpage == NULL)
         return false;
 
@@ -502,7 +506,9 @@ setup_stack (void **esp, int argc, char *argv[])
   uint8_t *kpage, *nullp = (uint8_t)0;
   bool success = false;
   uintptr_t *addr[32];
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  struct frame_entry *new_frame = create_f_entry(PAL_ZERO, (uint8_t *)(PHYS_BASE - PGSIZE));
+  //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  kpage = new_frame->kpage;
   //printf("start stacking");
   if (kpage != NULL) 
     {
