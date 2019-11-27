@@ -49,6 +49,11 @@ void spt_destroy(struct sup_page_table *spt){
 }
 
 
+sup_page_table * sup_create(void)
+{
+	return NULL;
+}
+
 struct sup_page_entry *spt_lookup(struct sup_page_table *spt, void *upage){
 	struct sup_page_entry spte;
 	spte.upage = pg_round_down(upage);
@@ -61,9 +66,6 @@ struct sup_page_entry *spt_lookup(struct sup_page_table *spt, void *upage){
 	return hash_entry(elem, struct sup_page_entry, helem);
 }
 
-//bool spt_load_file(struct sup_page_entry *spte);
-//bool spt_load_mmap(struct sup_page_entry *spte);
-//bool spt_load_swap(struct sup_page_entry *spte);
 bool spt_load_file(struct sup_page_entry *spte){
 	//void *addr = pagedir_get_page(thread_current()->pagedir, spte->upage);
 	uint8_t *frame = frame_alloc(PAL_USER,spte->upage);
@@ -87,13 +89,13 @@ bool spt_load_file(struct sup_page_entry *spte){
 	return true;
 }
 
-bool spt_load_swap(struct sup_page_entry *spte){
-	printf("swap : Not implemented yet.\n");
+bool spt_load_mmap(struct sup_page_entry *spte) {
+	printf("mmap : Not implemented yet.\n");
 	return false;
 }
 
-bool spt_load_mmap(struct sup_page_entry *spte){
-	printf("mmap : Not implemented yet.\n");
+bool spt_load_swap(struct sup_page_entry *spte){
+	printf("swap : Not implemented yet.\n");
 	return false;
 }
 
@@ -117,7 +119,6 @@ bool spt_load_page(struct sup_page_table *spt, void *upage){
 	}
 	return success;
 }
-
 
 bool sup_add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes, bool writable){
 	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
