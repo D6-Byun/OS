@@ -114,7 +114,7 @@ bool spt_load_page(struct sup_page_table *spt, void *upage){
 	return success;
 }
 
-bool sup_add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes, bool writable){
+bool spt_add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes, bool writable){
 	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
 	if(spte == NULL){
 		return false;

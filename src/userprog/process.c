@@ -175,7 +175,7 @@ process_exit (void)
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
 #ifdef VM
- 	sup_destroy(cur->spt);
+ 	spt_destroy(cur->spt);
  	cur->spt = NULL;
 #endif
   pd = cur->pagedir;
@@ -478,7 +478,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-	  if(!sup_add_entry(thread_current()->spt,file,ofs,upage,page_read_bytes,page_zero_bytes,writable)){
+	  if(!spt_add_entry(thread_current()->spt,file,ofs,upage,page_read_bytes,page_zero_bytes,writable)){
 		return false;
 	  }
       /* Get a page of memory. */
