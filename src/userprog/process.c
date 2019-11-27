@@ -301,7 +301,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	//hex_dump((uintptr_t)file_name,file_name,100,true);
 
 	 /* Allocate and activate page directory. */
-  	t->supt = spt_create();
+  	t->spt = spt_create();
   	t->pagedir = pagedir_create ();
     if (t->pagedir == NULL) 
     	goto done;

@@ -7,20 +7,20 @@
 static unsigned
 spt_hash_func(const struct hash_elem *elem, void *aux)
 {
-	struct sup_page_entry *spte = hash_entry(elem, struct sup_page_entry, elem);
+	struct sup_page_entry *spte = hash_entry(elem, struct sup_page_entry, helem);
 	return hash_int((int)spte->upage);
 }
 static bool
 spt_less_func(const struct hash_elem *a, const struct hash_elem *b, void *aux)
 {
-	struct sup_page_entry *aentry = hash_entry(a, struct sup_page_entry, elem);
-	struct sup_page_entry *bentry = hash_entry(b, struct sup_page_entry, elem);
+	struct sup_page_entry *aentry = hash_entry(a, struct sup_page_entry, helem);
+	struct sup_page_entry *bentry = hash_entry(b, struct sup_page_entry, helem);
 	return aentry->upage < bentry->upage;
 }
 static void
 spt_destroy_func(struct hash_elem *elem, void *aux)
 {
-	struct sup_page_entry *spte = hash_entry(elem, struct sup_page_entry, elem);
+	struct sup_page_entry *spte = hash_entry(elem, struct sup_page_entry, helem);
 	free(spte);
 }
 
