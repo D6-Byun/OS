@@ -97,7 +97,7 @@ start_process(void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
-	//frame_init();
+	frame_init();
 	//printf("start_process\n");
 	argv[0] = strtok_r(file_name, " ", &save_ptr);
 	while (1) {
@@ -171,14 +171,7 @@ process_exit(void)
 	struct thread *par;
 	struct thread *cur = thread_current();
 	uint32_t *pd;
-	
-	/*Close All Files*/
-	for(int i  = 0; i++; i<128){
-		if(cur->files[i] != NULL){
-			file_close(cur->files[i]);
-			cur->files[i] = NULL;
-		}
-	}
+
 	/* Destroy the current process's page directory and switch back
 	   to the kernel-only page directory. */
 	pd = cur->pagedir;
@@ -484,11 +477,12 @@ load_segment(struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 #ifdef VM
 		struct thread *cur = thread_current();
-		if (!add_entry(cur->spt, file, ofs, upage, NULL, page_read_bytes, page_zero_bytes, writable, VMFILE)) {
+		if (!add_entry(cur->spt, file, ofs, upage, NULL, page_read_bytes, page_zero_bytes, writable, FILE)) {
 			return false;
 		}
 
-#else
+#endif //VM
+#ifndef VM
 		/* Get a page of memory. */
 		uint8_t *kpage = frame_alloc(PAL_USER, upage);
 		if (kpage == NULL)
@@ -561,7 +555,7 @@ install_page(void *upage, void *kpage, bool writable)
 	/* Verify that there's not already a page at that virtual
 	   address, then map our page there. */
 	return (pagedir_get_page(t->pagedir, upage) == NULL
-		&& pagedir_set_page(t->pagedir, upage, kpage, writable) 
+		&& pagedir_set_page(t->pagedir, upage, kpage, writable)) 
 		&& add_install(&t->spt,upage, kpage, writable));
 }
 

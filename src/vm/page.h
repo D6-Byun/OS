@@ -8,11 +8,10 @@
 enum status {
 	FRAME,
 	SWAP,
-	VMFILE,
 	ZERO
 };
 
-struct sup_page_table{
+struct sup_page_tabe {
 	struct hash hash_brown;
 };
 

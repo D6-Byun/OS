@@ -59,7 +59,6 @@ syscall_handler (struct intr_frame *f)
 	//printf("f->esp: %x\n",f->esp);
 	//printf("*f->esp: %d\n",*(int*)f->esp);
 	//hex_dump((uintptr_t)f->esp,f->esp,24,true);
-	thread_current()->cur_esp = f->esp;
 	is_valid_addr(f->esp);
 	switch (*(uint32_t *)f->esp) {
 		case SYS_HALT:
@@ -130,11 +129,11 @@ syscall_handler (struct intr_frame *f)
 void exit(int status) {
 	printf("%s: exit(%d)\n",thread_name(),status);
 	thread_current()->exit = status;
-	/*for(int i = 3; i < 128; i++){
+	for(int i = 3; i < 128; i++){
 		if(thread_current()->files[i] != NULL){
 			close(i);
 		}
-	}*/
+	}
 	thread_exit();
 }
 pid_t exec(const char *cmd_line) {

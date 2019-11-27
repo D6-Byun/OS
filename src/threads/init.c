@@ -37,9 +37,7 @@
 #include "filesys/filesys.h"
 #include "filesys/fsutil.h"
 #endif
-#ifdef VM
-#include "vm/frame.h"
-#endif
+
 /* Page directory with kernel mappings only. */
 uint32_t *init_page_dir;
 
@@ -115,10 +113,6 @@ main (void)
 #ifdef USERPROG
   exception_init ();
   syscall_init ();
-#endif
-
-#ifdef VM
-	frame_init();
 #endif
 
   /* Start thread scheduler and enable interrupts. */
