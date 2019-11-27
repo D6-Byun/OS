@@ -18,7 +18,11 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
+#ifdef VM
 #include "vm/frame.h"
+#include "vm/page.h"
+#endif
+
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -173,6 +177,10 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+#ifdef VM
+ free(cur->spt);
+ cur->spt = NULL;
+#endif
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -293,6 +301,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	//hex_dump((uintptr_t)file_name,file_name,100,true);
 
 	 /* Allocate and activate page directory. */
+  	t->supt = spt_create();
   	t->pagedir = pagedir_create ();
     if (t->pagedir == NULL) 
     	goto done;

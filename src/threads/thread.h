@@ -5,7 +5,9 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/synch.h"
-
+#ifdef VM
+#include "vm/page.h"
+#endif
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -102,10 +104,14 @@ struct thread
 	struct semaphore sema_child;
 	struct thread *pthread;
 	struct semaphore sema_imsi;
-	struct file *files[128];
+	struct file *files[128];			/*array of files*/
 	int exit;							/*exit status*/
 	struct semaphore lock_imsi;
 	bool isexit;
+	uint32_t *cur_esp;
+#endif
+#ifdef VM
+	struct sup_page_table *spt;
 #endif
 
     /* Owned by thread.c. */
