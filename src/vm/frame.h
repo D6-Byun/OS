@@ -8,11 +8,6 @@
 #include "threads/palloc.h"
 #include "filesys/off_t.h"
 
-struct frame_table
-{
-	struct hash frame_hash;
-};
-
 struct frame_entry {
 	uint8_t * upage; //will be linked after the page creation.
 	uint8_t * kpage; //key which indicates physical memory address.

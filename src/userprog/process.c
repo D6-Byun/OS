@@ -173,7 +173,7 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
-  free_frame_table();
+  //free_frame_table();
 	sema_up(&(cur->sema_child));
 	sema_down(&(cur->sema_imsi));
 }
