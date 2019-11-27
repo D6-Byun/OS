@@ -50,14 +50,16 @@ struct sup_page_entry *sup_lookup_page(struct sup_page_table *spt, void *page) {
 	struct sup_page_entry temp;
 	temp.upage = page;
 	struct hash_elem *e = hash_find(&spt->hash_brown, &temp.helem);
-	if (e == NULL)
+	if (e == NULL){
+		printf("sup_lookup_page: there is no such entry\n");
 		return NULL;
+	}
 	return hash_entry(e, struct sup_page_entry, helem);
 }
 
 bool add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, void *kpage, 
 	uint32_t read_bytes, uint32_t zero_bytes, bool writable, enum status type) {
-	
+	printf("add_entry upage : %x\n",upage);	
 	struct sup_page_entry *entry = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
 	entry->file = file;
 	entry->file_ofs = ofs;
@@ -68,7 +70,9 @@ bool add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, void *u
 	entry->writable = writable;
 	entry->dirty = false;
 	entry->type = type;
-	if (hash_insert(&spt->hash_brown,entry->helem) != NULL) {
+	if (hash_insert(&spt->hash_brown,&entry->helem) != NULL) {
+		free(entry);
+		printf("add_entry: is already in\n");
 		return false;
 	}
 	return true;
@@ -76,13 +80,14 @@ bool add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, void *u
 /*add entry with UPAGE, KPAGE and WRITABLE which is already in frame to SPT */
 bool add_install(struct sup_page_table *spt, void *upage, void *kpage, bool writable) {
 	struct sup_page_entry *entry = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
+	printf("add_install upage: %x\n",upage);
 	entry->upage = upage;
 	entry->kpage = kpage;
 	entry->dirty = false;
 	entry->writable = writable;
 	entry->type = FRAME;
 
-	if (hash_insert(&spt->hash_brown, entry->helem) != NULL) {
+	if (hash_insert(&spt->hash_brown, &entry->helem) != NULL) {
 		free(entry);
 		printf("add_install: hash_insert failed.\n");
 		return false;
@@ -91,9 +96,11 @@ bool add_install(struct sup_page_table *spt, void *upage, void *kpage, bool writ
 }
 /*Allocate frame and insert to SPT*/
 bool spt_load_page(struct sup_page_table *spt, uint32_t *pagedir, void *upage) {
+	bool writable;
+	printf("%x: pagedir\n" ,pagedir);	
 	struct sup_page_entry *spte = sup_lookup_page(spt, upage);
 	if (spte == NULL) {
-		printf("spt_load_page: lookup failed.\n");
+		printf("spt_load_page: %x lookup failed.\n",upage);
 		return false;
 	}
 	void * frame = frame_alloc(PAL_USER, upage);
@@ -112,17 +119,29 @@ bool spt_load_page(struct sup_page_table *spt, uint32_t *pagedir, void *upage) {
 			break;
 		case ZERO:
 			memset(frame, 0, PGSIZE);
+			break;
+		case VMFILE:
+			file_seek(spte->file,spte->file_ofs);
+			off_t isread = file_read(spte->file, frame, spte->read_bytes);
+			if(isread != spte->read_bytes){
+				printf("spt_load_page: Not enough read\n");
+				frame_free(frame);
+				return false;
+			}
+			memset(frame + isread, 0, spte->zero_bytes);
+			writable = spte->writable;
+			break;
 		default:
 			NOT_REACHED();
 			break;
 	}
-	if (!pagedir_set_page(pagedir, upage, frame, true)) {
+	if (!pagedir_set_page(pagedir, upage, frame, writable)) {
 		frame_free(frame);
 		printf("spt_load_page: upage is already mapped.");
 		return false;
 	}
 	spte->kpage = frame;
-	spte->type = FRAME:
+	spte->type = FRAME;
 	pagedir_set_dirty(pagedir, frame, false);
 	frame_unpin(frame);
 

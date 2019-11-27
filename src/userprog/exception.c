@@ -149,7 +149,12 @@ page_fault(struct intr_frame *f)
 	not_present = (f->error_code & PF_P) == 0;
 	write = (f->error_code & PF_W) != 0;
 	user = (f->error_code & PF_U) != 0;
-
+	printf("Page fault at %p: %s error %s page in %s context.\n",
+		fault_addr,
+		not_present ? "not present" : "rights violation",
+		write ? "writing" : "reading",
+		user ? "user" : "kernel");
+	
 	struct thread *cur = thread_current();
 
 	void *esp;
@@ -167,11 +172,13 @@ page_fault(struct intr_frame *f)
 			/*stack growth*/
 		}
 		if (!spt_load_page(cur->spt,cur->pagedir,pg_round_down(fault_addr))) {
+			printf("fail_to_spt_load_page.\n");
 			fail_to_load(f);
 		}
 		return;
 	}
 	else {
+		printf("not_present page\n");
 		fail_to_load(f);
 	}
 	/* To implement virtual memory, delete the rest of the function
@@ -180,11 +187,8 @@ page_fault(struct intr_frame *f)
 }	
 
 void fail_to_load(struct intr_frame *f) {
-	printf("Page fault at %p: %s error %s page in %s context.\n",
-		fault_addr,
-		not_present ? "not present" : "rights violation",
-		write ? "writing" : "reading",
-		user ? "user" : "kernel");
+	printf("fail_to_load.\n");
+	
 	kill(f);
 
 
