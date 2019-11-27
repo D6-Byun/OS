@@ -31,6 +31,9 @@
 #else
 #include "tests/threads/tests.h"
 #endif
+#ifdef VM
+#include "vm/frame.h"
+#endif 
 #ifdef FILESYS
 #include "devices/block.h"
 #include "devices/ide.h"
@@ -127,7 +130,9 @@ main (void)
   filesys_init (format_filesys);
 #endif
 
+#ifdef VM
   frame_init();
+#endif
 
   printf ("Boot complete.\n");
 
