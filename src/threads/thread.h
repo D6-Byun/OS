@@ -5,7 +5,6 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/synch.h"
-#include "vm/page.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -109,10 +108,6 @@ struct thread
 	bool isexit;
 #endif
 
-#ifdef VM
-	struct sup_page_table *spt;
-	uint8_t *cur_esp;					/*For kernel mode esp*/
-#endif
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
   };
