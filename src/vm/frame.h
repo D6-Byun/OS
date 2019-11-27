@@ -21,5 +21,8 @@ bool delete_frame_entry(struct frame_entry*);
 struct frame_entry * create_f_entry(enum palloc_flags, uint8_t *);
 void free_frame_table(void);
 void free_frame_entry(struct hash_elem *, void *);
+/*
+free functions are not debuged yet.
+*/
 
 #endif
