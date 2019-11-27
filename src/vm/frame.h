@@ -5,9 +5,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <hash.h>
+#include "threads/palloc.h"
 #include "filesys/off_t.h"
-
-
 
 struct frame_table
 {
@@ -20,7 +19,7 @@ struct frame_entry {
 	struct hash_elem helem;
 };
 
-struct frame_table * frame_init(void);
+void frame_init(void);
 bool insert_frame_entry(struct frame_entry*);
 bool delete_frame_entry(struct frame_entry*);
 
