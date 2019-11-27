@@ -93,7 +93,6 @@ start_process (void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
-	frame_init();
   	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
