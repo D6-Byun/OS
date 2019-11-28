@@ -61,13 +61,19 @@ struct spt_entry * is_valid_addr(void *addr) {
 	{
 		return search_entry;
 	}
+	else
+	{
+		printf("entry not found in is_valid_addr\n");
+		return NULL;
+	}
 }
 
 void check_valid_buffer(void* buffer, unsigned size, void* esp, bool to_write)
 {
 	void * temp_buffer = buffer;
 	struct spt_entry * temp_entry;
-	while (size >= 0)
+	int32_t new_size = (int32_t)size;
+	while (new_size >= 0)
 	{
 		temp_entry = is_valid_addr(temp_buffer);
 		if (!temp_entry->writable)
@@ -75,11 +81,11 @@ void check_valid_buffer(void* buffer, unsigned size, void* esp, bool to_write)
 			printf("buffer not writable in check_valid_buffer\n");
 			exit(-1);
 		}
-		size = size - PGSIZE;
+		new_size = new_size - PGSIZE;
 		temp_buffer = temp_buffer + PGSIZE;
 	}
 }
-void check_valid_string(const void *str, void* esp)
+void check_valid_string(void *str, void* esp)
 {
 	is_valid_addr(str);
 }
