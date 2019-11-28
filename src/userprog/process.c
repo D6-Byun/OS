@@ -161,6 +161,8 @@ process_exit (void)
 	struct thread *par;
   struct thread *cur = thread_current ();
   uint32_t *pd;
+
+  spt_destroy(&cur->spt->hash_brown);
   
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
