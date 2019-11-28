@@ -161,7 +161,7 @@ process_exit (void)
   struct thread *cur = thread_current ();
   uint32_t *pd;
 
-  spt_destroy(&cur->spt);
+  spt_destroy(cur->spt);
   cur->spt = NULL;
   
   /* Destroy the current process's page directory and switch back
