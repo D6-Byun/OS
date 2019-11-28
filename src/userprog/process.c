@@ -472,17 +472,18 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Calculate how to fill this page.
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
-      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE; 
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
-
-      /* Get a page of memory. */
+	  struct spt_entry * temp_entry;
+	  /*
+      // Get a page of memory. 
 	  struct frame_entry * new_frame = create_f_entry(0, upage);
       //uint8_t *kpage = palloc_get_page (PAL_USER);
 	  uint8_t *kpage = new_frame->kpage;
       if (kpage == NULL)
         return false;
-
-      /* Load this page. */
+	  
+      // Load this page.
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
           palloc_free_page (kpage);
@@ -490,16 +491,21 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
-      /* Add the page to the process's address space. */
+      // Add the page to the process's address space.
       if (!install_page (upage, kpage, writable)) 
         {
           palloc_free_page (kpage);
           return false; 
         }
+	  */
+
+	  temp_entry = create_s_entry(upage, NULL, true, file, ofs, page_read_bytes, page_zero_bytes);
+	  insert_spt_entry(thread_current()->spt->hash_brown, temp_entry);
 
       /* Advance. */
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
+	  ofs += page_read_bytes
       upage += PGSIZE;
     }
   return true;
@@ -513,6 +519,7 @@ setup_stack (void **esp, int argc, char *argv[])
   uint8_t *kpage, *nullp = (uint8_t)0;
   bool success = false;
   uintptr_t *addr[32];
+  struct spt_entry *new_spte;
   struct frame_entry *new_frame = create_f_entry(PAL_ZERO, (uint8_t *)(PHYS_BASE - PGSIZE));
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   kpage = new_frame->kpage;
@@ -558,6 +565,8 @@ setup_stack (void **esp, int argc, char *argv[])
       else
         palloc_free_page (kpage);
     }
+  new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE),kpage,true,NULL,0,0,PGSIZE)
+
   //printf("Stack dump check\n");
   
   //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
