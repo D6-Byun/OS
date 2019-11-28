@@ -175,6 +175,7 @@ process_exit (void)
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
 #ifdef VM
+  	munmap(CLOSE_ALL);
  	spt_destroy(cur->spt);
  	cur->spt = NULL;
 #endif

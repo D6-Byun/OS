@@ -122,7 +122,7 @@ bool spt_add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, voi
 	spte->is_loaded = false;
 	spte->status = VMFILE;
 	spte->writable = writable;
-	return (hash_insert(&spt->hash_brown,&spte->helem) == NULL);
+	return hash_insert(&spt->hash_brown,&spte->helem) == NULL;
 }
 
 bool spt_add_mmap(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes){
@@ -154,7 +154,30 @@ bool spt_try_add_mmap(struct sup_page_entry *spte){
 	return true;
 }
 
-
+bool grow_stack(void *upage){
+	if(PHYS_BASE - pg_round_down(upage) > MAX_STACK_SIZE){
+		printf("Grow stack: stack is full.\n");
+		return false;
+	}
+	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
+	if(spte == NULL){
+		return false;
+	}
+	spte->upage = upage;
+	spte->is_loaded = true;
+	spte->status = SWAP;
+	void *frame = frame_alloc(PAL_USER,upage);
+	if(frame == NULL){
+		free(spte);
+		return false;
+	}
+	if(!install_page(upage,frame,true)){
+		free(spte);
+		frame_free(frame);
+		return false;
+	}
+	return hash_insert(&(thread_current()->spt->hash_brown),&spte->helem) == NULL;
+}
 
 
 

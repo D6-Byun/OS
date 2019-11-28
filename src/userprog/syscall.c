@@ -11,7 +11,8 @@
 #include "threads/vaddr.h"
 #include "filesys/off_t.h"
 #include "threads/synch.h"
-
+#include "vm/page.h"
+#include "vm/frame.h"
 struct file 
 	{
 		struct inode *inode;        /* File's inode. */
