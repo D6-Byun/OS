@@ -160,7 +160,8 @@ page_fault (struct intr_frame *f)
 	  addr_entry = find_spt_entry(fault_addr);
 	  if (addr_entry == NULL)
 	  {
-		//case of stack growth
+		  //stack growth
+		  //addr_entry = 
 	  }
 	  load_and_map(addr_entry);
 	  if (!addr_entry->is_loaded || (addr_entry->kpage == NULL))
