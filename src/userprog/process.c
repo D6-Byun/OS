@@ -574,7 +574,7 @@ setup_stack (void **esp, int argc, char *argv[])
 	  }
 	  else
 	  {
-		  free_frame_entry(new_frame->helem, NULL);
+		  free_frame_entry(&new_frame->helem, NULL);
 	  }
     }
   new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE), kpage, true, NULL, 0, 0, PGSIZE);
