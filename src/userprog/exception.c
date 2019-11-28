@@ -128,6 +128,7 @@ page_fault (struct intr_frame *f)
   bool write;        /* True: access was write, false: access was read. */
   bool user;         /* True: access by user, false: access by kernel. */
   void *fault_addr;  /* Fault address. */
+  struct spt_entry * addr_entry;
 
   /* Obtain faulting address, the virtual address that was
      accessed to cause the fault.  It may point to code or to
@@ -162,7 +163,7 @@ page_fault (struct intr_frame *f)
 		//case of stack growth
 	  }
 	  load_and_map(addr_entry);
-	  if (!addr_entry.is_loaded || (kpage == NULL))
+	  if (!addr_entry.is_loaded || (addr_entry->kpage == NULL))
 	  {
 		  exit(-1);
 		  printf("entry physical mappeing error");
@@ -171,6 +172,7 @@ page_fault (struct intr_frame *f)
 
   }
 }
+
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
@@ -182,5 +184,4 @@ page_fault (struct intr_frame *f)
           user ? "user" : "kernel");
   kill (f);
 	*/
-}
 
