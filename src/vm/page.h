@@ -39,7 +39,7 @@ bool insert_spt_entry(struct hash*, struct spt_entry*);
 bool delete_spt_entry(struct hash*, struct spt_entry*);
 
 struct spt_entry * find_spt_entry(void *);
-void spt_destroy(struct hash *);
+void spt_destroy(struct spt *);
 
 struct spt_entry * create_s_entry(uint8_t *, uint8_t *, bool, struct file *, off_t, uint32_t, uint32_t);
 

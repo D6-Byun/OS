@@ -33,6 +33,7 @@ bool insert_frame_entry(struct frame_entry *frame_e)
 	struct hash_elem * insert_elem = hash_insert(frame_table, &frame_e->helem);
 	if (insert_elem == NULL)
 	{
+		printf("hash_insert failed in insert_frame_entry\n");
 		return false;
 	}
 	return true;
@@ -44,6 +45,7 @@ bool delete_frame_entry(struct frame_entry *frame_e)
 	struct hash_elem * delete_elem = hash_delete(frame_table, &frame_e->helem);
 	if (delete_elem == NULL)
 	{
+		printf("hash_delete failed in delete_frame_entry\n");
 		return false;
 	}
 	palloc_free_page(kpage_ptr);
@@ -56,10 +58,17 @@ struct frame_entry * create_f_entry(enum palloc_flags flag, uint8_t * upage)
 	struct frame_entry * new_frame_entry = (struct frame_entry *)malloc(sizeof(struct frame_entry));
 	if (new_frame_entry == NULL)
 	{
+		printf("malloc failed in create_f_entry\n");
 		return NULL;
 	}
 	new_frame_entry->kpage = palloc_get_page(PAL_USER | flag);
+	if (new_frame_entry->kpage == NULL)
+	{
+		//swap needed to implement
+		PANIC("Swap needed\n");
+	}
 	new_frame_entry->upage = upage;
+	insert_frame_entry(new_frame_entry);
 
 	return new_frame_entry;
 }
@@ -73,6 +82,7 @@ void free_frame_table(void)
 void free_frame_entry(struct hash_elem *e, void *aux)
 {
 	struct frame_entry * target_entry = hash_entry(e, struct frame_entry, helem);
+	hash_delete(frame_table, &target_entry->helem);
 	palloc_free_page(target_entry->kpage);
 	free(target_entry);
 }

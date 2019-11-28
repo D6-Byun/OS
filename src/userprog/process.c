@@ -162,6 +162,7 @@ process_exit (void)
   uint32_t *pd;
 
   spt_destroy(&cur->spt->hash_brown);
+  cur->spt = NULL;
   
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
@@ -500,7 +501,16 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
 	  //not sure about page member initializing
 	  temp_entry = create_s_entry(upage, NULL, true, file, ofs, page_read_bytes, page_zero_bytes);
-	  insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
+	  if (temp_entry == NULL)
+	  {
+		  printf("spt_entry create fail in load_segment\n");
+		  return false;
+	  }
+	  if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
+	  {
+		  printf("spt insert fail in load_segment\n");
+		  return false;
+	  }
 
       /* Advance. */
       read_bytes -= page_read_bytes;
@@ -562,11 +572,22 @@ setup_stack (void **esp, int argc, char *argv[])
 		  *(int *)*esp = 0;
 
 	  }
-      else
-        palloc_free_page (kpage);
+	  else
+	  {
+		  free_frame_entry(kpage);
+	  }
     }
   new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE), kpage, true, NULL, 0, 0, PGSIZE);
-  insert_spt_entry(&thread_current()->spt->hash_brown, new_spte);
+  if (new_spte == NULL)
+  {
+	  printf("spt_entry create fail in setup_stack\n");
+	  return false;
+  }
+  if (!insert_spt_entry(&thread_current()->spt->hash_brown, new_spte))
+  {
+	  printf("spt insert fail in setup_stack\n");
+	  return false;
+  }
   //not sure
   //printf("Stack dump check\n");
   
@@ -600,6 +621,7 @@ void load_and_map(struct spt_entry *spt_e)
 	if (new_frame == NULL)
 	{
 		//case of swap
+		printf("can't alloc frame in load_and_map\n");
 		exit(-1);
 	}
 	spt_e->kpage = new_frame;
