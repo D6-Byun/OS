@@ -23,7 +23,7 @@ struct file
 
 typedef int pid_t;
 
-void is_valid_addr(void *);
+struct spt_entry * is_valid_addr(void *);
 void check_valid_buffer(void*, unsigned, void*, bool);
 void check_valid_string(const void *, void*);
 static void syscall_handler (struct intr_frame *);
@@ -50,7 +50,7 @@ syscall_init (void)
   	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-void is_valid_addr(void *addr) {
+struct spt_entry * is_valid_addr(void *addr) {
 	struct spt_entry * search_entry;
 	if (addr == NULL || !is_user_vaddr(addr) || (uint32_t)addr < 0x08048000) {
 		exit(-1);
