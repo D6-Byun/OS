@@ -517,20 +517,21 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 static bool
 setup_stack (void **esp) 
 {
-  uint8_t *kpage;
-  bool success = false;
+ // uint8_t *kpage;
+  bool success = grow_stack(((uint8_t *)PHYS_BASE) - PGSIZE);
 
-  kpage = frame_alloc (PAL_USER | PAL_ZERO, PHYS_BASE - PGSIZE);
+  //kpage = frame_alloc (PAL_USER | PAL_ZERO, PHYS_BASE - PGSIZE);
   //printf("start stacking");
-  if (kpage != NULL) 
-    {
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+  //if (kpage != NULL) 
+    //{
+      //success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 	  if (success) {
 		  *esp = PHYS_BASE; 
 	  }
       else
-        frame_free(kpage);
-    }
+		  return success;
+        //frame_free(kpage);
+
   //printf("Stack dump check\n");
   
   //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);

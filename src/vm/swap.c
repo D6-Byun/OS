@@ -10,16 +10,21 @@ void swap_init(void){
 	lock_init(&swap_lock);
 	swap_block = block_get_role(BLOCK_SWAP);
 	if(swap_block == NULL){
-		PANIC("NO SUCH BLOCK DEVICE");
+		//PANIC("NO SUCH BLOCK DEVICE");
+		return;
 	}
 	swap_bm = bitmap_create(block_size(swap_block)/SEC_PER_PAGE);	
 	if(swap_bm == NULL){
-		PANIC("bitmap: INITIALIZE FAILED");
+		//PANIC("bitmap: INITIALIZE FAILED");
+		return;
 	}
 	bitmap_set_all(swap_bm, SWAP_FREE);
 }
 /*swap disk -> physical memory*/
 void swap_in(size_t used_index, void *addr){
+	if(swap_block == NULL ||swap_bm == NULL){
+		return;
+	}
 	lock_acquire(&swap_lock);
 	if(bitmap_test(swap_bm,used_index) == SWAP_FREE){
 		lock_release(&swap_lock);
@@ -33,6 +38,9 @@ void swap_in(size_t used_index, void *addr){
 }
 /*frame -> swap disk*/
 size_t swap_out(void *addr){
+	if(swap_block == NULL ||swap_bm == NULL){
+		PANIC("Swap_out: Swap device error.");
+	}
 	lock_acquire(&swap_lock);
 	/*FIRST FIT*/
 	size_t free_idx = bitmap_scan_and_flip(swap_bm,0,1,SWAP_FREE);

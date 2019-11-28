@@ -46,9 +46,36 @@ syscall_init (void)
   	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-void is_valid_addr(void *addr) {
+struct sup_page_entry * is_valid_addr(void *addr, void *esp) {
 	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
 		exit(-1);
+	}
+	bool load = false;
+	struct sup_page_entry * spte = spt_lookup(&thread_current()->spt->hash_brown,addr);
+	if(!spte){
+		exit(-11);
+	}
+	spt_load_page(thread_current()->spt,spte->upage);
+	if(!spte->is_loaded){
+		exit(-12);
+	}
+	return spte;
+}
+void check_valid_buffer(void *buffer, unsigned size, void *esp, bool to_write){
+	for(unsigned i = 0; i <size; i++){
+		struct sup_page_entry *spte= is_valid_addr(buffer + i,esp);
+		if(spte != NULL && to_write){
+			if(spte->writable == false){
+				exit(-13);
+			}
+		}
+	}
+}
+void check_valid_string(void *str, void *esp){
+	struct sup_page_entry *spte = is_valid_addr(str,esp);
+	while(*(char *)str != 0){
+		str = str + 1;
+		is_valid_addr(str,esp);	
 	}
 }
 
@@ -60,74 +87,77 @@ syscall_handler (struct intr_frame *f)
 	//printf("f->esp: %x\n",f->esp);
 	//printf("*f->esp: %d\n",*(int*)f->esp);
 	//hex_dump((uintptr_t)f->esp,f->esp,24,true);
-	is_valid_addr(f->esp);
+	is_valid_addr(f->esp,f->esp);
 	switch (*(uint32_t *)f->esp) {
 		case SYS_HALT:
 			shutdown_power_off();
 			break;
 		case SYS_EXIT:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
 			//printf("EXIT!\n");
 			exit(*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_EXEC:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
+			check_valid_string((void *)*(uint32_t*)f->esp+4, f->esp);
 			f->eax = exec((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_WAIT:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
 			f->eax = wait((pid_t)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_CREATE:
-			is_valid_addr(f->esp + 4);
-			is_valid_addr(f->esp + 8);
+			is_valid_addr(f->esp + 4,f->esp);
+			is_valid_addr(f->esp + 8,f->esp);
 			f->eax = create((const char *)*(uint32_t *)(f->esp + 4),(unsigned)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_REMOVE:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
 			f->eax = remove((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_OPEN:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
+			check_valid_string((void *)*(uint32_t *)f->esp+4, f->esp);
 			f->eax = open((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_FILESIZE:
-			
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
 			f->eax = filesize((int)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_READ:
-			is_valid_addr(f->esp + 4);
-			is_valid_addr(f->esp + 8);
-			is_valid_addr(f->esp + 12);
+			is_valid_addr(f->esp + 4,f->esp);
+			is_valid_addr(f->esp + 8,f->esp);
+			is_valid_addr(f->esp + 12,f->esp);
+			check_valid_buffer((void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp+12),f->esp, true); 
 			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:
-			is_valid_addr(f->esp + 4);
-			is_valid_addr(f->esp + 8);
-			is_valid_addr(f->esp + 12);
+			is_valid_addr(f->esp + 4,f->esp);
+			is_valid_addr(f->esp + 8,f->esp);
+			is_valid_addr(f->esp + 12,f->esp);
+			check_valid_buffer((void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp+12),f->esp, false); 
 			f->eax = write((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8),(uintptr_t)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_SEEK:
-			is_valid_addr(f->esp + 4);
-			is_valid_addr(f->esp + 8);
+			is_valid_addr(f->esp + 4,f->esp);
+			is_valid_addr(f->esp + 8,f->esp);
 			seek((int)*(uint32_t *)(f->esp + 4),(unsigned)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_TELL:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
 			f->eax = tell((unsigned)*(uint32_t*)(f->esp + 4));
 			break;
 		case SYS_CLOSE:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
 		case SYS_MMAP:
-			is_valid_addr(f->esp + 4);
-			is_valid_addr(f->esp + 8);
+			is_valid_addr(f->esp + 4,f->esp);
+			is_valid_addr(f->esp + 8,f->esp);
 			f->eax = mmap((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_MUNMAP:
-			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 4,f->esp);
 			munmap((int)*(uint32_t *)(f->esp + 4));
 			break;
 	}
@@ -227,7 +257,6 @@ int open(const char *file) {
 	if(file == NULL){
 		exit(-1);
 	}
-	is_valid_addr(file);
 	lock_acquire(&lock_imsi2);
 	openfile = filesys_open(file);
 	if(openfile == NULL){
@@ -259,7 +288,7 @@ int filesize(int fd) {
 }
 int read(int fd, void *buffer, unsigned length) {
 	int i = 0;
-	is_valid_addr(buffer);
+	//is_valid_addr(buffer);
 	lock_acquire(&lock_imsi2);
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
@@ -282,7 +311,7 @@ int read(int fd, void *buffer, unsigned length) {
 }
 int write(int fd, const void *buffer, unsigned length) {
 	int retval;
-	is_valid_addr(buffer);
+	//is_valid_addr(buffer);
 	lock_acquire(&lock_imsi2);
 	if (fd == 1) {
 		putbuf(buffer,length);

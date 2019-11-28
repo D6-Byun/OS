@@ -1,5 +1,5 @@
 #include "vm/frame.h"
-#include "vm/page.h"
+//#include "vm/page.h"
 #include <hash.h>
 #include <list.h>
 #include "threads/thread.h"
@@ -19,7 +19,6 @@ static bool frame_less_func(const struct hash_elem *elema, const struct hash_ele
 
 struct frame_page_entry{
 	void *kpage; //key: mapped to physical addr
-	void *upage;
 
 	struct hash_elem helem; //for frame_hash
 	struct list_elem lelem;
@@ -48,23 +47,23 @@ static bool frame_less_func(const struct hash_elem *elema, const struct hash_ele
 
 }
 
-void *frame_alloc(enum palloc_flags flags, void *upage){
+void *frame_alloc(enum palloc_flags flags, struct sup_page_entry *spte){
 	void *frame_page = palloc_get_page(PAL_USER | flags);
 	if(frame_page == NULL){
 		/*eviction and swapping*/
 		frame_page = frame_evict();
+		lock_release(&frame_lock);
 		if(frame_page == NULL){
 			PANIC("SWAP IS FULL");
 		}
-		return frame_page;
 	}
 	struct frame_page_entry *frame = malloc(sizeof(struct frame_page_entry));
 	if(frame == NULL) {
 		return NULL;
 	}
 	frame->kpage = frame_page;
-	frame->upage = upage;
 	frame->t = thread_current();
+	frame->spte = spte;
 	frame->pinned = true;
 
 	lock_acquire(&frame_lock);
@@ -130,7 +129,7 @@ void *frame_evict(void){
 				off_t iswrite = file_write_at(spte->file,spte->upage,spte->read_bytes, spte->ofs);
 				if(iswrite != spte->read_bytes){
 					printf("frame_evict: write at error:\n");
-					lock_release(&frame_lock);
+					//lock_release(&frame_lock);
 					return NULL;
 				}
 				spte->swap_index = swap_out(fpe->kpage);
@@ -141,8 +140,7 @@ void *frame_evict(void){
 			pagedir_clear_page(cur->pagedir, fpe->spte->upage);
 			palloc_free_page(fpe->kpage);
 			free(fpe);
-			lock_release(&frame_lock);
-			
+			//lock_release(&frame_lock);
 			return palloc_get_page(PAL_USER);
 		}
 		elem = list_next(elem);
