@@ -62,7 +62,7 @@ struct sup_page_entry *spt_lookup(struct sup_page_table *spt, void *upage){
 
 bool spt_load_file(struct sup_page_entry *spte){
 	//void *addr = pagedir_get_page(thread_current()->pagedir, spte->upage);
-	uint8_t *frame = frame_alloc(PAL_USER,spte);
+	uint8_t *frame = frame_alloc(PAL_USER,spte->upage);
 	if(!frame){
 		printf("spt_load_file: can't alloc frame\n");
 		return false;
@@ -84,30 +84,17 @@ bool spt_load_file(struct sup_page_entry *spte){
 }
 
 bool spt_load_swap(struct sup_page_entry *spte){
-	void *frame = frame_alloc(PAL_USER,spte);
-	if(frame == NULL){
-		printf("spt_load_swap: fail to alloc\n");
-		return false;
-	}
-	if(install_page(spte->upage,frame,spte->writable)){
-		frame_free(frame);
-		return false;
-	}
-	swap_in(spte->swap_index,spte->upage);
-	spte->is_loaded = true;
-	return true;
+	printf("swap : Not implemented yet.\n");
+	return false;
 }
 
 bool spt_load_page(struct sup_page_table *spt, void *upage){
 	struct sup_page_entry *spte = spt_lookup(spt,upage);
 	if(spte == NULL){
-		//printf("spt_load_page: can't find entry.\n");
+		printf("spt_load_page: can't find entry.\n");
 		return false;
 	}
 	bool success = false;
-	if(spte->is_loaded){
-		return false;
-	}
 	switch(spte->status){
 		case VMFILE:
 			success = spt_load_file(spte);
@@ -174,22 +161,19 @@ bool grow_stack(void *upage){
 	}
 	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
 	if(spte == NULL){
-		printf("spte is not allocated \n");
 		return false;
 	}
 	spte->upage = upage;
 	spte->is_loaded = true;
 	spte->status = SWAP;
-	void *frame = frame_alloc(PAL_USER,spte);
+	void *frame = frame_alloc(PAL_USER,upage);
 	if(frame == NULL){
 		free(spte);
-		printf("frame is not allocated\n");
 		return false;
 	}
 	if(!install_page(upage,frame,true)){
 		free(spte);
 		frame_free(frame);
-		printf("frame install is failed\n");
 		return false;
 	}
 	return hash_insert(&(thread_current()->spt->hash_brown),&spte->helem) == NULL;
