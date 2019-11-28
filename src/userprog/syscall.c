@@ -53,7 +53,7 @@ syscall_init (void)
 struct spt_entry * is_valid_addr(void *addr) {
 	struct spt_entry * search_entry;
 	if (addr == NULL || !is_user_vaddr(addr) || (uint32_t)addr < 0x08048000) {
-		printf("addr not in user section\n")
+		printf("addr not in user section\n");
 		exit(-1);
 	}
 	search_entry = find_spt_entry(addr);
