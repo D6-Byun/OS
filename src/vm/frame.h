@@ -13,5 +13,5 @@ void frame_free(void *kpage);
 
 void frame_pin(void *kpage);
 void frame_unpin(void *kpage);
-
+void *frame_evict(void);
 #endif

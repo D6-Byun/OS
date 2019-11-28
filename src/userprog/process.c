@@ -20,7 +20,7 @@
 #include "threads/malloc.h"
 #include "vm/frame.h"
 #include "vm/page.h"
-
+#include "vm/swap.h"
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 static void arg_stack(int argc, char *argv[], void **esp);
@@ -98,6 +98,7 @@ start_process (void *file_name_)
 	struct intr_frame if_;
 	bool success;
   	frame_init();
+	swap_init();
 	//printf("start_process\n");
 	argv[0] = strtok_r(file_name, " ", &save_ptr);
 		while (1) {

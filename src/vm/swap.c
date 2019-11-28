@@ -1,10 +1,10 @@
 #include "vm/swap.h"
 
-struct lock swap_lock;
+static struct lock swap_lock;
 
 struct block *swap_block;
 
-struct bitmap *swap_bm;
+static struct bitmap *swap_bm;
 
 void swap_init(void){
 	lock_init(&swap_lock);

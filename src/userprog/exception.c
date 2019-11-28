@@ -152,17 +152,31 @@ page_fault (struct intr_frame *f)
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
-  if(!user || is_kernel_vaddr(fault_addr)){
-  	exit(-1);
-  } 
+  	if(!user || is_kernel_vaddr(fault_addr)){
+  		exit(-1);
+  	} 
+	uint32_t *esp = f->esp;
 	struct thread *cur = thread_current();
-	if(!spt_load_page(cur->spt,fault_addr)){
+	if(!user){
+		esp = cur->cur_esp;
+	}
+	bool isload = false;
+	if(not_present){
+		struct sup_page_entry *spte = spt_lookup(cur->spt, fault_addr);
+		if(spte != NULL){
+			isload = spt_load_page(cur->spt, fault_addr);
+		}else if(fault_addr < PHYS_BASE ||PHYS_BASE - fault_addr < MAX_STACK_SIZE){
+			isload = grow_stack(fault_addr);
+		}
+	}
+	if(!isload){
  		printf ("Page fault at %p: %s error %s page in %s context.\n",
           fault_addr,
           not_present ? "not present" : "rights violation",
           write ? "writing" : "reading",
           user ? "user" : "kernel");
-  		kill (f);
+  		PANIC("page_fault_handling: load failed or growth failed.");
+		kill (f);
   	}
 }
 
