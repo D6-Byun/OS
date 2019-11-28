@@ -120,7 +120,69 @@ syscall_handler (struct intr_frame *f)
 			is_valid_addr(f->esp + 4);
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
+		case SYS_MMAP:
+			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 8);
+			f->eax = mmap((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8));
+			break;
+		case SYS_MUNMAP:
+			is_valid_addr(f->esp + 4);
+			munmap((int)*(uint32_t *)(f->esp + 4));
+			break;
 	}
+}
+int mmap(int fd, void *addr){
+	uint32_t page_read_bytes;
+	uint32_t page_zero_bytes;
+	struct thread *cur = thread_current();
+	if(addr == NULL||pg_ofs(addr) != 0){
+		exit(-1);
+	}
+	struct file *ofile = cur->files[fd];
+	if(ofile == NULL){
+		exit(-1);
+	}
+	struct file *file = file_reopen(ofile);
+	thread_current()->mapid++;
+	off_t ofs = 0;
+	uint32_t read_bytes = file_length(file);
+	while(read_bytes > 0){
+		page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+		page_zero_bytes = PGSIZE - page_read_bytes;
+		if(!spt_add_mmap(&cur->spt,file,ofs,addr,page_read_bytes,page_zero_bytes)){
+			munmap(cur->mapid);
+			exit(-1);
+		}
+		read_bytes -= page_read_bytes;
+		ofs += page_read_bytes;
+		addr += PGSIZE;
+	}
+	return cur->mapid;
+}
+
+void munmap(int mapping){
+	struct thread *cur = thread_current();
+	struct list_elem *next, *elem = list_begin(&cur->mmap_list);
+	while(elem != list_end(&cur->mmap_list)){
+		next = list_next(elem);
+		struct mmap_file *mfile = list_entry(elem,struct mmap_file, melem);
+		if(mfile->mapid == mapping ||mapping == CLOSE_ALL){
+			if(mfile->spte->is_loaded){
+				if(pagedir_is_dirty(cur->pagedir,mfile->spte->upage)){
+					file_write_at(mfile->spte->file, mfile->spte->upage, mfile->spte->read_bytes, mfile->spte->ofs);
+				}
+				frame_free(pagedir_get_page(cur->pagedir, mfile->spte->upage));
+				pagedir_clear_page(cur->pagedir, mfile->spte->upage);
+			}
+			hash_delete(&cur->spt->hash_brown,&mfile->spte->helem);
+			list_remove(&mfile->melem);
+			free(mfile->spte);
+			free(mfile);	
+		}
+
+		elem = next;
+	}	
+
 }
 
 /*void halt() {
@@ -259,3 +321,4 @@ void close(int fd) {
 	file_close(thread_current()->files[fd]);
 	thread_current()->files[fd] = NULL;
 }
+

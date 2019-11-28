@@ -1,4 +1,5 @@
 #include "vm/frame.h"
+#include "vm/page.h"
 #include <hash.h>
 #include <list.h>
 #include "threads/thread.h"
@@ -22,7 +23,7 @@ struct frame_page_entry{
 	struct hash_elem helem; //for frame_hash
 //	struct list_elem lelem;
 	struct thread *t; //thread
-
+	struct sup_page_entry *spte;
 	bool pinned; //true: prevent evicting
 
 };

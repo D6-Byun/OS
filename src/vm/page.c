@@ -6,7 +6,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "filesys/file.h"
-
+#include "userprog/process.h"
 #include "vm/page.h"
 #include "vm/frame.h"
 
@@ -83,11 +83,6 @@ bool spt_load_file(struct sup_page_entry *spte){
 	return true;
 }
 
-bool spt_load_mmap(struct sup_page_entry *spte) {
-	printf("mmap : Not implemented yet.\n");
-	return false;
-}
-
 bool spt_load_swap(struct sup_page_entry *spte){
 	printf("swap : Not implemented yet.\n");
 	return false;
@@ -108,7 +103,7 @@ bool spt_load_page(struct sup_page_table *spt, void *upage){
 			success = spt_load_swap(spte);
 			break;
 		case MMAP:
-			success = spt_load_mmap(spte);
+			success = spt_load_file(spte);
 			break;
 	}
 	return success;
@@ -130,6 +125,34 @@ bool spt_add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, voi
 	return (hash_insert(&spt->hash_brown,&spte->helem) == NULL);
 }
 
+bool spt_add_mmap(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes){
+	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
+	spte->file = file;
+	spte->ofs = ofs;
+	spte->upage = upage;
+	spte->read_bytes = read_bytes;
+	spte->zero_bytes = zero_bytes;
+	spte->writable = true;
+	spte->is_loaded = false;
+	spte->status = MMAP;
+	if(spt_try_add_mmap(spte) == false){
+		free(spte);
+		return false;
+	}
+	return hash_insert(&spt->hash_brown,&spte->helem) == NULL;
+}
+
+bool spt_try_add_mmap(struct sup_page_entry *spte){
+	struct mmap_file *mfile = (struct mmap_file *)malloc(sizeof(struct mmap_file));
+	if(mfile == NULL){
+		printf("spt_try_add_mmap: fail to malloc mmap_file.\n");
+		return false;
+	}
+	mfile->spte = spte;
+	mfile->mapid = thread_current()->mapid;
+	list_push_back(&thread_current()->mmap_list, &mfile->melem);
+	return true;
+}
 
 
 

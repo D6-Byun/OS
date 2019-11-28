@@ -481,6 +481,10 @@ init_thread (struct thread *t, const char *name, int priority)
 	t->pthread = running_thread();
 	sema_init(&(t->lock_imsi),0);
 #endif // USERPROG
+#ifdef VM
+	list_init(&t->mmap_list);
+	t->mapid = 0;
+#endif
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and

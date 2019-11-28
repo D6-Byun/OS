@@ -111,7 +111,9 @@ struct thread
 	uint32_t *cur_esp;
 #endif
 #ifdef VM
+	struct list mmap_list;
 	struct sup_page_table *spt;
+	int mapid;
 #endif
 
     /* Owned by thread.c. */
