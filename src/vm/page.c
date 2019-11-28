@@ -98,7 +98,8 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 	struct spt_entry * target_entry = hash_entry(e, struct spt_entry, helem);
 	if (target_entry->is_loaded)
 	{
-		free_frame_entry(target_entry->kpage);
+		printf("need to change format of frame entry deletion\n");
+		//free_frame_entry(target_entry->kpage, NULL);
 	}
 	free(target_entry);
 }
