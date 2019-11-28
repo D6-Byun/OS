@@ -11,6 +11,6 @@ void process_activate (void);
 
 void load_and_map(struct spt_entry *);
 
-bool load_file(void *, struct spt_entry*);
+bool load_file(struct frame_entry *, struct spt_entry*);
 
 #endif /* userprog/process.h */

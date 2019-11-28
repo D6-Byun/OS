@@ -506,7 +506,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Advance. */
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
-	  ofs += page_read_bytes
+	  ofs += page_read_bytes;
       upage += PGSIZE;
     }
   return true;
@@ -601,7 +601,7 @@ void load_and_map(struct spt_entry *spt_e)
 	if (new_frame == NULL)
 	{
 		//case of swap
-		exit(-1)
+		exit(-1);
 	}
 	spt_e->kpage = new_frame;
 	if (load_file(new_frame, spt_e))
