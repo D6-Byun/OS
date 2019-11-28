@@ -18,6 +18,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
+#include "threads/thread.h"
 #include "vm/frame.h"
 
 static thread_func start_process NO_RETURN;
@@ -93,6 +94,10 @@ start_process (void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
+	struct thread *cur = thread_current();
+
+	cur->spt = spt_init(); /*create spt in current thread*/
+	
   	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
