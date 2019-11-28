@@ -18,20 +18,20 @@ struct spt* spt_init(void)
 static unsigned spt_hash_func(const struct hash_elem *e, void *aux)
 {
 	struct spt_entry * target_entry = hash_entry(e, struct spt_entry, helem);
-	return hash_int((uint32_t)target_entry->vaddr);
+	return hash_int((uint32_t)target_entry->upage);
 }
 
 static bool spt_less_func(const struct hash_elem *a, const struct hash_elem *b, void *aux)
 {
 	struct spt_entry *a_entry = hash_entry(a, struct spt_entry, helem);
 	struct spt_entry *b_entry = hash_entry(b, struct spt_entry, helem);
-	return (hash_int((uint32_t)a_entry->vaddr) < hash_int((uint32_t)b_entry->vaddr));
+	return (hash_int((uint32_t)a_entry->upage) < hash_int((uint32_t)b_entry->upage));
 
 }
 
 bool insert_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 {
-	struct hash_elem insert_elem = hash_insert(spt, &spt_e->helem);
+	struct hash_elem * insert_elem = hash_insert(spt, &spt_e->helem);
 	if (insert_elem == NULL)
 	{
 		return false;
@@ -42,7 +42,7 @@ bool insert_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 {
 	//uint8_t *upage_ptr = spt_e->upage;
-	struct hash_elem delete_elem = hash_delete(spt, &spt_e->helem);
+	struct hash_elem * delete_elem = hash_delete(spt, &spt_e->helem);
 	if (delete_elem == NULL)
 	{
 		return false;
@@ -66,11 +66,11 @@ struct spt_entry * create_s_entry(uint8_t * upage, uint8_t *kpage, bool writable
 	return new_spt_entry;
 }
 
-struct spt_entry * find_spt_entry(void *vaddr)
+struct spt_entry * find_spt_entry(void *upage)
 {
 	struct spt_entry tem_entry;
-	tem_entry.vaddr = pg_round_down(vaddr);
-	struct hash_elem * target_elem = hash_find(&thread_current()->spt, &tem_entry.helem);
+	tem_entry.upage = pg_round_down(upage);
+	struct hash_elem * target_elem = hash_find(&thread_current()->spt->hash_brown, &tem_entry.helem);
 	if (target_elem == NULL)
 	{
 		return NULL;
