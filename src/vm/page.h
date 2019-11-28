@@ -1,4 +1,5 @@
 #ifndef VM_PAGE_H
+#define VM_PAGE_H
 
 #include <list.h>
 #include <stdio.h>
