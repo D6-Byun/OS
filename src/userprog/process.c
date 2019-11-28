@@ -499,8 +499,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         }
 	  */
 
+	  //not sure about page member initializing
 	  temp_entry = create_s_entry(upage, NULL, true, file, ofs, page_read_bytes, page_zero_bytes);
-	  insert_spt_entry(thread_current()->spt->hash_brown, temp_entry);
+	  insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
 
       /* Advance. */
       read_bytes -= page_read_bytes;
@@ -565,8 +566,9 @@ setup_stack (void **esp, int argc, char *argv[])
       else
         palloc_free_page (kpage);
     }
-  new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE),kpage,true,NULL,0,0,PGSIZE)
-
+  new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE), kpage, true, NULL, 0, 0, PGSIZE);
+  insert_spt_entry(&thread_current()->spt->hash_brown, new_spte);
+  //not sure
   //printf("Stack dump check\n");
   
   //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
