@@ -161,7 +161,7 @@ process_exit (void)
   struct thread *cur = thread_current ();
   uint32_t *pd;
 
-  spt_destroy(&cur->spt->hash_brown);
+  spt_destroy(&cur->spt);
   cur->spt = NULL;
   
   /* Destroy the current process's page directory and switch back
@@ -500,7 +500,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	  */
 
 	  //not sure about page member initializing
-	  temp_entry = create_s_entry(upage, NULL, true, file, ofs, page_read_bytes, page_zero_bytes);
+	  temp_entry = create_s_entry(upage, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
 	  if (temp_entry == NULL)
 	  {
 		  printf("spt_entry create fail in load_segment\n");
@@ -624,7 +624,7 @@ void load_and_map(struct spt_entry *spt_e)
 		printf("can't alloc frame in load_and_map\n");
 		exit(-1);
 	}
-	spt_e->kpage = new_frame;
+	spt_e->kpage = new_frame->kpage;
 	if (load_file(new_frame, spt_e))
 	{
 		install_page(spt_e->upage, new_frame, spt_e->writable);
