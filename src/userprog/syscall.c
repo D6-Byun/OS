@@ -25,7 +25,7 @@ typedef int pid_t;
 
 struct spt_entry * is_valid_addr(void *);
 void check_valid_buffer(void*, unsigned, void*, bool);
-void check_valid_string(const void *, void*);
+void check_valid_string(void *, void*);
 static void syscall_handler (struct intr_frame *);
 void halt(void) NO_RETURN;
 void exit(int status) NO_RETURN;
