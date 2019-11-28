@@ -163,7 +163,7 @@ page_fault (struct intr_frame *f)
 		//case of stack growth
 	  }
 	  load_and_map(addr_entry);
-	  if (!addr_entry.is_loaded || (addr_entry->kpage == NULL))
+	  if (!addr_entry->is_loaded || (addr_entry->kpage == NULL))
 	  {
 		  exit(-1);
 		  printf("entry physical mappeing error");
