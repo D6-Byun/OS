@@ -33,7 +33,7 @@ static bool spt_less_func(const struct hash_elem *a, const struct hash_elem *b, 
 bool insert_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 {
 	struct hash_elem * insert_elem = hash_insert(spt, &spt_e->helem);
-	if (insert_elem == NULL)
+	if (insert_elem != NULL)
 	{
 		printf("hash_insert failed in insert_spt_entry\n");
 		return false;

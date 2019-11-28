@@ -31,7 +31,7 @@ static bool frame_less_func(const struct hash_elem *a, const struct hash_elem *b
 bool insert_frame_entry(struct frame_entry *frame_e)
 {
 	struct hash_elem * insert_elem = hash_insert(frame_table, &frame_e->helem);
-	if (insert_elem == NULL)
+	if (insert_elem != NULL)
 	{
 		printf("hash_insert failed in insert_frame_entry\n");
 		return false;
