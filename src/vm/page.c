@@ -3,6 +3,7 @@
 #include "threads/vaddr.h"
 #include "threads/thread.h"
 #include "threads/malloc.h"
+#include "vm/frame.h"
 
 static unsigned spt_hash_func(const struct hash_elem *, void *);
 static bool spt_less_func(const struct hash_elem *, const struct hash_elem *, void *);

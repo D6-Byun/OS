@@ -594,3 +594,36 @@ install_page (void *upage, void *kpage, bool writable)
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
 }
+
+void load_and_map(struct spt_entry *spt_e)
+{
+	struct frame_entry * new_frame = create_f_entry(PAL_ZERO, spt_e->upage);
+	if (new_frame == NULL)
+	{
+		//case of swap
+		exit(-1)
+	}
+	spt_e->kpage = new_frame;
+	if (load_file(new_frame, spt_e))
+	{
+		install_page(spt_e->upage, new_frame, spt_e->writable);
+		spt_e->is_loaded = true;
+	}
+	else
+	{
+		printf("load error");
+		exit(-1);
+	}
+}
+
+bool load_file(struct frame_entry *kpage, struct spt_entry* spt_e)
+{
+	off_t indexer = file_read_at(spt_e->file, kpage, spt_e->read_bytes, spt_e->offset);
+	if(indexer != spt_e->read_bytes);
+	{
+		free_frame_entry(&kpage->helem, NULL);
+		printf("load_file: fail to install\n");
+		return false;
+	}
+	return true;
+}

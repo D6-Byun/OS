@@ -54,6 +54,10 @@ bool delete_frame_entry(struct frame_entry *frame_e)
 struct frame_entry * create_f_entry(enum palloc_flags flag, uint8_t * upage)
 {
 	struct frame_entry * new_frame_entry = (struct frame_entry *)malloc(sizeof(struct frame_entry));
+	if (new_frame_entry == NULL)
+	{
+		return NULL;
+	}
 	new_frame_entry->kpage = palloc_get_page(PAL_USER | flag);
 	new_frame_entry->upage = upage;
 

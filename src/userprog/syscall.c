@@ -11,6 +11,8 @@
 #include "threads/vaddr.h"
 #include "filesys/off_t.h"
 #include "threads/synch.h"
+#include "vm/page.h"
+#include "vm/frame.h"
 
 struct file 
 	{
@@ -21,6 +23,9 @@ struct file
 
 typedef int pid_t;
 
+void is_valid_addr(void *);
+void check_valid_buffer(void*, unsigned, void*, bool);
+void check_valid_string(const void *, void*);
 static void syscall_handler (struct intr_frame *);
 void halt(void) NO_RETURN;
 void exit(int status) NO_RETURN;
@@ -46,9 +51,35 @@ syscall_init (void)
 }
 
 void is_valid_addr(void *addr) {
-	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
+	struct spt_entry * search_entry;
+	if (addr == NULL || !is_user_vaddr(addr) || (uint32_t)addr < 0x08048000) {
 		exit(-1);
 	}
+	search_entry = find_spt_entry(addr);
+	if (search_entry != NULL)
+	{
+		return search_entry;
+	}
+}
+
+void check_valid_buffer(void* buffer, unsigned size, void* esp, bool to_write)
+{
+	void * temp_buffer = buffer;
+	struct spt_entry * temp_entry;
+	while (size >= 0)
+	{
+		temp_entry = is_valid_addr(temp_buffer);
+		if (!temp_entry->writable)
+		{
+			exit(-1);
+		}
+		size = size - PGSIZE;
+		temp_buffer = temp_buffer + PGSIZE;
+	}
+}
+void check_valid_string(const void *str, void* esp)
+{
+	is_valid_addr(str);
 }
 
 
@@ -196,7 +227,7 @@ int filesize(int fd) {
 }
 int read(int fd, void *buffer, unsigned length) {
 	int i = 0;
-	is_valid_addr(buffer);
+	check_valid_buffer(buffer, length, buffer, true);
 	lock_acquire(&lock_imsi2);
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
@@ -219,7 +250,7 @@ int read(int fd, void *buffer, unsigned length) {
 }
 int write(int fd, const void *buffer, unsigned length) {
 	int retval;
-	is_valid_addr(buffer);
+	check_valid_string(buffer, buffer);
 	lock_acquire(&lock_imsi2);
 	if (fd == 1) {
 		putbuf(buffer,length);
