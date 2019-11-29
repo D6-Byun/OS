@@ -155,17 +155,13 @@ page_fault (struct intr_frame *f)
   	if(!user || is_kernel_vaddr(fault_addr)){
   		exit(-1);
   	} 
-	uint32_t *esp = f->esp;
 	struct thread *cur = thread_current();
-	if(!user){
-		esp = cur->cur_esp;
-	}
 	bool isload = false;
-	if(not_present){
+	if(not_present && fault_addr > 0x08048000 && is_user_vaddr(fault_addr)){
 		struct sup_page_entry *spte = spt_lookup(cur->spt, fault_addr);
 		if(spte != NULL){
-			isload = spt_load_page(cur->spt, fault_addr);
-		}else if(fault_addr < PHYS_BASE ||PHYS_BASE - fault_addr < MAX_STACK_SIZE){
+			isload = spt_load_page(cur->spt, spte);
+		}else if(fault_addr >= f->esp - 32){
 			isload = grow_stack(fault_addr);
 		}
 	}
@@ -175,7 +171,7 @@ page_fault (struct intr_frame *f)
           not_present ? "not present" : "rights violation",
           write ? "writing" : "reading",
           user ? "user" : "kernel");
-  		PANIC("page_fault_handling: load failed or growth failed.");
+  		//PANIC("page_fault_handling: load failed or growth failed.");
 		kill (f);
   	}
 }

@@ -37,7 +37,7 @@ struct sup_page_entry *spt_lookup(struct sup_page_table *spt, void *upage);
 bool spt_load_file(struct sup_page_entry *spte);
 //bool spt_load_mmap(struct sup_page_entry *spte);
 bool spt_load_swap(struct sup_page_entry *spte);
-bool spt_load_page(struct sup_page_table *spt, void *upage);
+bool spt_load_page(struct sup_page_table *spt, struct sup_page_entry *spte);
 bool spt_add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes, bool writable);
 bool spt_add_mmap(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes);
 bool spt_try_add_mmap(struct sup_page_entry *spte);

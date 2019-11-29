@@ -31,7 +31,7 @@ struct frame_page_entry{
 
 void frame_init(){
 	lock_init(&frame_lock);
-	hash_init(&frame_hash, frame_hash_func, frame_less_func, NULL);
+	//hash_init(&frame_hash, frame_hash_func, frame_less_func, NULL);
 	list_init(&frame_list);
 }
 
@@ -48,7 +48,7 @@ static bool frame_less_func(const struct hash_elem *elema, const struct hash_ele
 
 }
 
-void *frame_alloc(enum palloc_flags flags, void *upage){
+void *frame_alloc(enum palloc_flags flags, struct sup_page_entry *spte){
 	void *frame_page = palloc_get_page(PAL_USER | flags);
 	if(frame_page == NULL){
 		/*eviction and swapping*/
@@ -63,12 +63,12 @@ void *frame_alloc(enum palloc_flags flags, void *upage){
 		return NULL;
 	}
 	frame->kpage = frame_page;
-	frame->upage = upage;
+	frame->upage = spte->upage;
 	frame->t = thread_current();
 	frame->pinned = true;
 
 	lock_acquire(&frame_lock);
-	hash_insert(&frame_hash, &frame->helem);
+	//hash_insert(&frame_hash, &frame->helem);
 	list_push_back(&frame_list, &frame->lelem);
 	lock_release(&frame_lock);
 	return frame_page;
@@ -77,14 +77,15 @@ void *frame_alloc(enum palloc_flags flags, void *upage){
 struct frame_page_entry * frame_lookup(void *kpage){
 	ASSERT(pg_ofs(kpage) == 0);
 	
-	struct frame_page_entry fpe_temp;
-	fpe_temp.kpage = kpage;
-
-	struct hash_elem *hel = hash_find(&frame_hash, &(fpe_temp.helem));
-	if(hel == NULL){
-		PANIC("There is no such frame");
+	struct list_elem *elem;
+	for(elem = list_begin(&frame_list);elem != list_end(&frame_list); elem = list_next(elem)){
+		struct frame_page_entry *fpe = list_entry(elem,struct frame_page_entry, lelem);
+		if(fpe->kpage == kpage){
+			return fpe;
+		}
+	
 	}
-	return hash_entry(hel, struct frame_page_entry, helem);
+	return NULL;
 }
 
 void frame_free(void *kpage){
@@ -92,14 +93,16 @@ void frame_free(void *kpage){
 	ASSERT(pg_ofs(kpage) == 0);
 
 	struct frame_page_entry *fpe = frame_lookup(kpage);
-	hash_delete(&frame_hash, &fpe->helem);
+	if(fpe != NULL){
+	//hash_delete(&frame_hash, &fpe->helem);
 	list_remove(&fpe->lelem);
-	palloc_free_page(kpage);
 	free(fpe);
+	}
 	lock_release(&frame_lock);
+	palloc_free_page(kpage);
 }
 /*set pinned value of frame_page_entry which has KAPGE to PIN*/
-static void frame_set_pinned(void *kpage, bool pin){
+/*static void frame_set_pinned(void *kpage, bool pin){
 	lock_acquire(&frame_lock);
 	struct frame_page_entry *fpe = frame_lookup(kpage);
 	fpe->pinned = pin;
@@ -113,7 +116,7 @@ void frame_pin(void *kpage){
 
 void frame_unpin(void *kpage){
 	frame_set_pinned(kpage, false);
-}
+}*/
 
 void *frame_evict(void){
 	struct thread *cur = thread_current();
