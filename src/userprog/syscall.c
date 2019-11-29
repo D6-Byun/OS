@@ -169,14 +169,17 @@ int mmap(int fd, void *addr){
 	uint32_t page_read_bytes;
 	uint32_t page_zero_bytes;
 	struct thread *cur = thread_current();
-	if(addr == NULL||pg_ofs(addr) != 0){
-		exit(-1);
+	if(addr == NULL|| !is_user_vaddr(addr) ||pg_ofs(addr) != 0){
+		return -1;
 	}
 	struct file *ofile = cur->files[fd];
 	if(ofile == NULL){
-		exit(-1);
+		return -1;
 	}
 	struct file *file = file_reopen(ofile);
+	if(file == NULL || file_length(ofile) == 0){
+		return -1;	
+	}
 	thread_current()->mapid++;
 	off_t ofs = 0;
 	uint32_t read_bytes = file_length(file);
@@ -185,7 +188,7 @@ int mmap(int fd, void *addr){
 		page_zero_bytes = PGSIZE - page_read_bytes;
 		if(!spt_add_mmap(&cur->spt,file,ofs,addr,page_read_bytes,page_zero_bytes)){
 			munmap(cur->mapid);
-			exit(-1);
+			return -1;
 		}
 		read_bytes -= page_read_bytes;
 		ofs += page_read_bytes;
@@ -197,6 +200,7 @@ int mmap(int fd, void *addr){
 void munmap(int mapping){
 	struct thread *cur = thread_current();
 	struct list_elem *next, *elem = list_begin(&cur->mmap_list);
+
 	while(elem != list_end(&cur->mmap_list)){
 		next = list_next(elem);
 		struct mmap_file *mfile = list_entry(elem,struct mmap_file, melem);
