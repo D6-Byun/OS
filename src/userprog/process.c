@@ -631,9 +631,11 @@ void load_and_map(struct spt_entry *spt_e)
 		printf("can't alloc frame in load_and_map\n");
 		exit(-1);
 	}
+	printf("successfully frame entry made in load_and_map\n");
 	spt_e->kpage = new_frame->kpage;
 	if (load_file(new_frame, spt_e))
 	{
+		printf("successfully load_complete in load_and_map\n");
 		install_page(spt_e->upage, new_frame, spt_e->writable);
 		spt_e->is_loaded = true;
 	}
@@ -642,6 +644,7 @@ void load_and_map(struct spt_entry *spt_e)
 		printf("load error");
 		exit(-1);
 	}
+	printf("successfully install complete in load_and_map\n");
 }
 
 bool load_file(struct frame_entry *kpage, struct spt_entry* spt_e)
@@ -653,5 +656,6 @@ bool load_file(struct frame_entry *kpage, struct spt_entry* spt_e)
 		printf("load_file: fail to install\n");
 		return false;
 	}
+	printf("successfully read ended up in load_file\n");
 	return true;
 }
