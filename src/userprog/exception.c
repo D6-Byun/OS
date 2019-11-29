@@ -153,7 +153,7 @@ page_fault (struct intr_frame *f)
 	/* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
-  	if(is_kernel_vaddr(fault_addr)){
+  	if(fault_addr == NULL || is_kernel_vaddr(fault_addr)){
   		//printf("page_fault_handle: is kernel access %x \n",fault_addr);
 		exit(-1);
   	}

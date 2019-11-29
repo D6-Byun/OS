@@ -47,7 +47,8 @@ syscall_init (void)
 }
 
 void is_valid_addr(void *addr) {
-	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
+	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000
+			||!is_user_vaddr(addr + 3)){
 		exit(-1);
 	}
 	struct sup_page_entry *spte = spt_lookup(thread_current()->spt,addr);
@@ -97,6 +98,7 @@ syscall_handler (struct intr_frame *f)
 			break;
 		case SYS_EXEC:
 			is_valid_addr(f->esp + 4);
+			check_valid_string((const void*)*(uint32_t *)(f->esp + 4));
 			f->eax = exec((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_WAIT:
