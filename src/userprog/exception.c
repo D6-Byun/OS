@@ -169,7 +169,8 @@ page_fault (struct intr_frame *f)
 	  addr_entry = find_spt_entry(fault_addr);
 	  if (addr_entry == NULL)
 	  {
-		  PANIC("stack growth needed! in page_fault\n");
+		  exit(-1);
+		  //PANIC("stack growth needed! in page_fault\n");
 		  //stack growth
 		  //addr_entry = 
 	  }
