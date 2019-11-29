@@ -649,7 +649,8 @@ void load_and_map(struct spt_entry *spt_e)
 
 bool load_file(struct frame_entry *kpage, struct spt_entry* spt_e)
 {
-	off_t indexer = file_read_at(spt_e->file, kpage, spt_e->read_bytes, spt_e->offset);
+	printf("");
+	off_t indexer = file_read_at(spt_e->file, kpage->kpage, spt_e->read_bytes, spt_e->offset);
 	if(indexer != spt_e->read_bytes)
 	{
 		free_frame_entry(&kpage->helem, NULL);

@@ -72,7 +72,7 @@ struct frame_entry * create_f_entry(enum palloc_flags flag, uint8_t * upage)
 	}
 	new_frame_entry->upage = upage;
 
-	printf("successfully spt_entry created\n");
+	printf("successfully frame_entry created\n");
 
 	insert_frame_entry(new_frame_entry);
 
