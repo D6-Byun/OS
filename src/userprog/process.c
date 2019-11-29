@@ -633,6 +633,7 @@ void load_and_map(struct spt_entry *spt_e)
 	}
 	printf("successfully frame entry made in load_and_map\n");
 	spt_e->kpage = new_frame->kpage;
+	printf("kpage address is %x\n",spt_e->kpage);
 	if (load_file(new_frame, spt_e))
 	{
 		printf("successfully load_complete in load_and_map\n");
@@ -647,13 +648,16 @@ void load_and_map(struct spt_entry *spt_e)
 	printf("successfully install complete in load_and_map\n");
 }
 
-bool load_file(struct frame_entry *kpage, struct spt_entry* spt_e)
+bool load_file(struct frame_entry *frame_entry, struct spt_entry* spt_e)
 {
-	printf("");
-	off_t indexer = file_read_at(spt_e->file, kpage->kpage, spt_e->read_bytes, spt_e->offset);
+	printf("load file begins \n");
+	ASSERT(spt_e->read_bytes <= PGSIZE);
+
+
+	off_t indexer = file_read_at(spt_e->file, frame_entry->kpage, spt_e->read_bytes, spt_e->offset);
 	if(indexer != spt_e->read_bytes)
 	{
-		free_frame_entry(&kpage->helem, NULL);
+		free_frame_entry(&frame_entry->helem, NULL);
 		printf("load_file: fail to install\n");
 		return false;
 	}
