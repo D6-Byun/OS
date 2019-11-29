@@ -643,7 +643,7 @@ void load_and_map(struct spt_entry *spt_e)
 	if (load_file(new_frame, spt_e))
 	{
 		printf("successfully load_complete in load_and_map\n");
-		install_page(spt_e->upage, new_frame, spt_e->writable);
+		install_page(spt_e->upage, new_frame->kpage, spt_e->writable);
 		spt_e->is_loaded = true;
 	}
 	else
