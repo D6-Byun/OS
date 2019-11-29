@@ -146,23 +146,31 @@ page_fault (struct intr_frame *f)
   page_fault_cnt++;
 
   /* Determine cause. */
-  not_present = (f->error_code & PF_P) == 0;
-  write = (f->error_code & PF_W) != 0;
-  user = (f->error_code & PF_U) != 0;
-  /* To implement virtual memory, delete the rest of the function
+  	not_present = (f->error_code & PF_P) == 0;
+  	write = (f->error_code & PF_W) != 0;
+  	user = (f->error_code & PF_U) != 0;
+  	//printf ("Page fault at %p: %s error %s page in %s context.\n", fault_addr, not_present ? "not present" : "rights violation", write ? "writing" : "reading", user ? "user" : "kernel");
+	/* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
-  	if(!user || is_kernel_vaddr(fault_addr)){
-  		exit(-1);
-  	} 
+  	if(is_kernel_vaddr(fault_addr)){
+  		//printf("page_fault_handle: is kernel access %x \n",fault_addr);
+		exit(-1);
+  	}
+	uint32_t *esp = f->esp;
 	struct thread *cur = thread_current();
+	if(!user){
+		esp = cur->cur_esp;
+	}
 	bool isload = false;
 	if(not_present && fault_addr > 0x08048000 && is_user_vaddr(fault_addr)){
 		struct sup_page_entry *spte = spt_lookup(cur->spt, fault_addr);
 		if(spte != NULL){
 			isload = spt_load_page(cur->spt, spte);
-		}else if(fault_addr >= f->esp - 32){
+			//printf("page_fault: spt_load_page : %d\n",isload);
+		}else if(fault_addr >= esp - 32){
 			isload = grow_stack(fault_addr);
+			//printf("page_fault: grow_stack : %d\n",isload);
 		}
 	}
 	if(!isload){
