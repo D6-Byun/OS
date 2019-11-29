@@ -153,6 +153,7 @@ page_fault (struct intr_frame *f)
   
   if (!user || is_kernel_vaddr(fault_addr))
   {
+	  printf("invalid address error in page_fault\n");
 	  exit(-1);
   }
   if (not_present)
@@ -160,14 +161,14 @@ page_fault (struct intr_frame *f)
 	  addr_entry = find_spt_entry(fault_addr);
 	  if (addr_entry == NULL)
 	  {
-		  PANIC("stack growth needed!");
+		  PANIC("stack growth needed! in page_fault\n");
 		  //stack growth
 		  //addr_entry = 
 	  }
 	  load_and_map(addr_entry);
 	  if (!addr_entry->is_loaded || (addr_entry->kpage == NULL))
 	  {
-		  printf("entry physical mappeing error");
+		  printf("entry physical mappeing error in page_fault\n");
 		  exit(-1);
 		  kill(f);
 	  }
