@@ -153,6 +153,11 @@ page_fault (struct intr_frame *f)
   
   if (!user || is_kernel_vaddr(fault_addr))
   {
+	  if (!user)
+	  {
+		  printf("not user in page_Fault\n");
+		  exit(-1);
+	  }
 	  printf("invalid address error in page_fault\n");
 	  exit(-1);
   }
