@@ -62,7 +62,7 @@ process_execute (const char *file_name)
 	//printf("%s\n",token);
 	/*if load failed, return -1 */
 	if(filesys_open(hongkong) == NULL){
-		//printf("file open failed in process_execute\n");
+		printf("file open failed in process_execute\n");
 		return -1;
 	}
 	//printf("check\n");
@@ -80,7 +80,7 @@ process_execute (const char *file_name)
 	}*/
 	if(thread_current()->isexit){
 
-		//printf("isexit in process_execute\n");
+		printf("isexit in process_execute\n");
 		return -1;
 	}
 	//free(hongkong);
@@ -519,12 +519,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	  //printf("upage address : %x\n", upage);
 	  if (temp_entry == NULL)
 	  {
-		  //printf("spt_entry create fail in load_segment\n");
+		  printf("spt_entry create fail in load_segment\n");
 		  return false;
 	  }
 	  if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
 	  {
-		  //printf("spt insert fail in load_segment\n");
+		  printf("spt insert fail in load_segment\n");
 		  return false;
 	  }
 
@@ -637,7 +637,7 @@ void load_and_map(struct spt_entry *spt_e)
 	if (new_frame == NULL)
 	{
 		//case of swap
-		//printf("can't alloc frame in load_and_map\n");
+		printf("can't alloc frame in load_and_map\n");
 		exit(-1);
 	}
 	//printf("successfully frame entry made in load_and_map\n");
@@ -651,7 +651,7 @@ void load_and_map(struct spt_entry *spt_e)
 	}
 	else
 	{
-		//printf("load error");
+		printf("load error");
 		exit(-1);
 	}
 	//printf("successfully install complete in load_and_map\n");
