@@ -469,9 +469,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT (pg_ofs (upage) == 0);
   ASSERT (ofs % PGSIZE == 0);
 
+  printf("now load_segment \n");
+
   file_seek (file, ofs);
   while (read_bytes > 0 || zero_bytes > 0) 
     {
+	  printf("now read_byte is %d",read_bytes);
       /* Calculate how to fill this page.
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
@@ -521,6 +524,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	  ofs += page_read_bytes;
       upage += PGSIZE;
     }
+  printf("now load_segment \n");
   return true;
 }
 
@@ -536,7 +540,7 @@ setup_stack (void **esp, int argc, char *argv[])
   struct frame_entry *new_frame = create_f_entry(PAL_ZERO, (uint8_t *)(PHYS_BASE - PGSIZE));
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   kpage = new_frame->kpage;
-  //printf("start stacking");
+  printf("start stacking");
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
