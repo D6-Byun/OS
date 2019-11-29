@@ -524,7 +524,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	  ofs += page_read_bytes;
       upage += PGSIZE;
     }
-  printf("now load_segment \n");
+  printf("end load_segment \n");
   return true;
 }
 
@@ -540,7 +540,7 @@ setup_stack (void **esp, int argc, char *argv[])
   struct frame_entry *new_frame = create_f_entry(PAL_ZERO, (uint8_t *)(PHYS_BASE - PGSIZE));
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   kpage = new_frame->kpage;
-  printf("start stacking");
+  printf("start stacking\n");
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
@@ -584,6 +584,7 @@ setup_stack (void **esp, int argc, char *argv[])
 		  free_frame_entry(&new_frame->helem, NULL);
 	  }
     }
+  printf("arg_stack end ")
   new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE), kpage, true, NULL, 0, 0, PGSIZE);
   if (new_spte == NULL)
   {
@@ -596,9 +597,7 @@ setup_stack (void **esp, int argc, char *argv[])
 	  return false;
   }
   //not sure
-  //printf("Stack dump check\n");
-  
-  //hex_dump((uintptr_t)*esp,*esp,0xc0000000-(uintptr_t)*esp,true);
+  printf("end setup_stack \n");
   return success;
 }
 
