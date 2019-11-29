@@ -483,7 +483,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   file_seek (file, ofs);
   while (read_bytes > 0 || zero_bytes > 0) 
     {
-	  //printf("now read_byte is %d\n",read_bytes);
+	  printf("now read_byte is %d\n",read_bytes);
       /* Calculate how to fill this page.
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
@@ -516,7 +516,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
 	  //not sure about page member initializing
 	  temp_entry = create_s_entry(upage, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
-	  //printf("upage address : %x\n", upage);
+	  printf("upage address : %x\n", upage);
 	  if (temp_entry == NULL)
 	  {
 		  //printf("spt_entry create fail in load_segment\n");
