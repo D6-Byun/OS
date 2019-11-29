@@ -50,8 +50,31 @@ void is_valid_addr(void *addr) {
 	if (addr == NULL || !is_user_vaddr(addr)||(uint32_t)addr < 0x08048000){
 		exit(-1);
 	}
+	struct sup_page_entry *spte = spt_lookup(thread_current()->spt,addr);
+	if(spte == NULL){
+		printf("is_valid_addr: cannot found spte.\n");
+		exit(-1);
+	}
+	spt_load_page(thread_current()->spt,spte);
+	if(spte->is_loaded == false){
+		printf("is_valid_addr : spte is not loaded.\n");
+		exit(-1);
+	}
 }
 
+void check_valid_buffer(void *buffer, unsigned size){
+	char *char_buffer = (char *)buffer;
+	for(unsigned i = 0; i < size; i++){
+		is_valid_addr(char_buffer + i);
+	}
+}
+void check_valid_string(const void *str){
+	is_valid_addr(str);
+	while(*(char *)str != 0){
+		str = (char *)str + 1;
+		is_valid_addr(str);
+	}
+}
 
 static void
 syscall_handler (struct intr_frame *f) 
@@ -83,6 +106,7 @@ syscall_handler (struct intr_frame *f)
 		case SYS_CREATE:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
+			check_valid_string((const void *)*(uint32_t *)(f->esp + 4));
 			f->eax = create((const char *)*(uint32_t *)(f->esp + 4),(unsigned)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_REMOVE:
@@ -102,6 +126,7 @@ syscall_handler (struct intr_frame *f)
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 12);
+			check_valid_buffer((void *)*(uint32_t *)(f->esp + 8),(unsigned)*(uint32_t *)(f->esp + 12));
 			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:
@@ -264,18 +289,23 @@ int read(int fd, void *buffer, unsigned length) {
 	is_valid_addr(buffer);
 	lock_acquire(&lock_imsi2);
 	if (fd == 0) {
+		uint8_t *input_buffer = (uint8_t *) buffer;
 		for (i = 0; i < length; i++) {
-			if (((char *)buffer)[i] == '\0') {
-				break;		
-			}
+			input_buffer[i] = input_getc();		
 		}
+		lock_release(&lock_imsi2);
+		return length;
 	}
-	else if(fd > 2){
+	else if(fd > 2 && fd < 128){
 		if (thread_current()->files[fd] == NULL) {
 			lock_release(&lock_imsi2);
 			exit(-1);
 		}
 		i = file_read(thread_current()->files[fd], buffer, length);
+	}else{
+		/*invalid fd*/
+		lock_release(&lock_imsi2);
+		return -1;
 	}
 
 	//printf("%d\n",i);
@@ -291,7 +321,7 @@ int write(int fd, const void *buffer, unsigned length) {
 		//printf("size = %d\n",length);
 		retval = length;
 	}
-	else if(fd > 2){
+	else if(fd > 2 && fd < 128){
 		if(thread_current()->files[fd] == NULL){
 			lock_release(&lock_imsi2);
 			exit(-1);
@@ -318,6 +348,9 @@ unsigned tell(int fd) {
 	return file_tell(thread_current()->files[fd]);
 }
 void close(int fd) {
+	if(fd < 0 || fd > 127){
+		exit(-1);
+	}
 	if(thread_current()->files[fd] == NULL)
 		exit(-1);
 	
