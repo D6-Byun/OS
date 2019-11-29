@@ -23,6 +23,9 @@ struct file
 
 typedef int pid_t;
 
+typedef int mapid_t;
+//#define MAP_FAILED ((mapid_t) -1)
+
 struct spt_entry * is_valid_addr(void *);
 void check_valid_buffer(void*, unsigned, bool);
 void check_valid_string(void *);
@@ -40,6 +43,9 @@ int write(int fd, const void *buffer, unsigned length);
 void seek(int fd, unsigned position);
 unsigned tell(int fd);
 void close(int fd);
+
+mapid_t mmap(int, void *);
+void munmap(mapid_t);
 
 struct lock lock_imsi2;
 	
@@ -202,6 +208,18 @@ syscall_handler (struct intr_frame *f)
 			//printf("CLOSE!\n");
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
+		case SYS_MMAP:
+			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 7);
+			is_valid_addr(f->esp + 8);
+			is_valid_addr(f->esp + 11);
+			f->eax = mmap((int)*(uint32_t *)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8));
+
+		case SYS_MUNMAP:
+			is_valid_addr(f->esp + 4);
+			is_valid_addr(f->esp + 7);
+			munmap((mapid_t)*(uint32_t *)(f->esp + 4));
+
 	}
 }
 
@@ -351,4 +369,21 @@ void close(int fd) {
 	
 	file_close(thread_current()->files[fd]);
 	thread_current()->files[fd] = NULL;
+}
+
+mapid_t mmap(int fd, void *addr)
+{
+	struct file* target_file = thread_current()->files[fd];
+	if (target_file == NULL)
+	{
+		//printf("file with fd doesn't exist in mmap\n");
+		exit(-1);
+	}
+
+
+}
+
+void munmap(mapid_t mapping)
+{
+
 }

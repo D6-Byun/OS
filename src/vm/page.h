@@ -28,7 +28,7 @@ struct spt_entry {
 
 	struct hash_elem helem;
 
-	//struct list_elem mmap_elem;
+	struct list_elem mmap_elem;
 	//uint32_t swap_slot;
 
 
