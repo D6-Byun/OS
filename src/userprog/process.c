@@ -666,7 +666,7 @@ bool load_file(struct frame_entry *frame_entry, struct spt_entry* spt_e)
 		printf("load_file: fail to install\n");
 		return false;
 	}
-	memset(frame_entry->kpage + spt_e->read_bytes, 0, spte->zero_bytes);
+	memset(frame_entry->kpage + spt_e->read_bytes, 0, spt_e->zero_bytes);
 	printf("successfully read ended up in load_file\n");
 	return true;
 }
