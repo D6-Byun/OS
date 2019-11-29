@@ -158,10 +158,10 @@ page_fault (struct intr_frame *f)
 	  if (!user)
 	  {
 		  printf("not user in page_Fault\n");
-		  //exit(-1);
+		  exit(-1);
 	  }
 	  printf("invalid address error in page_fault\n");
-	  //exit(-1);
+	  exit(-1);
   }
   printf("pass1\n");
   if (not_present)
