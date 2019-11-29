@@ -53,7 +53,7 @@ syscall_init (void)
 struct spt_entry * is_valid_addr(void *addr) {
 	struct spt_entry * search_entry;
 	if (addr == NULL || !is_user_vaddr(addr) || (uint32_t)addr < 0x08048000) {
-		printf("addr not in user section\n");
+		//printf("addr not in user section\n");
 		exit(-1);
 	}
 	
@@ -64,7 +64,7 @@ struct spt_entry * is_valid_addr(void *addr) {
 	}
 	else
 	{
-		printf("entry not found in is_valid_addr\n");
+		//printf("entry not found in is_valid_addr\n");
 		return NULL;
 	}
 }
@@ -79,7 +79,7 @@ void check_valid_buffer(void* buffer, unsigned size, bool to_write)
 		temp_entry = is_valid_addr(temp_buffer);
 		if (temp_entry == NULL)
 		{
-			printf("spt_entry doesn't exist in check_Valid_buffer\n");
+			//printf("spt_entry doesn't exist in check_Valid_buffer\n");
 			exit(-1);
 		}
 		/*

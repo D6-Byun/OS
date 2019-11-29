@@ -151,7 +151,7 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
-  //printf("fault address is %x\n",fault_addr);
+  printf("fault address is %x\n",fault_addr);
   
   if (!user || is_kernel_vaddr(fault_addr))
   {
@@ -160,7 +160,7 @@ page_fault (struct intr_frame *f)
 		  printf("not user in page_Fault\n");
 		  exit(-1);
 	  }
-	  printf("invalid address error in page_fault\n");
+	  //printf("invalid address error in page_fault\n");
 	  exit(-1);
   }
   //printf("pass1\n");
@@ -169,7 +169,7 @@ page_fault (struct intr_frame *f)
 	  addr_entry = find_spt_entry(fault_addr);
 	  if (addr_entry == NULL)
 	  {
-		  printf("need to implement stack growth\n");
+		  //printf("need to implement stack growth\n");
 		  exit(-1);
 		  //PANIC("stack growth needed! in page_fault\n");
 		  //stack growth
@@ -178,7 +178,7 @@ page_fault (struct intr_frame *f)
 	  load_and_map(addr_entry);
 	  if (!addr_entry->is_loaded || (addr_entry->kpage == NULL))
 	  {
-		  printf("entry physical mapping error in page_fault\n");
+		  //printf("entry physical mapping error in page_fault\n");
 		  exit(-1);
 		  kill(f);
 	  }
