@@ -62,6 +62,7 @@ process_execute (const char *file_name)
 	//printf("%s\n",token);
 	/*if load failed, return -1 */
 	if(filesys_open(hongkong) == NULL){
+		printf("file open failed in process_execute\n");
 		return -1;
 	}
 	//printf("check\n");
@@ -78,6 +79,8 @@ process_execute (const char *file_name)
 		}
 	}*/
 	if(thread_current()->isexit){
+
+		printf("isexit in process_execute\n");
 		return -1;
 	}
 	//free(hongkong);
