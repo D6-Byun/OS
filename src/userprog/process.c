@@ -166,6 +166,11 @@ process_exit (void)
 
   spt_destroy(cur->spt);
   cur->spt = NULL;
+
+  for (i = 0; i < 128; i++)
+  {
+	  close(i);
+  }
   
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
@@ -183,6 +188,7 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+
   //free_frame_table();
 	sema_up(&(cur->sema_child));
 	sema_down(&(cur->sema_imsi));
@@ -394,7 +400,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
  done:
   /* We arrive here whether the load is successful or not. */
-  file_close (file);
+  //file_close (file);
   return success;
 }
 
