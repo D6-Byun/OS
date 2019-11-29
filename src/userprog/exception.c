@@ -161,6 +161,7 @@ page_fault (struct intr_frame *f)
 	  printf("invalid address error in page_fault\n");
 	  exit(-1);
   }
+  printf("pass1\n");
   if (not_present)
   {
 	  addr_entry = find_spt_entry(fault_addr);
