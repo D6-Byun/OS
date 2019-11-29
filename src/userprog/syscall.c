@@ -87,6 +87,7 @@ void check_valid_buffer(void* buffer, unsigned size, void* esp, bool to_write)
 		temp_buffer = temp_buffer + PGSIZE;
 	}
 }
+
 void check_valid_string(void *str, void* esp)
 {
 	is_valid_addr(str);
@@ -258,7 +259,7 @@ int read(int fd, void *buffer, unsigned length) {
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
 			if (((char *)buffer)[i] == '\0') {
-				break;		
+				break;	
 			}
 		}
 	}
