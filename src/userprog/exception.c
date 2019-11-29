@@ -164,13 +164,13 @@ page_fault (struct intr_frame *f)
 	  exit(-1);
   }
   */
-  /*
+  
   if (is_kernel_vaddr(fault_addr))
   {
 	  //printf("invalid address error in page_fault\n");
 	  exit(-1);
   }
-  */
+  
   //printf("pass1\n");
   if (not_present)
   {
