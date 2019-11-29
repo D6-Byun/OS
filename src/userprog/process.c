@@ -653,14 +653,20 @@ bool load_file(struct frame_entry *frame_entry, struct spt_entry* spt_e)
 	printf("load file begins \n");
 	ASSERT(spt_e->read_bytes <= PGSIZE);
 
+	printf("file pointer : %x\n", spt_e->file);
+	printf("kpage pointer : %x\n", spt_e->kpage);
+	printf("read_bytes : %d\n", spt_e->read_bytes);
+	printf("offset : %d\n", spt_e->offset);
 
 	off_t indexer = file_read_at(spt_e->file, frame_entry->kpage, spt_e->read_bytes, spt_e->offset);
+	printf("file_Read_at successfully ended up in load_file \n");
 	if(indexer != spt_e->read_bytes)
 	{
 		free_frame_entry(&frame_entry->helem, NULL);
 		printf("load_file: fail to install\n");
 		return false;
 	}
+	memset(frame_entry->kpage + spt_e->read_bytes, 0, spte->zero_bytes);
 	printf("successfully read ended up in load_file\n");
 	return true;
 }
