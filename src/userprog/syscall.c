@@ -73,10 +73,15 @@ void check_valid_buffer(void* buffer, unsigned size, bool to_write)
 {
 	void * temp_buffer = buffer;
 	struct spt_entry * temp_entry;
-	int32_t new_size = (int32_t)size;
-	while (new_size >= 0)
+	//int32_t new_size = (int32_t)size;
+	while (temp_buffer < buffer + size)
 	{
 		temp_entry = is_valid_addr(temp_buffer);
+		if (temp_entry == NULL)
+		{
+			printf("spt_entry doesn't exist in check_Valid_buffer\n");
+			exit(-1);
+		}
 		/*
 		if (!temp_entry->writable)
 		{
@@ -84,7 +89,7 @@ void check_valid_buffer(void* buffer, unsigned size, bool to_write)
 			exit(-1);
 		}
 		*/
-		new_size = new_size - PGSIZE;
+		//new_size = new_size - PGSIZE;
 		temp_buffer = temp_buffer + PGSIZE;
 	}
 }
