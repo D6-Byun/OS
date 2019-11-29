@@ -107,50 +107,59 @@ syscall_handler (struct intr_frame *f)
 			break;
 		case SYS_EXIT:
 			is_valid_addr(f->esp + 4);
-			//printf("EXIT!\n");
+			printf("EXIT!\n");
 			exit(*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_EXEC:
 			is_valid_addr(f->esp + 4);
+			printf("EXEC!\n");
 			f->eax = exec((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_WAIT:
 			is_valid_addr(f->esp + 4);
+			printf("WAIT!\n");
 			f->eax = wait((pid_t)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_CREATE:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
+			printf("CREATE!\n");
 			f->eax = create((const char *)*(uint32_t *)(f->esp + 4),(unsigned)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_REMOVE:
 			is_valid_addr(f->esp + 4);
+			printf("REMOVE!\n");
 			f->eax = remove((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_OPEN:
 			is_valid_addr(f->esp + 4);
+			printf("OPEN!\n");
 			f->eax = open((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_FILESIZE:
 			
 			is_valid_addr(f->esp + 4);
+			printf("FILESIZE!\n");
 			f->eax = filesize((int)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_READ:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 12);
+			printf("READ!\n");
 			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 12);
+			printf("WRITE!\n");
 			f->eax = write((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8),(uintptr_t)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_SEEK:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
+			printf("SEEK!\n");
 			seek((int)*(uint32_t *)(f->esp + 4),(unsigned)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_TELL:
@@ -159,6 +168,7 @@ syscall_handler (struct intr_frame *f)
 			break;
 		case SYS_CLOSE:
 			is_valid_addr(f->esp + 4);
+			printf("CLOSE!\n");
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
 	}
