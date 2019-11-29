@@ -169,7 +169,10 @@ process_exit (void)
 
   for (int i = 0; i < 128; i++)
   {
-	  close(i);
+	  if (thread_current()->files[i] != NULL)
+	  {
+		  close(i);
+	  }
   }
   
   /* Destroy the current process's page directory and switch back
