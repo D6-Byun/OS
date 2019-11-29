@@ -76,11 +76,11 @@ void check_valid_buffer(void* buffer, unsigned size, bool to_write)
 	struct spt_entry * temp_entry;
 	//int32_t new_size = (int32_t)size;
 
-	printf("check_valid_Buffer start \n");
+	//printf("check_valid_Buffer start \n");
 
 	while (temp_buffer < buffer + size)
 	{
-		printf("checking %x addr in check_valid_buffer \n",temp_buffer);
+		//printf("checking %x addr in check_valid_buffer \n",temp_buffer);
 		temp_entry = is_valid_addr(temp_buffer);
 		/*
 		if (temp_entry == NULL)
