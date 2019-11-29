@@ -158,10 +158,10 @@ page_fault (struct intr_frame *f)
 	  if (!user)
 	  {
 		  printf("not user in page_Fault\n");
-		  exit(-1);
+		  //exit(-1);
 	  }
 	  printf("invalid address error in page_fault\n");
-	  exit(-1);
+	  //exit(-1);
   }
   printf("pass1\n");
   if (not_present)
@@ -176,7 +176,7 @@ page_fault (struct intr_frame *f)
 	  load_and_map(addr_entry);
 	  if (!addr_entry->is_loaded || (addr_entry->kpage == NULL))
 	  {
-		  printf("entry physical mappeing error in page_fault\n");
+		  printf("entry physical mapping error in page_fault\n");
 		  exit(-1);
 		  kill(f);
 	  }

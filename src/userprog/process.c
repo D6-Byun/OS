@@ -533,7 +533,7 @@ setup_stack (void **esp, int argc, char *argv[])
   bool success = false;
   uintptr_t *addr[32];
   struct spt_entry *new_spte;
-  struct frame_entry *new_frame = create_f_entry(0, (uint8_t *)(PHYS_BASE - PGSIZE));
+  struct frame_entry *new_frame = create_f_entry(PAL_ZERO, (uint8_t *)(PHYS_BASE - PGSIZE));
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   kpage = new_frame->kpage;
   //printf("start stacking");
