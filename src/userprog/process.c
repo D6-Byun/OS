@@ -97,9 +97,7 @@ start_process (void *file_name_)
 	char *file_name = file_name_;
 	struct intr_frame if_;
 	bool success;
-  	frame_init();
-	swap_init();
-	//printf("start_process\n");
+  	//printf("start_process\n");
 	argv[0] = strtok_r(file_name, " ", &save_ptr);
 		while (1) {
 			argv[argc] = strtok_r(NULL, " ",&save_ptr);	

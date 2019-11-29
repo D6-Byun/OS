@@ -163,6 +163,9 @@ page_fault (struct intr_frame *f)
 		esp = cur->cur_esp;
 	}
 	bool isload = false;
+
+	//printf("page_fault: addr: %x, esp: %x\n",fault_addr,esp);
+
 	if(not_present && fault_addr > 0x08048000 && is_user_vaddr(fault_addr)){
 		struct sup_page_entry *spte = spt_lookup(cur->spt, fault_addr);
 		if(spte != NULL){
