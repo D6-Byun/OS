@@ -24,8 +24,8 @@ struct file
 typedef int pid_t;
 
 struct spt_entry * is_valid_addr(void *);
-//void check_valid_buffer(void*, unsigned, void*, bool);
-//void check_valid_string(void *, void*);
+void check_valid_buffer(void*, unsigned, bool);
+void check_valid_string(void *);
 static void syscall_handler (struct intr_frame *);
 void halt(void) NO_RETURN;
 void exit(int status) NO_RETURN;
@@ -68,8 +68,8 @@ struct spt_entry * is_valid_addr(void *addr) {
 		return NULL;
 	}
 }
-/*
-void check_valid_buffer(void* buffer, unsigned size, void* esp, bool to_write)
+
+void check_valid_buffer(void* buffer, unsigned size, bool to_write)
 {
 	void * temp_buffer = buffer;
 	struct spt_entry * temp_entry;
@@ -87,11 +87,10 @@ void check_valid_buffer(void* buffer, unsigned size, void* esp, bool to_write)
 	}
 }
 
-void check_valid_string(void *str, void* esp)
+void check_valid_string(void *str)
 {
 	is_valid_addr(str);
 }
-*/
 
 static void
 syscall_handler (struct intr_frame *f) 
@@ -270,8 +269,8 @@ int filesize(int fd) {
 }
 int read(int fd, void *buffer, unsigned length) {
 	int i = 0;
-	//check_valid_buffer(buffer, length, buffer, true);
-	is_valid_addr(buffer);
+	check_valid_buffer(buffer, length, buffer, true);
+	//is_valid_addr(buffer);
 	lock_acquire(&lock_imsi2);
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
