@@ -13,6 +13,7 @@ struct spt* spt_init(void)
 {
 	struct spt* m_hash = (struct spt *)malloc(sizeof(struct spt));
 	hash_init(&m_hash->hash_brown, spt_hash_func, spt_less_func, NULL);
+	printf("successfully spt inited\n");
 	return m_hash;
 }
 
@@ -38,6 +39,7 @@ bool insert_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 		printf("hash_insert failed in insert_spt_entry\n");
 		return false;
 	}
+	printf("successfully spt_entry inserted\n");
 	return true;
 }
 
@@ -52,6 +54,7 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 	}
 	//palloc_free_page(upage_ptr);
 	free(spt_e);
+	printf("successfully spt_entry deleted\n");
 	return true;
 }
 
@@ -64,12 +67,14 @@ struct spt_entry * create_s_entry(uint8_t * upage, uint8_t *kpage, bool writable
 		return NULL;
 	}
 	new_spt_entry->kpage = kpage;
-	new_spt_entry->upage = upage;
+	new_spt_entry->upage = pg_round_down(upage);
 	new_spt_entry->writable = writable;
 	new_spt_entry->file = file;
 	new_spt_entry->offset = offset;
 	new_spt_entry->read_bytes = read_bytes;
 	new_spt_entry->zero_bytes = zero_bytes;
+
+	printf("successfully spt_entry created\n");
 
 	return new_spt_entry;
 }
@@ -84,6 +89,7 @@ struct spt_entry * find_spt_entry(void *upage)
 		printf("hash_find failed in find_spt_entry\n");
 		return NULL;
 	}
+	printf("successfully spt_entry found\n");
 	return hash_entry(target_elem, struct spt_entry, helem);
 }
 
@@ -91,6 +97,7 @@ void spt_destroy(struct spt *spt)
 {
 	hash_destroy(&spt->hash_brown, spt_entry_destroy);
 	free(spt);
+	printf("OMAWE WA MO SINDAERU\n");
 }
 
 static void spt_entry_destroy(struct hash_elem *e, void *aux)
@@ -101,5 +108,6 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 		printf("need to change format of frame entry deletion\n");
 		//free_frame_entry(target_entry->kpage, NULL);
 	}
+	printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
 }

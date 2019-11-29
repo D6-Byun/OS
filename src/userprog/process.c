@@ -474,7 +474,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   file_seek (file, ofs);
   while (read_bytes > 0 || zero_bytes > 0) 
     {
-	  printf("now read_byte is %d",read_bytes);
+	  printf("now read_byte is %d\n",read_bytes);
       /* Calculate how to fill this page.
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
@@ -584,7 +584,7 @@ setup_stack (void **esp, int argc, char *argv[])
 		  free_frame_entry(&new_frame->helem, NULL);
 	  }
     }
-  printf("arg_stack end ");
+  printf("arg_stack end\n");
   new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE), kpage, true, NULL, 0, 0, PGSIZE);
   if (new_spte == NULL)
   {
