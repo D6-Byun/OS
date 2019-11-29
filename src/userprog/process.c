@@ -507,6 +507,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
 	  //not sure about page member initializing
 	  temp_entry = create_s_entry(upage, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
+	  printf("upage address : %x\n", upage);
 	  if (temp_entry == NULL)
 	  {
 		  printf("spt_entry create fail in load_segment\n");
