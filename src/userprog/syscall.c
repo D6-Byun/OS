@@ -107,59 +107,59 @@ syscall_handler (struct intr_frame *f)
 			break;
 		case SYS_EXIT:
 			is_valid_addr(f->esp + 4);
-			printf("EXIT!\n");
+			//printf("EXIT!\n");
 			exit(*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_EXEC:
 			is_valid_addr(f->esp + 4);
-			printf("EXEC!\n");
+			//printf("EXEC!\n");
 			f->eax = exec((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_WAIT:
 			is_valid_addr(f->esp + 4);
-			printf("WAIT!\n");
+			//printf("WAIT!\n");
 			f->eax = wait((pid_t)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_CREATE:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
-			printf("CREATE!\n");
+			//printf("CREATE!\n");
 			f->eax = create((const char *)*(uint32_t *)(f->esp + 4),(unsigned)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_REMOVE:
 			is_valid_addr(f->esp + 4);
-			printf("REMOVE!\n");
+			//printf("REMOVE!\n");
 			f->eax = remove((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_OPEN:
 			is_valid_addr(f->esp + 4);
-			printf("OPEN!\n");
+			//printf("OPEN!\n");
 			f->eax = open((const char *)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_FILESIZE:
 			
 			is_valid_addr(f->esp + 4);
-			printf("FILESIZE!\n");
+			//printf("FILESIZE!\n");
 			f->eax = filesize((int)*(uint32_t *)(f->esp + 4));
 			break;
 		case SYS_READ:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 12);
-			printf("READ!\n");
+			//printf("READ!\n");
 			f->eax = read((int)*(uint32_t*)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8), (unsigned)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_WRITE:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 12);
-			printf("WRITE!\n");
+			//printf("WRITE!\n");
 			f->eax = write((int)*(uint32_t *)(f->esp + 4),(void *)*(uint32_t *)(f->esp + 8),(uintptr_t)*(uint32_t *)(f->esp + 12));
 			break;
 		case SYS_SEEK:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 8);
-			printf("SEEK!\n");
+			//printf("SEEK!\n");
 			seek((int)*(uint32_t *)(f->esp + 4),(unsigned)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_TELL:
@@ -168,7 +168,7 @@ syscall_handler (struct intr_frame *f)
 			break;
 		case SYS_CLOSE:
 			is_valid_addr(f->esp + 4);
-			printf("CLOSE!\n");
+			//printf("CLOSE!\n");
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
 	}
@@ -190,7 +190,7 @@ void exit(int status) {
 pid_t exec(const char *cmd_line) {
 	//hex_dump((uintptr_t)cmd_line,cmd_line,64,true);
 	if(cmd_line == NULL){
-		printf("exec failed \n");
+		//printf("exec failed \n");
 		exit(-1);
 	}
 	return process_execute(cmd_line);
@@ -200,14 +200,14 @@ int wait(pid_t pid) {
 }
 bool create(const char *file, unsigned initial_size) {
 	if(file == NULL){
-		printf("full file in syscall create \n");
+		//printf("full file in syscall create \n");
 		exit(-1);
 	}
 	return filesys_create(file, initial_size);
 }
 bool remove(const char *file) {
 	if(file == NULL){
-		printf("full file in syscall remove \n");
+		//printf("full file in syscall remove \n");
 		exit(-1);
 	}
 	return filesys_remove(file);
@@ -216,7 +216,7 @@ int open(const char *file) {
 	struct file *openfile;
 	int retval;
 	if(file == NULL){
-		printf("full file in syscall open \n");
+		//printf("full file in syscall open \n");
 		exit(-1);
 	}
 	is_valid_addr(file);
@@ -244,7 +244,7 @@ int open(const char *file) {
 int filesize(int fd) {
 	//printf("filesize start\n");
 	if(thread_current()->files[fd] == NULL){
-		printf("file with fd doesn't exist in syscall filesize \n");
+		//printf("file with fd doesn't exist in syscall filesize \n");
 		exit(-1);
 	}
 	//printf("file length : %d\n",file_length(thread_current()->files[fd]));
@@ -265,7 +265,7 @@ int read(int fd, void *buffer, unsigned length) {
 	else if(fd > 2){
 		if (thread_current()->files[fd] == NULL) {
 			lock_release(&lock_imsi2);
-			printf("file with fd doesn't exist in syscall read \n");
+			//printf("file with fd doesn't exist in syscall read \n");
 			exit(-1);
 		}
 		i = file_read(thread_current()->files[fd], buffer, length);
@@ -287,7 +287,7 @@ int write(int fd, const void *buffer, unsigned length) {
 	else if(fd > 2){
 		if(thread_current()->files[fd] == NULL){
 			lock_release(&lock_imsi2);
-			printf("file with fd doesn't exist in syscall write \n");
+			//printf("file with fd doesn't exist in syscall write \n");
 			exit(-1);
 		}
 		if(thread_current()->files[fd]->deny_write){
@@ -303,19 +303,19 @@ int write(int fd, const void *buffer, unsigned length) {
 }
 void seek(int fd, unsigned position) {
 	if(thread_current()->files[fd] == NULL)
-		printf("file with fd doesn't exist in syscall seek \n");
+		//printf("file with fd doesn't exist in syscall seek \n");
 		exit(-1);
 	file_seek(thread_current()->files[fd],position);
 }
 unsigned tell(int fd) {
 	if(thread_current()->files[fd] == NULL)
-		printf("file with fd doesn't exist in syscall tell \n");
+		//printf("file with fd doesn't exist in syscall tell \n");
 		exit(-1);
 	return file_tell(thread_current()->files[fd]);
 }
 void close(int fd) {
 	if(thread_current()->files[fd] == NULL)
-		printf("file with fd doesn't exist in syscall close \n");
+		//printf("file with fd doesn't exist in syscall close \n");
 		exit(-1);
 	
 	file_close(thread_current()->files[fd]);

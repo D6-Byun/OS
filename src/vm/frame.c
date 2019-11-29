@@ -13,7 +13,7 @@ void frame_init(void)
 {
 	frame_table = (struct hash *)malloc(sizeof(struct hash));
 	hash_init(frame_table , frame_hash_func, frame_less_func, NULL);
-	printf("successfully frame inited\n");
+	//printf("successfully frame inited\n");
 }
 
 static unsigned frame_hash_func(const struct hash_elem *e, void *aux)
@@ -34,10 +34,10 @@ bool insert_frame_entry(struct frame_entry *frame_e)
 	struct hash_elem * insert_elem = hash_insert(frame_table, &frame_e->helem);
 	if (insert_elem != NULL)
 	{
-		printf("hash_insert failed in insert_frame_entry\n");
+		//printf("hash_insert failed in insert_frame_entry\n");
 		return false;
 	}
-	printf("successfully frame_entry inserted\n");
+	//printf("successfully frame_entry inserted\n");
 	return true;
 }
 
@@ -47,12 +47,12 @@ bool delete_frame_entry(struct frame_entry *frame_e)
 	struct hash_elem * delete_elem = hash_delete(frame_table, &frame_e->helem);
 	if (delete_elem == NULL)
 	{
-		printf("hash_delete failed in delete_frame_entry\n");
+		//printf("hash_delete failed in delete_frame_entry\n");
 		return false;
 	}
 	palloc_free_page(kpage_ptr);
 	free(frame_e);
-	printf("successfully frame_entry deleted\n");
+	//printf("successfully frame_entry deleted\n");
 	return true;
 }
 
@@ -61,7 +61,7 @@ struct frame_entry * create_f_entry(enum palloc_flags flag, uint8_t * upage)
 	struct frame_entry * new_frame_entry = (struct frame_entry *)malloc(sizeof(struct frame_entry));
 	if (new_frame_entry == NULL)
 	{
-		printf("malloc failed in create_f_entry\n");
+		//printf("malloc failed in create_f_entry\n");
 		return NULL;
 	}
 	new_frame_entry->kpage = palloc_get_page(PAL_USER | flag);
@@ -72,7 +72,7 @@ struct frame_entry * create_f_entry(enum palloc_flags flag, uint8_t * upage)
 	}
 	new_frame_entry->upage = upage;
 
-	printf("successfully frame_entry created\n");
+	//printf("successfully frame_entry created\n");
 
 	insert_frame_entry(new_frame_entry);
 
@@ -93,7 +93,7 @@ void free_frame_entry(struct hash_elem *e, void *aux)
 	free(target_entry);
 
 
-	printf("chock chock - frame_entry_Destroy\n");
+	//printf("chock chock - frame_entry_Destroy\n");
 }
 
 /*

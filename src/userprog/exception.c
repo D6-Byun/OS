@@ -151,19 +151,19 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
-  printf("fault address is %x\n",fault_addr);
+  //printf("fault address is %x\n",fault_addr);
   
   if (!user || is_kernel_vaddr(fault_addr))
   {
 	  if (!user)
 	  {
-		  printf("not user in page_Fault\n");
+		  //printf("not user in page_Fault\n");
 		  exit(-1);
 	  }
-	  printf("invalid address error in page_fault\n");
+	  //printf("invalid address error in page_fault\n");
 	  exit(-1);
   }
-  printf("pass1\n");
+  //printf("pass1\n");
   if (not_present)
   {
 	  addr_entry = find_spt_entry(fault_addr);
@@ -177,7 +177,7 @@ page_fault (struct intr_frame *f)
 	  load_and_map(addr_entry);
 	  if (!addr_entry->is_loaded || (addr_entry->kpage == NULL))
 	  {
-		  printf("entry physical mapping error in page_fault\n");
+		  //printf("entry physical mapping error in page_fault\n");
 		  exit(-1);
 		  kill(f);
 	  }

@@ -62,7 +62,7 @@ process_execute (const char *file_name)
 	//printf("%s\n",token);
 	/*if load failed, return -1 */
 	if(filesys_open(hongkong) == NULL){
-		printf("file open failed in process_execute\n");
+		//printf("file open failed in process_execute\n");
 		return -1;
 	}
 	//printf("check\n");
@@ -80,7 +80,7 @@ process_execute (const char *file_name)
 	}*/
 	if(thread_current()->isexit){
 
-		printf("isexit in process_execute\n");
+		//printf("isexit in process_execute\n");
 		return -1;
 	}
 	//free(hongkong);
@@ -478,12 +478,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT (pg_ofs (upage) == 0);
   ASSERT (ofs % PGSIZE == 0);
 
-  printf("now load_segment \n");
+  //printf("now load_segment \n");
 
   file_seek (file, ofs);
   while (read_bytes > 0 || zero_bytes > 0) 
     {
-	  printf("now read_byte is %d\n",read_bytes);
+	  //printf("now read_byte is %d\n",read_bytes);
       /* Calculate how to fill this page.
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
@@ -516,15 +516,15 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
 	  //not sure about page member initializing
 	  temp_entry = create_s_entry(upage, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
-	  printf("upage address : %x\n", upage);
+	  //printf("upage address : %x\n", upage);
 	  if (temp_entry == NULL)
 	  {
-		  printf("spt_entry create fail in load_segment\n");
+		  //printf("spt_entry create fail in load_segment\n");
 		  return false;
 	  }
 	  if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
 	  {
-		  printf("spt insert fail in load_segment\n");
+		  //printf("spt insert fail in load_segment\n");
 		  return false;
 	  }
 
@@ -534,7 +534,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	  ofs += page_read_bytes;
       upage += PGSIZE;
     }
-  printf("end load_segment \n");
+  //printf("end load_segment \n");
   return true;
 }
 
@@ -550,7 +550,7 @@ setup_stack (void **esp, int argc, char *argv[])
   struct frame_entry *new_frame = create_f_entry(PAL_ZERO, (uint8_t *)(PHYS_BASE - PGSIZE));
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   kpage = new_frame->kpage;
-  printf("start stacking\n");
+  //printf("start stacking\n");
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
@@ -594,20 +594,20 @@ setup_stack (void **esp, int argc, char *argv[])
 		  free_frame_entry(&new_frame->helem, NULL);
 	  }
     }
-  printf("arg_stack end\n");
+  // printf("arg_stack end\n");
   new_spte = create_s_entry((uint8_t *)(PHYS_BASE - PGSIZE), kpage, true, NULL, 0, 0, PGSIZE);
   if (new_spte == NULL)
   {
-	  printf("spt_entry create fail in setup_stack\n");
+	  //printf("spt_entry create fail in setup_stack\n");
 	  return false;
   }
   if (!insert_spt_entry(&thread_current()->spt->hash_brown, new_spte))
   {
-	  printf("spt insert fail in setup_stack\n");
+	  //printf("spt insert fail in setup_stack\n");
 	  return false;
   }
   //not sure
-  printf("end setup_stack \n");
+  //printf("end setup_stack \n");
   return success;
 }
 
@@ -637,45 +637,45 @@ void load_and_map(struct spt_entry *spt_e)
 	if (new_frame == NULL)
 	{
 		//case of swap
-		printf("can't alloc frame in load_and_map\n");
+		//printf("can't alloc frame in load_and_map\n");
 		exit(-1);
 	}
-	printf("successfully frame entry made in load_and_map\n");
+	//printf("successfully frame entry made in load_and_map\n");
 	spt_e->kpage = new_frame->kpage;
-	printf("kpage address is %x\n",spt_e->kpage);
+	//printf("kpage address is %x\n",spt_e->kpage);
 	if (load_file(new_frame, spt_e))
 	{
-		printf("successfully load_complete in load_and_map\n");
+		//printf("successfully load_complete in load_and_map\n");
 		install_page(spt_e->upage, new_frame->kpage, spt_e->writable);
 		spt_e->is_loaded = true;
 	}
 	else
 	{
-		printf("load error");
+		//printf("load error");
 		exit(-1);
 	}
-	printf("successfully install complete in load_and_map\n");
+	//printf("successfully install complete in load_and_map\n");
 }
 
 bool load_file(struct frame_entry *frame_entry, struct spt_entry* spt_e)
 {
-	printf("load file begins \n");
+	//printf("load file begins \n");
 	ASSERT(spt_e->read_bytes <= PGSIZE);
 
-	printf("file pointer : %x\n", spt_e->file);
-	printf("kpage pointer : %x\n", spt_e->kpage);
-	printf("read_bytes : %d\n", spt_e->read_bytes);
-	printf("offset : %d\n", spt_e->offset);
+	//printf("file pointer : %x\n", spt_e->file);
+	//printf("kpage pointer : %x\n", spt_e->kpage);
+	//printf("read_bytes : %d\n", spt_e->read_bytes);
+	//printf("offset : %d\n", spt_e->offset);
 
 	off_t indexer = file_read_at(spt_e->file, frame_entry->kpage, spt_e->read_bytes, spt_e->offset);
-	printf("file_Read_at successfully ended up in load_file \n");
+	//printf("file_Read_at successfully ended up in load_file \n");
 	if(indexer != spt_e->read_bytes)
 	{
 		free_frame_entry(&frame_entry->helem, NULL);
-		printf("load_file: fail to install\n");
+		//printf("load_file: fail to install\n");
 		return false;
 	}
 	memset(frame_entry->kpage + spt_e->read_bytes, 0, spt_e->zero_bytes);
-	printf("successfully read ended up in load_file\n");
+	//printf("successfully read ended up in load_file\n");
 	return true;
 }
