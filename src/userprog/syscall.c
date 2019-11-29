@@ -56,7 +56,7 @@ struct spt_entry * is_valid_addr(void *addr) {
 		//printf("addr not in user section\n");
 		exit(-1);
 	}
-	
+	/*
 	search_entry = find_spt_entry(addr);
 	if (search_entry != NULL)
 	{
@@ -67,6 +67,7 @@ struct spt_entry * is_valid_addr(void *addr) {
 		//printf("entry not found in is_valid_addr\n");
 		return NULL;
 	}
+	*/
 }
 
 void check_valid_buffer(void* buffer, unsigned size, bool to_write)
