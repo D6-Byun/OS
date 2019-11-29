@@ -167,7 +167,7 @@ process_exit (void)
   spt_destroy(cur->spt);
   cur->spt = NULL;
 
-  for (i = 0; i < 128; i++)
+  for (int i = 0; i < 128; i++)
   {
 	  close(i);
   }
