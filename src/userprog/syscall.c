@@ -395,7 +395,7 @@ mapid_t mmap(int fd, void *addr)
 		//printf("file with fd doesn't exist in mmap\n");
 		exit(-1);
 	}
-	if (list_empty(thread_current()->mmap_list))
+	if (list_empty(&thread_current()->mmap_list))
 	{
 		printf("list is empty\n");
 	}
