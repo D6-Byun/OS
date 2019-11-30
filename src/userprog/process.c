@@ -20,6 +20,7 @@
 #include "threads/malloc.h"
 #include "threads/thread.h"
 #include "userprog/syscall.h"
+#include <list.h>
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -101,6 +102,7 @@ start_process (void *file_name_)
 
 	cur->spt = spt_init(); /*create spt in current thread*/
 	list_init(&cur->mmap_list);
+	cur->mmap_index = 0;
 	
   	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
