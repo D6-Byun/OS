@@ -462,9 +462,9 @@ mapid_t mmap(int fd, void *addr)
 		{
 			printf("mmap_file is null\n");
 		}
-		/*
-		printf(temp_mmap->mapid);
-		*/
+		
+		printf("mapid == %d\n",(temp_mmap->mapid));
+		
 	}
 	
 	return mapid;
