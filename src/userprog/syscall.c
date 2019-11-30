@@ -381,7 +381,7 @@ mapid_t mmap(int fd, void *addr)
 	mapid_t mapid;
 	int file_size = file_length(target_file);
 	int page_count = (file_size / PGSIZE) + ((file_size % PGSIZE) == 0 ? 0 : 1);
-	struct mmap_file * mmap_file;
+	struct mmap_file * mmap_file1;
 	int8_t * upage = (int8_t *) addr;
 	bool writable = true;
 	struct file* file = target_file;
@@ -404,10 +404,10 @@ mapid_t mmap(int fd, void *addr)
 	is_valid_addr(addr);
 	mapid = thread_current()->mmap_index;
 	thread_current()->mmap_index++;
-	mmap_file = (struct mmap_file *)malloc(sizeof(struct mmap_file));
-	mmap_file->file = target_file;
-	mmap_file->mapid = mapid;
-	list_init(&mmap_file->spt_entry_list);
+	mmap_file1 = (struct mmap_file *)malloc(sizeof(struct mmap_file));
+	mmap_file1->file = target_file;
+	mmap_file1->mapid = mapid;
+	list_init(&mmap_file1->spt_entry_list);
 
 
 	printf("list init ended in mmap\n");
@@ -441,13 +441,13 @@ mapid_t mmap(int fd, void *addr)
 			exit(-1);
 		}
 		printf("spt_entry inserted in table in mmap\n");
-		list_push_back(&mmap_file->spt_entry_list, &temp_entry->mmap_elem);
+		list_push_back(&mmap_file1->spt_entry_list, &temp_entry->mmap_elem);
 		printf("stp_entry inserted in mmap_list in mmap\n");
 		upage = upage + PGSIZE;
 		ofs += page_read_bytes;
 		read_byte -= page_read_bytes;
 	}
-	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
+	list_push_back(&thread_current()->mmap_list, &mmap_file1->elem);
 	printf("mmap ended\n");
 	
 	
