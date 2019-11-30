@@ -455,8 +455,9 @@ mapid_t mmap(int fd, void *addr)
 	{
 		printf("for start \n");
 		printf("e : %x\n", e);
-		/*
+		
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
+		/*
 		if (temp_mmap == NULL)
 		{
 			printf("mmap_file is null\n");
