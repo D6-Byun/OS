@@ -409,7 +409,7 @@ mapid_t mmap(int fd, void *addr)
 	printf("now go to while loop\n");
 
 
-	while (read_byte > 0)
+	while (file_size>ofs)
 	{
 		printf("upage : %x\n", addr);
 		printf("file_size : %d\n", read_byte);
