@@ -43,7 +43,7 @@ bool insert_frame_entry(struct frame_entry *frame_e)
 
 bool delete_frame_entry(struct frame_entry *frame_e)
 {
-	printf("delete_frame_entry\n");
+	//printf("delete_frame_entry\n");
 	uint8_t * kpage_ptr = frame_e->kpage;
 	struct hash_elem * delete_elem = hash_delete(frame_table, &frame_e->helem);
 	if (delete_elem == NULL)
@@ -89,7 +89,7 @@ void free_frame_table(void)
 void free_frame_entry(struct hash_elem *e, void *aux)
 {
 	uint8_t * target_pointer;
-	printf("free frame_entry\n");
+	//printf("free frame_entry\n");
 	struct frame_entry * target_entry = hash_entry(e, struct frame_entry, helem);
 	//printf("kpage addr : %x\n", target_entry->kpage);
 	target_pointer = target_entry->kpage;
