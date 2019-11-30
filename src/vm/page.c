@@ -132,6 +132,7 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 		}
 	}
 	//hash_delete(&thread_current()->spt->hash_brown, &target_entry->helem);
-	//printf("NANIIIIII - spt_entry_Destroy\n");
+	printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
+	printf("end\n");
 }
