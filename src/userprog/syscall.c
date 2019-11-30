@@ -378,7 +378,7 @@ mapid_t mmap(int fd, void *addr)
 	struct file* saved_file = thread_current()->files[fd];
 	struct file* target_file = file_reopen(saved_file);
 	mapid_t mapid;
-	int file_size = filesize(fd);
+	int file_size = file_length(target_file);
 	int page_count = (file_size / PGSIZE) + ((file_size % PGSIZE) == 0 ? 0 : 1);
 	struct mmap_file * mmap_file;
 	int8_t * upage;
@@ -437,12 +437,13 @@ mapid_t mmap(int fd, void *addr)
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
 	printf("mmap ended\n");
-
+	/*
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 		printf(temp_mmap->mapid);
 	}
+	*/
 	return mapid;
 
 }
