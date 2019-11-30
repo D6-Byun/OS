@@ -4,6 +4,8 @@
 #include "threads/thread.h"
 #include "threads/malloc.h"
 #include "vm/frame.h"
+#include "userprog/process.h"
+
 
 static unsigned spt_hash_func(const struct hash_elem *, void *);
 static bool spt_less_func(const struct hash_elem *, const struct hash_elem *, void *);
@@ -137,4 +139,31 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 	//printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
 	//printf("end\n");
+}
+
+bool grow_stack(void *upage)
+{
+	if (PHYS_BASE - pg_round_down(upage) > MAX_STACK_SIZE) {
+		//printf("Grow stack: stack is full.\n");
+		return false;
+	}
+	struct spt_entry *spte = (struct spt_entry *)malloc(sizeof(struct spt_entry));
+	if (spte == NULL)
+	{
+		return false;
+	}
+	spte->upage = pg_round_down(upage);
+	spte->is_loaded = true;
+	spte->writable = true;
+	struct frame_entry * new_frame = create_f_entry(0, spte->upage);
+	if (new_frame == NULL) {
+		free(spte);
+		return false;
+	}
+	if (!install_page(spte->upage, new_frame, spte->writable)) {
+		free(spte);
+		delete_frame_entry(new_frame);
+		return false;
+	}
+	return hash_insert(&(thread_current()->spt->hash_brown), &spte->helem) == NULL;
 }

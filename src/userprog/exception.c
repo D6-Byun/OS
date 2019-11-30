@@ -129,6 +129,9 @@ page_fault (struct intr_frame *f)
   bool user;         /* True: access by user, false: access by kernel. */
   void *fault_addr;  /* Fault address. */
   struct spt_entry * addr_entry;
+  uint32_t *esp = f->esp;
+  struct thread *cur = thread_current();
+  bool isload = false;
 
   /* Obtain faulting address, the virtual address that was
      accessed to cause the fault.  It may point to code or to
@@ -170,15 +173,24 @@ page_fault (struct intr_frame *f)
 	  //printf("invalid address error in page_fault\n");
 	  exit(-1);
   }
+  if (!user) {
+	  //esp = cur->cur_esp;
+  }
   
   //printf("pass1\n");
-  if (not_present)
+  if (not_present && fault_addr > 0x08048000)
   {
 	  addr_entry = find_spt_entry(fault_addr);
 	  if (addr_entry == NULL)
 	  {
-		  //printf("need to implement stack growth\n");
-		  exit(-1);
+		  if (fault_addr >= esp - 32)
+		  {
+			  grow_stack(fault_addr);
+		  }
+		  else
+		  {
+			  exit(-1);
+		  }
 		  //PANIC("stack growth needed! in page_fault\n");
 		  //stack growth
 		  //addr_entry = 

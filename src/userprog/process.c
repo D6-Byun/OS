@@ -425,8 +425,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
 /* load() helpers. */
 
-static bool install_page (void *upage, void *kpage, bool writable);
-
 /* Checks whether PHDR describes a valid, loadable segment in
    FILE and returns true if so, false otherwise. */
 static bool
@@ -559,10 +557,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 static bool
 setup_stack (void **esp, int argc, char *argv[]) 
 {
+	
   uint8_t *kpage, *nullp = (uint8_t)0;
   bool success = false;
   uintptr_t *addr[32];
   struct spt_entry *new_spte;
+  /*
   struct frame_entry *new_frame = create_f_entry(PAL_ZERO, (uint8_t *)(PHYS_BASE - PGSIZE));
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   kpage = new_frame->kpage;
@@ -572,7 +572,7 @@ setup_stack (void **esp, int argc, char *argv[])
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 	  if (success) {
 		  *esp = PHYS_BASE;
-		  /*argv[i][...]*/
+		  //argv[i][...]
 		  for (int i = argc - 1; i >= 0; i--) {
 			  *esp -= (strlen(argv[i]) + 1);
 			 // printf("%d,\n",(strlen(argv[i]+1)));
@@ -580,27 +580,27 @@ setup_stack (void **esp, int argc, char *argv[])
 			  addr[i] = (uintptr_t*)*esp;
 		  }
 		  addr[argc] = (uintptr_t*)0;
-		  /*word-align*/
+		  //word-align
 		  while ((uintptr_t)*esp % 4 != 0) {
 			  *esp = *esp - 1;
 			  //printf("%d\n",(uintptr_t)*esp);
 			  //memmove(*esp,nullp,sizeof(*nullp));
 		  }
 			//printf("%d\n",(uintptr_t)*esp);
-		  /*argv[i]*/
+		  //argv[i]
 		  for (int i = argc; i >= 0; i--) {
 			  *esp = *esp - 4;
 			  *(uintptr_t **)*esp = addr[i];
 		  }
-		  /*argv*/
+		  //argv
 		  *esp = *esp - 4;
 		  //printf("%d\n",(uintptr_t)*esp);
 		  *(uintptr_t **)*esp = *esp + 4;
-		  /*argc*/
+		  //argc
 		  *esp = *esp - 4;
 		  	//printf("%d\n",(uintptr_t)*esp);
 			*(int *)*esp = argc;
-		  /*ret addr*/
+		  //ret addr
 		  *esp = *esp - 4;
 		  *(int *)*esp = 0;
 
@@ -629,6 +629,44 @@ setup_stack (void **esp, int argc, char *argv[])
   */
   //not sure
   //printf("end setup_stack \n");
+	bool success = grow_stack(((uint8_t *)PHYS_BASE) - PGSIZE);
+	if (success) {
+		*esp = PHYS_BASE;
+		//argv[i][...]
+		for (int i = argc - 1; i >= 0; i--) {
+			*esp -= (strlen(argv[i]) + 1);
+			// printf("%d,\n",(strlen(argv[i]+1)));
+			memcpy(*esp, argv[i], strlen(argv[i]) + 1);
+			addr[i] = (uintptr_t*)*esp;
+		}
+		addr[argc] = (uintptr_t*)0;
+		//word-align
+		while ((uintptr_t)*esp % 4 != 0) {
+			*esp = *esp - 1;
+			//printf("%d\n",(uintptr_t)*esp);
+			//memmove(*esp,nullp,sizeof(*nullp));
+		}
+		//printf("%d\n",(uintptr_t)*esp);
+	  //argv[i]
+		for (int i = argc; i >= 0; i--) {
+			*esp = *esp - 4;
+			*(uintptr_t **)*esp = addr[i];
+		}
+		//argv
+		*esp = *esp - 4;
+		//printf("%d\n",(uintptr_t)*esp);
+		*(uintptr_t **)*esp = *esp + 4;
+		//argc
+		*esp = *esp - 4;
+		//printf("%d\n",(uintptr_t)*esp);
+		*(int *)*esp = argc;
+		//ret addr
+		*esp = *esp - 4;
+		*(int *)*esp = 0;
+	}
+	else {
+		return success;
+	}
   return success;
 }
 
@@ -641,8 +679,7 @@ setup_stack (void **esp, int argc, char *argv[])
    with palloc_get_page().
    Returns true on success, false if UPAGE is already mapped or
    if memory allocation fails. */
-static bool
-install_page (void *upage, void *kpage, bool writable)
+bool install_page (void *upage, void *kpage, bool writable)
 {
   struct thread *t = thread_current ();
 

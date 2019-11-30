@@ -7,6 +7,8 @@
 #include <hash.h>
 #include "filesys/off_t.h"
 
+#define MAX_STACK_SIZE (1 << 23) //8MB = max stack size (4.3.3)
+
 struct spt
 {
 	struct hash hash_brown;
@@ -48,5 +50,7 @@ struct spt_entry * find_spt_entry(void *);
 void spt_destroy(struct spt *);
 
 struct spt_entry * create_s_entry(uint8_t *, uint8_t *, bool, struct file *, off_t, uint32_t, uint32_t);
+
+bool grow_stack(void *upage);
 
 #endif // !VM_PAGE_H_
