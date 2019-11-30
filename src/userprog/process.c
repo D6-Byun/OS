@@ -169,7 +169,7 @@ process_exit (void)
   uint32_t *pd;
   struct list_elem *e;
 
-  printf("destroy start \n");
+  //printf("destroy start \n");
 
   spt_destroy(cur->spt);
   cur->spt = NULL;
@@ -180,7 +180,7 @@ process_exit (void)
 	  free_mmap(temp_mmap);
   }
   */
-  printf("spt_destroy end\n");
+  //printf("spt_destroy end\n");
   for (int i = 0; i < 128; i++)
   {
 	  if (thread_current()->files[i] != NULL)
@@ -663,7 +663,7 @@ void load_and_map(struct spt_entry *spt_e)
 	}
 	//printf("successfully frame entry made in load_and_map\n");
 	spt_e->kpage = new_frame->kpage;
-	printf("kpage address is %x\n",spt_e->kpage);
+	//printf("kpage address is %x\n",spt_e->kpage);
 	if (load_file(new_frame, spt_e))
 	{
 		//printf("successfully load_complete in load_and_map\n");
