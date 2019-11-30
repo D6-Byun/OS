@@ -390,7 +390,7 @@ mapid_t mmap(int fd, void *addr)
 
 	if (saved_file == NULL)
 	{
-		printf("file with fd doesn't exist in mmap\n");
+		//printf("file with fd doesn't exist in mmap\n");
 		exit(-1);
 	}
 	is_valid_addr(addr);
@@ -408,12 +408,12 @@ mapid_t mmap(int fd, void *addr)
 		temp_entry = create_s_entry(addr, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
 		if (temp_entry == NULL)
 		{
-			printf("spt_entry create fail in load_segment\n");
+			//printf("spt_entry create fail in load_segment\n");
 			exit(-1);
 		}
 		if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
 		{
-			printf("spt insert fail in load_segment\n");
+			//printf("spt insert fail in load_segment\n");
 			exit(-1);
 		}
 		list_push_back(&mmap_file->spt_entry_list, &temp_entry->mmap_elem);
@@ -444,14 +444,14 @@ void munmap(mapid_t mapid)
 		}
 		if (target_mmap == NULL)
 		{
-			printf("target_mmap is null in munmap\n");
+			//printf("target_mmap is null in munmap\n");
 			exit(-1);
 		}
 		free_mmap(target_mmap);
 	}
 	else
 	{
-		printf("mmap_list is empty in munmap\n");
+		//printf("mmap_list is empty in munmap\n");
 		exit(-1);
 	}
 }

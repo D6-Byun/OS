@@ -103,7 +103,7 @@ struct frame_entry * search_frame_entry(void *kpage) {
 	struct frame_entry * tem_entry;
 	tem_entry->kpage = pg_round_down(kpage);
 	struct hash_elem * target_elem = hash_find(frame_table, &tem_entry->helem);
-	printf("target elem found successfully\n");
+	//printf("target elem found successfully\n");
 	if (target_elem == NULL)
 	{
 		//printf("hash_find failed in find_spt_entry\n");
