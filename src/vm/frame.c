@@ -88,9 +88,9 @@ void free_frame_table(void)
 void free_frame_entry(struct hash_elem *e, void *aux)
 {
 	uint8_t * target_pointer;
-	printf("free frame_entry\n");
+	//printf("free frame_entry\n");
 	struct frame_entry * target_entry = hash_entry(e, struct frame_entry, helem);
-	printf("kpage addr : %x\n", target_entry->kpage);
+	//printf("kpage addr : %x\n", target_entry->kpage);
 	target_pointer = target_entry->kpage;
 	hash_delete(frame_table, &target_entry->helem);
 	free(target_entry);
@@ -101,20 +101,20 @@ void free_frame_entry(struct hash_elem *e, void *aux)
 
 
 struct frame_entry * search_frame_entry(void *kpage) {
-	printf("search_Frame_entry\n");
-	printf("frame table : %x\n", frame_table);
+	//printf("search_Frame_entry\n");
+	//printf("frame table : %x\n", frame_table);
 	struct frame_entry * tem_entry = (struct frame_entry*)malloc(sizeof(struct frame_entry));
-	printf("malloc finish\n");
+	//printf("malloc finish\n");
 	tem_entry->kpage = pg_round_down(kpage);
-	printf("round_down finish\n");
+	//printf("round_down finish\n");
 	struct hash_elem * target_elem = hash_find(frame_table, &tem_entry->helem);
-	printf("target elem found successfully\n");
+	//printf("target elem found successfully\n");
 	if (target_elem == NULL)
 	{
-		printf("hash_find failed in find_spt_entry\n");
+		//printf("hash_find failed in find_spt_entry\n");
 		return NULL;
 	}
-	printf("successfully spt_entry found\n");
+	//printf("successfully spt_entry found\n");
 	return hash_entry(target_elem, struct frame_entry, helem);
 }
 

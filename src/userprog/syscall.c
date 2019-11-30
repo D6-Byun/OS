@@ -398,7 +398,7 @@ mapid_t mmap(int fd, void *addr)
 	}
 	if (list_empty(&thread_current()->mmap_list))
 	{
-		printf("list is empty\n");
+		//printf("list is empty\n");
 	}
 
 	is_valid_addr(addr);
@@ -410,21 +410,21 @@ mapid_t mmap(int fd, void *addr)
 	list_init(&mmap_file1->spt_entry_list);
 
 
-	printf("list init ended in mmap\n");
-	printf("upage : %x\n", addr);
-	printf("file_size : %d\n", read_byte);
-	printf("mapid : %d\n", thread_current()->mmap_index);
-	printf("now go to while loop\n");
+	//printf("list init ended in mmap\n");
+	//printf("upage : %x\n", addr);
+	//printf("file_size : %d\n", read_byte);
+	//printf("mapid : %d\n", thread_current()->mmap_index);
+	//printf("now go to while loop\n");
 
 
 	while (file_size>ofs)
 	{
-		printf("upage : %x\n", upage);
-		printf("file_size : %d\n", read_byte);
+		//printf("upage : %x\n", upage);
+		//printf("file_size : %d\n", read_byte);
 		size_t page_read_bytes = read_byte < PGSIZE ? read_byte : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
-		printf("page_read_bytes : %d\n", page_read_bytes);
-		printf("page_zero_bytes : %d\n", page_zero_bytes);
+		//printf("page_read_bytes : %d\n", page_read_bytes);
+		//printf("page_zero_bytes : %d\n", page_zero_bytes);
 		temp_entry = create_s_entry(upage, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
 		if (temp_entry == NULL)
 		{
@@ -432,38 +432,38 @@ mapid_t mmap(int fd, void *addr)
 			exit(-1);
 		}
 
-		printf("spt_entry created in mmap\n");
-		printf("spt_entry page_read_bytes : %d\n", temp_entry->read_bytes);
+		//printf("spt_entry created in mmap\n");
+		//printf("spt_entry page_read_bytes : %d\n", temp_entry->read_bytes);
 
 		if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
 		{
 			//printf("spt insert fail in load_segment\n");
 			exit(-1);
 		}
-		printf("spt_entry inserted in table in mmap\n");
+		//printf("spt_entry inserted in table in mmap\n");
 		list_push_back(&mmap_file1->spt_entry_list, &temp_entry->mmap_elem);
-		printf("stp_entry inserted in mmap_list in mmap\n");
+		//printf("stp_entry inserted in mmap_list in mmap\n");
 		upage = upage + PGSIZE;
 		ofs += page_read_bytes;
 		read_byte -= page_read_bytes;
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file1->elem);
-	printf("mmap ended\n");
+	//printf("mmap ended\n");
 	
 	
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
-		printf("for start \n");
-		printf("e : %x\n", e);
+		//printf("for start \n");
+		//printf("e : %x\n", e);
 		
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 		
 		if (temp_mmap == NULL)
 		{
-			printf("mmap_file is null\n");
+			//printf("mmap_file is null\n");
 		}
 		
-		printf("mapid == %d\n",(temp_mmap->mapid));
+		//printf("mapid == %d\n",(temp_mmap->mapid));
 		
 	}
 	
@@ -475,47 +475,47 @@ void munmap(mapid_t mapid)
 {
 	struct mmap_file * target_mmap = NULL;
 	struct list_elem *e;
-	printf("munmap start\n");
+	//printf("munmap start\n");
 	if (!list_empty(&thread_current()->mmap_list))
 	{
 		for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 		{
 			struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
-			printf("mapid : %d\n", temp_mmap->mapid);
-			printf("input mapid : %d\n", mapid);
+			//printf("mapid : %d\n", temp_mmap->mapid);
+			//printf("input mapid : %d\n", mapid);
 			if (temp_mmap->mapid == mapid)
 			{
 				target_mmap = temp_mmap;
-				printf("1!\n");
+				//printf("1!\n");
 			}
 		}
 		if (target_mmap == NULL)
 		{
-			printf("target_mmap is null in munmap\n");
+			//printf("target_mmap is null in munmap\n");
 			exit(-1);
 		}
 		free_mmap(target_mmap);
 	}
 	else
 	{
-		printf("mmap_list is empty in munmap\n");
+		//printf("mmap_list is empty in munmap\n");
 		exit(-1);
 	}
-	printf("munmap finish\n");
+	//printf("munmap finish\n");
 }
 
 /* delete spt_entry in spt_entry_list, in hash_brown, delete mmap_file in mmap_list, and file_close, and free mmap_file. */
 void free_mmap(struct mmap_file * mmap_file)
 {
 	struct list_elem *e;
-	printf("start free_map\n");
+	//printf("start free_map\n");
 	for (e = list_begin(&mmap_file->spt_entry_list); e != list_end(&mmap_file->spt_entry_list); e = list_next(e))
 	{
-		printf("for loop start\n");
+		//printf("for loop start\n");
 		struct spt_entry *temp_entry = list_entry(e, struct spt_entry, mmap_elem);
 		if (temp_entry == NULL)
 		{
-			printf("it is null\n");
+			//printf("it is null\n");
 		}
 		list_remove(e);
 		/*
@@ -524,14 +524,14 @@ void free_mmap(struct mmap_file * mmap_file)
 			file_write_at(temp_entry->file, mmap_file->file, temp_entry->read_bytes, temp_entry->offset);
 		}
 		*/
-		printf("removed from list\n");
+		//printf("removed from list\n");
 		delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
 	}
-	printf("for loop end\n");
+	//printf("for loop end\n");
 	list_remove(&mmap_file->elem);
-	printf("mmap_file deleted in mmap_list\n");
+	//printf("mmap_file deleted in mmap_list\n");
 	file_close(mmap_file->file);
-	printf("file close\n");
+	//printf("file close\n");
 	free(mmap_file);
-	printf("free mmap_file\n");
+	//printf("free mmap_file\n");
 }
