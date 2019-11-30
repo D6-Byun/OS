@@ -470,7 +470,7 @@ void free_mmap(struct mmap_file * mmap_file)
 			file_write_at(temp_entry->file, mmap_file->file, temp_entry->read_bytes, temp_entry->offset);
 		}
 		*/
-		delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
+		//delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
 	}
 	list_remove(&mmap_file->elem);
 	file_close(mmap_file->file);

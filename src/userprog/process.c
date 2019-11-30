@@ -168,13 +168,13 @@ process_exit (void)
 
   spt_destroy(cur->spt);
   cur->spt = NULL;
-
+  /*
   for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
   {
 	  struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 	  free_mmap(temp_mmap);
   }
-
+  */
   for (int i = 0; i < 128; i++)
   {
 	  if (thread_current()->files[i] != NULL)
