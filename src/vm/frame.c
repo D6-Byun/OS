@@ -98,9 +98,9 @@ void free_frame_entry(struct hash_elem *e, void *aux)
 
 
 struct frame_entry * search_frame_entry(void *kpage) {
-	struct frame_entry tem_entry;
-	tem_entry.kpage = pg_round_down(kpage);
-	struct hash_elem * target_elem = hash_find(frame_table, &tem_entry.helem);
+	struct frame_entry * tem_entry;
+	tem_entry->kpage = pg_round_down(kpage);
+	struct hash_elem * target_elem = hash_find(frame_table, &tem_entry->helem);
 	if (target_elem == NULL)
 	{
 		//printf("hash_find failed in find_spt_entry\n");
