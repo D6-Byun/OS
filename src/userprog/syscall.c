@@ -65,6 +65,21 @@ struct spt_entry * is_valid_addr(void *addr) {
 		//printf("addr not in user section\n");
 		exit(-1);
 	}
+	bool isload = false;
+	struct spt_entry *spte = find_spt_entry(addr);
+	if (spte != NULL) {
+		//printf("is_valid_addr: cannot found spte.\n");
+		load_and_map(spte);
+		isload = spte->is_loaded;
+	}
+	else if (addr >= esp - 32) {
+		isload = grow_stack(addr);
+	}
+	if (!isload) {
+		//printf("is_valid_addr: not loaded\n");
+		exit(-1);
+	}
+
 	/*
 	search_entry = find_spt_entry(addr);
 	if (search_entry != NULL)
