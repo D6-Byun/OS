@@ -460,7 +460,7 @@ void munmap(mapid_t mapid)
 void free_mmap(struct mmap_file * mmap_file)
 {
 	struct list_elem *e;
-	for (e = list_begin(mmap_file->spt_entry_list); e != list_end(mmap_file->spt_entry_list); e = list_next(e))
+	for (e = list_begin(&mmap_file->spt_entry_list); e != list_end(&mmap_file->spt_entry_list); e = list_next(e))
 	{
 		struct spt_entry *temp_entry = list_entry(e, struct spt_entry, mmap_elem);
 		list_remove(e);
@@ -472,7 +472,7 @@ void free_mmap(struct mmap_file * mmap_file)
 		*/
 		delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
 	}
-	list_remove(mmap_file->elem);
+	list_remove(&mmap_file->elem);
 	file_close(mmap_file->file);
 	free(mmap_file);
 }
