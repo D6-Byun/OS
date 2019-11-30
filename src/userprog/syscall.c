@@ -476,6 +476,7 @@ void munmap(mapid_t mapid)
 	struct mmap_file * target_mmap = NULL;
 	struct list_elem *e;
 	printf("munmap start\n");
+
 	if (!list_empty(&thread_current()->mmap_list))
 	{
 		for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
@@ -510,6 +511,12 @@ void free_mmap(struct mmap_file * mmap_file)
 {
 	struct list_elem *e;
 	printf("start free_map\n");
+
+	if (list_empty(&mmap_file->spt_entry_list))
+	{
+		printf("list is empty\n");
+	}
+
 	for (e = list_begin(&mmap_file->spt_entry_list); e != list_end(&mmap_file->spt_entry_list); e = list_next(e))
 	{
 		printf("for loop start\n");
