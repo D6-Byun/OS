@@ -522,6 +522,9 @@ void free_mmap(struct mmap_file * mmap_file)
 	}
 	printf("for loop end\n");
 	list_remove(&mmap_file->elem);
+	printf("mmap_file deleted in mmap_list\n");
 	file_close(mmap_file->file);
+	printf("file close\n");
 	free(mmap_file);
+	printf("free mmap_file\n");
 }
