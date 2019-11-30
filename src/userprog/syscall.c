@@ -412,7 +412,7 @@ mapid_t mmap(int fd, void *addr)
 	printf("list init ended in mmap\n");
 	printf("upage : %x\n", addr);
 	printf("file_size : %d\n", read_byte);
-	printf("mapid : %d", thread_current()->mmap_index);
+	printf("mapid : %d\n", thread_current()->mmap_index);
 	printf("now go to while loop\n");
 
 
@@ -422,6 +422,8 @@ mapid_t mmap(int fd, void *addr)
 		printf("file_size : %d\n", read_byte);
 		size_t page_read_bytes = read_byte < PGSIZE ? read_byte : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+		printf("page_read_bytes : %d\n", page_read_bytes);
+		printf("page_zero_bytes : %d\n", page_zero_bytes);
 		temp_entry = create_s_entry(addr, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
 		if (temp_entry == NULL)
 		{
@@ -430,6 +432,8 @@ mapid_t mmap(int fd, void *addr)
 		}
 
 		printf("spt_entry created in mmap\n");
+		printf("spt_entry page_read_bytes : %d\n", temp_entry->read_bytes);
+
 		if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
 		{
 			//printf("spt insert fail in load_segment\n");
