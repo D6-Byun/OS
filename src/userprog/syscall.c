@@ -457,11 +457,12 @@ mapid_t mmap(int fd, void *addr)
 		printf("e : %x\n", e);
 		
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
-		/*
+		
 		if (temp_mmap == NULL)
 		{
 			printf("mmap_file is null\n");
 		}
+		/*
 		printf(temp_mmap->mapid);
 		*/
 	}
