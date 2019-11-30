@@ -401,6 +401,8 @@ mapid_t mmap(int fd, void *addr)
 	mmap_file->mapid = mapid;
 	list_init(&mmap_file->spt_entry_list);
 
+	print("list init ended in mmap\n");
+
 	while (read_byte > 0)
 	{
 		size_t page_read_bytes = read_byte < PGSIZE ? read_byte : PGSIZE;
@@ -411,18 +413,22 @@ mapid_t mmap(int fd, void *addr)
 			//printf("spt_entry create fail in load_segment\n");
 			exit(-1);
 		}
+
+		print("spt_entry created in mmap\n");
 		if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
 		{
 			//printf("spt insert fail in load_segment\n");
 			exit(-1);
 		}
+		print("spt_entry inserted in table in mmap\n");
 		list_push_back(&mmap_file->spt_entry_list, &temp_entry->mmap_elem);
-		
+		print("stp_entry inserted in mmap_list in mmap\n");
 		addr = addr + PGSIZE;
 		ofs += page_read_bytes;
 		read_byte -= page_read_bytes;
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
+	print("list init ended in mmap\n");
 	return mapid;
 
 }
