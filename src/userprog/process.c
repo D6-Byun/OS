@@ -100,6 +100,7 @@ start_process (void *file_name_)
 	struct thread *cur = thread_current();
 
 	cur->spt = spt_init(); /*create spt in current thread*/
+	list_init(&cur->mmap_list);
 	
   	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
