@@ -137,7 +137,7 @@ syscall_handler (struct intr_frame *f)
 	//printf("f->esp: %x\n",f->esp);
 	//printf("*f->esp: %d\n",*(int*)f->esp);
 	//hex_dump((uintptr_t)f->esp,f->esp,24,true);
-	is_valid_addr(f->esp, , f->esp);
+	is_valid_addr(f->esp, f->esp);
 	switch (*(uint32_t *)f->esp) {
 		case SYS_HALT:
 			shutdown_power_off();
