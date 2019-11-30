@@ -114,9 +114,9 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 		//printf("need to change format of frame entry deletion\n");
 		printf("connected with frame\n");
 		printf("kpage addr : %x\n", target_entry->kpage);
-		struct frame_entry *target_frame = search_frame_entry(target_entry->kpage);
+		//struct frame_entry *target_frame = search_frame_entry(target_entry->kpage);
 		printf("found frame entry\n");
-		free_frame_entry(&target_frame->helem, NULL);
+		//free_frame_entry(&target_frame->helem, NULL);
 	}
 	printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
