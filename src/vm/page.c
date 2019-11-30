@@ -60,6 +60,7 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 		free_frame_entry(&taget_entry->helem, NULL);
 		
 	}
+	spt_e->is_loaded = false;
 	free(spt_e);
 	//printf("successfully spt_entry deleted\n");
 	return true;
@@ -124,6 +125,8 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 
 		free_frame_entry(&target_frame->helem, NULL);
 	}
+	target_entry->is_loaded = false;
+	hash_delete(&thread_current()->spt->hash_brown, &target_entry->helem);
 	//printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
 }
