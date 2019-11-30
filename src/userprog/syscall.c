@@ -305,8 +305,8 @@ int filesize(int fd) {
 }
 int read(int fd, void *buffer, unsigned length) {
 	int i = 0;
-	check_valid_buffer(buffer, length, true);
-	//is_valid_addr(buffer);
+	//check_valid_buffer(buffer, length, true);
+	is_valid_addr(buffer);
 	lock_acquire(&lock_imsi2);
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
