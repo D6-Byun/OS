@@ -532,7 +532,7 @@ void free_mmap(struct mmap_file * mmap_file)
 		{
 			printf("it is null\n");
 		}
-		e = list_remove(e);
+		e=list_remove(e);
 		/*
 		if (temp_entry->is_loaded && temp_entry->dirty)
 		{
