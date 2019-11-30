@@ -516,6 +516,7 @@ void free_mmap(struct mmap_file * mmap_file)
 	{
 		printf("list is empty\n");
 	}
+	printf("list size : %d\n",list_size(&mmap_file->spt_entry_list));
 
 	for (e = list_begin(&mmap_file->spt_entry_list); e != list_end(&mmap_file->spt_entry_list); e = list_next(e))
 	{
