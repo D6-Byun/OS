@@ -48,6 +48,7 @@ void close(int fd);
 
 mapid_t mmap(int, void *);
 void munmap(mapid_t);
+void free_mmap(struct mmap_file *);
 
 struct lock lock_imsi2;
 	
@@ -430,5 +431,48 @@ mapid_t mmap(int fd, void *addr)
 
 void munmap(mapid_t mapid)
 {
+	struct mmap_file * target_mmap = NULL;
+	struct list_elem *e;
+	if (!list_empty(&thread_current()->mmap_list))
+	{
+		for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
+		{
+			struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
+			if (temp_mmap->mapid == mapid)
+			{
+				target_mmap = temp_mmap;
+				break;
+			}
+		}
+		if (target_mmap == NULL)
+		{
+			exit(-1);
+		}
+		free_mmap(target_mmap);
+	}
+	else
+	{
+		exit(-1);
+	}
+}
 
+/* delete spt_entry in spt_entry_list, in hash_brown, delete mmap_file in mmap_list, and file_close, and free mmap_file. */
+void free_mmap(struct mmap_file * mmap_file)
+{
+	struct list_elem *e;
+	for (e = list_begin(mmap_file->spt_entry_list); e != list_end(mmap_file->spt_entry_list); e = list_next(e))
+	{
+		struct spt_entry *temp_entry = list_entry(e, struct spt_entry, mmap_elem);
+		list_remove(e);
+		/*
+		if (temp_entry->is_loaded && temp_entry->dirty)
+		{
+			file_write_at(temp_entry->file, mmap_file->file, temp_entry->read_bytes, temp_entry->offset);
+		}
+		*/
+		delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
+	}
+	list_remove(mmap_file->elem);
+	file_close(mmap_file->file);
+	free(mmap_file);
 }
