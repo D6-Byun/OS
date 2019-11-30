@@ -160,7 +160,7 @@ bool grow_stack(void *upage)
 		free(spte);
 		return false;
 	}
-	if (!install_page(spte->upage, new_frame, spte->writable)) {
+	if (!install_page(spte->upage, new_frame->kpage, spte->writable)) {
 		free(spte);
 		delete_frame_entry(new_frame);
 		return false;
