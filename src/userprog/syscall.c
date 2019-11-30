@@ -395,12 +395,12 @@ mapid_t mmap(int fd, void *addr)
 
 	if (saved_file == NULL)
 	{
-		printf("file with fd doesn't exist in mmap\n");
+		//printf("file with fd doesn't exist in mmap\n");
 		exit(-1);
 	}
 	if (list_empty(&thread_current()->mmap_list))
 	{
-		printf("list is empty\n");
+		//printf("list is empty\n");
 	}
 
 	is_valid_addr(addr);
@@ -412,63 +412,63 @@ mapid_t mmap(int fd, void *addr)
 	list_init(&mmap_file1->spt_entry_list);
 
 
-	printf("list init ended in mmap\n");
-	printf("upage : %x\n", addr);
-	printf("file_size : %d\n", read_byte);
-	printf("mapid : %d\n", thread_current()->mmap_index);
-	printf("now go to while loop\n");
+	//printf("list init ended in mmap\n");
+	//printf("upage : %x\n", addr);
+	//printf("file_size : %d\n", read_byte);
+	//printf("mapid : %d\n", thread_current()->mmap_index);
+	//printf("now go to while loop\n");
 
 
 	while (file_size>ofs)
 	{
-		printf("upage : %x\n", upage);
-		printf("file_size : %d\n", read_byte);
+		//printf("upage : %x\n", upage);
+		//printf("file_size : %d\n", read_byte);
 		size_t page_read_bytes = read_byte < PGSIZE ? read_byte : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
-		printf("page_read_bytes : %d\n", page_read_bytes);
-		printf("page_zero_bytes : %d\n", page_zero_bytes);
+		//printf("page_read_bytes : %d\n", page_read_bytes);
+		//printf("page_zero_bytes : %d\n", page_zero_bytes);
 		temp_entry = create_s_entry(upage, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
 		if (temp_entry == NULL)
 		{
-			printf("spt_entry create fail in load_segment\n");
+			//printf("spt_entry create fail in load_segment\n");
 			exit(-1);
 		}
 
-		printf("spt_entry created in mmap\n");
-		printf("spt_entry page_read_bytes : %d\n", temp_entry->read_bytes);
+		//printf("spt_entry created in mmap\n");
+		//printf("spt_entry page_read_bytes : %d\n", temp_entry->read_bytes);
 
 		if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
 		{
-			printf("spt insert fail in load_segment\n");
+			//printf("spt insert fail in load_segment\n");
 			exit(-1);
 		}
-		printf("spt_entry inserted in table in mmap\n");
+		//printf("spt_entry inserted in table in mmap\n");
 		list_push_back(&mmap_file1->spt_entry_list, &temp_entry->mmap_elem);
-		printf("stp_entry inserted in mmap_list in mmap\n");
+		//printf("stp_entry inserted in mmap_list in mmap\n");
 		upage = upage + PGSIZE;
 		ofs += page_read_bytes;
 		read_byte -= page_read_bytes;
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file1->elem);
-	printf("mmap ended\n");
+	//printf("mmap ended\n");
 	
 	
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
-		printf("for start \n");
-		printf("e : %x\n", e);
+		//printf("for start \n");
+		//printf("e : %x\n", e);
 		
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 		
 		if (temp_mmap == NULL)
 		{
-			printf("mmap_file is null\n");
+			//printf("mmap_file is null\n");
 		}
 		
-		printf("mapid == %d\n",(temp_mmap->mapid));
+		//printf("mapid == %d\n",(temp_mmap->mapid));
 		
 	}
-	printf("mapid = %d\n", mapid);
+	//printf("mapid = %d\n", mapid);
 	/*
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
