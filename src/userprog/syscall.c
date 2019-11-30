@@ -402,9 +402,15 @@ mapid_t mmap(int fd, void *addr)
 	list_init(&mmap_file->spt_entry_list);
 
 	printf("list init ended in mmap\n");
+	printf("upage : %x\n", addr);
+	printf("file_size : %d\n", read_byte);
+	printf("now go to while loop\n");
+
 
 	while (read_byte > 0)
 	{
+		printf("upage : %x\n", addr);
+		printf("file_size : %d\n", read_byte);
 		size_t page_read_bytes = read_byte < PGSIZE ? read_byte : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 		temp_entry = create_s_entry(addr, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
