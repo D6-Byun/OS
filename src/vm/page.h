@@ -30,8 +30,14 @@ struct spt_entry {
 
 	struct list_elem mmap_elem;
 	//uint32_t swap_slot;
+};
 
-
+struct mmap_file
+{
+	int mapid;
+	struct file* file;
+	struct list_elem elem;
+	struct list spt_entry_list;
 };
 
 struct spt * spt_init(void);

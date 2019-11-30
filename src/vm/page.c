@@ -52,8 +52,12 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 		//printf("hash_delete failed in delete_spt_entry\n");
 		return false;
 	}
-	//palloc_free_page(upage_ptr);
 	free(spt_e);
+	if (spt_e->is_loaded)
+	{
+		struct frame_entry *taget_entry = search_frame_entry(spt_e->kpage);
+		free_frame_entry(taget_entry->helem, NULL);
+	}
 	//printf("successfully spt_entry deleted\n");
 	return true;
 }
@@ -106,7 +110,8 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 	if (target_entry->is_loaded)
 	{
 		//printf("need to change format of frame entry deletion\n");
-		//free_frame_entry(target_entry->kpage, NULL);
+		struct frame_entry *taget_entry = search_frame_entry(spt_e->kpage);
+		free_frame_entry(taget_entry->helem, NULL);
 	}
 	//printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);

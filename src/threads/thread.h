@@ -98,6 +98,7 @@ struct thread
 	struct spt * spt;
 
 	struct list mmap_list;
+	int mmap_index;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */

@@ -96,10 +96,17 @@ void free_frame_entry(struct hash_elem *e, void *aux)
 	//printf("chock chock - frame_entry_Destroy\n");
 }
 
-/*
-struct frame_entry * search_frame_entry()
 
-::Maybe needed at free::
-
-*/
+struct frame_entry * search_frame_entry(void *kpage) {
+	struct frame_entry tem_entry;
+	tem_entry.kpage = pg_round_down(kpage);
+	struct hash_elem * target_elem = hash_find(frame_table, &tem_entry.helem);
+	if (target_elem == NULL)
+	{
+		//printf("hash_find failed in find_spt_entry\n");
+		return NULL;
+	}
+	//printf("successfully spt_entry found\n");
+	return hash_entry(target_elem, struct frame_entry, helem);
+}
 

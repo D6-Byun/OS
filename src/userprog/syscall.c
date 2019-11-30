@@ -13,6 +13,8 @@
 #include "threads/synch.h"
 #include "vm/page.h"
 #include "vm/frame.h"
+#include "threads/malloc.h"
+
 
 struct file 
 	{
@@ -373,17 +375,60 @@ void close(int fd) {
 
 mapid_t mmap(int fd, void *addr)
 {
-	struct file* target_file = thread_current()->files[fd];
-	if (target_file == NULL)
+	struct file* saved_file = thread_current()->files[fd];
+	struct file* target_file = file_reopen(saved_file);
+	mapid_t mapid;
+	int file_size = filesize(fd);
+	int page_count = (file_size / PGSIZE) + ((file_size % PGSIZE) == 0 ? 0 : 1);
+	struct mmap_file * mmap_file;
+	int8_t * upage;
+	bool writable = true;
+	struct file* file = target_file;
+	off_t ofs = 0;
+	uint32_t read_byte = file_size;
+	//uint32_t zero_byte = ;
+	struct spt_entry* temp_entry;
+
+	if (saved_file == NULL)
 	{
 		//printf("file with fd doesn't exist in mmap\n");
 		exit(-1);
 	}
+	is_valid_addr(addr);
+	mapid = thread_current()->mmap_index;
+	thread_current()->mmap_index++;
+	mmap_file = (struct mmap_file *)malloc(sizeof(struct mmap_file));
+	mmap_file->file = target_file;
+	mmap_file->mapid = mapid;
+	list_init(&mmap_file->spt_entry_list);
 
+	while (read_byte > 0)
+	{
+		size_t page_read_bytes = read_byte < PGSIZE ? read_byte : PGSIZE;
+		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+		temp_entry = create_s_entry(addr, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
+		if (temp_entry == NULL)
+		{
+			//printf("spt_entry create fail in load_segment\n");
+			exit(-1);
+		}
+		if (!insert_spt_entry(&thread_current()->spt->hash_brown, temp_entry))
+		{
+			//printf("spt insert fail in load_segment\n");
+			exit(-1);
+		}
+		list_push_back(&mmap_file->spt_entry_list, &temp_entry->mmap_elem);
+		
+		addr = addr + PGSIZE;
+		ofs += page_read_bytes;
+		read_byte -= page_read_bytes;
+	}
+	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
+	return mapid;
 
 }
 
-void munmap(mapid_t mapping)
+void munmap(mapid_t mapid)
 {
 
 }
