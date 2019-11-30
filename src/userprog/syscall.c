@@ -12,6 +12,7 @@
 #include "filesys/off_t.h"
 #include "threads/synch.h"
 #include "vm/frame.h"
+#include "vm/page.h"
 #include "threads/malloc.h"
 #include <list.h>
 
