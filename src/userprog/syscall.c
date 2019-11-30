@@ -484,7 +484,6 @@ void munmap(mapid_t mapid)
 			if (temp_mmap->mapid == mapid)
 			{
 				target_mmap = temp_mmap;
-				break;
 			}
 		}
 		if (target_mmap == NULL)
