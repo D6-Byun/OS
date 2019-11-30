@@ -174,7 +174,12 @@ process_exit (void)
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
 #ifdef VM
-  	munmap(CLOSE_ALL);
+  	for(int mapid = 1; mapid < cur->mapid; mapid++){
+		struct mmap_file *mfile = find_mmap_file(mapid);
+		if(mfile != NULL){
+			do_munmap(mfile);
+		}
+	}
  	spt_destroy(cur->spt);
  	cur->spt = NULL;
 #endif
@@ -596,4 +601,41 @@ static void arg_stack(int argc, char *argv[], void **esp){
 	/*ret addr*/
 	*esp = *esp - 4;
 	*(int *)*esp = 0;
+}
+
+void do_munmap(struct mmap_file *mfile){
+	struct thread *cur = thread_current();
+	struct list_elem *spte_elem = list_begin(&mfile->spte_list);
+	struct list_elem *spte_next = list_next(spte_elem);
+	while(spte_elem != list_end(&mfile->spte_list)){
+		struct sup_page_entry *spte = list_entry(spte_elem, struct sup_page_entry, lelem);
+		if(spte->is_loaded){
+			if(pagedir_is_dirty(cur->pagedir, spte->upage)){
+				file_write_at(spte->file, spte->upage, spte->read_bytes, spte->ofs);
+			}
+			frame_free(pagedir_get_page(cur->pagedir, spte->upage));
+			pagedir_clear_page(cur->pagedir, spte->upage);
+		}
+		spte->is_loaded = false;
+		hash_delete(&cur->spt->hash_brown,&spte->helem);
+		list_remove(&mfile->melem);
+		if(mfile->mapid != 0){
+			file_close(spte->file);
+		}
+		free(spte);	
+		spte_elem = spte_next;
+	}
+	free(mfile);
+}
+
+struct mmap_file *find_mmap_file(int mapid){
+	struct thread *cur = thread_current();
+	struct list_elem *elem = list_begin(&cur->mmap_list);
+	while(elem != list_end(&cur->mmap_list)){
+		struct mmap_file *mfile = list_entry(elem, struct mmap_file, melem);
+		if(mfile->mapid == mapid){
+			return mfile;
+		}
+	}
+	return NULL;
 }

@@ -66,6 +66,7 @@ void *frame_alloc(enum palloc_flags flags, struct sup_page_entry *spte){
 	frame->upage = spte->upage;
 	frame->t = thread_current();
 	frame->pinned = true;
+	frame->spte = spte;
 
 	lock_acquire(&frame_lock);
 	//hash_insert(&frame_hash, &frame->helem);
@@ -132,7 +133,7 @@ void *frame_evict(void){
 				struct sup_page_entry *spte = fpe->spte; 
 				off_t iswrite = file_write_at(spte->file,spte->upage,spte->read_bytes, spte->ofs);
 				if(iswrite != spte->read_bytes){
-					printf("frame_evict: write at error:\n");
+					//printf("frame_evict: write at error:\n");
 					lock_release(&frame_lock);
 					return NULL;
 				}

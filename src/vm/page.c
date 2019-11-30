@@ -40,6 +40,8 @@ spt_destroy_func(struct hash_elem *elem, void *aux)
 struct sup_page_table *spt_create(void){
 	struct sup_page_table *spt = (struct sup_page_table *)malloc(sizeof(struct sup_page_table));
 	hash_init(&spt->hash_brown,spt_hash_func,spt_less_func, NULL);
+	//printf("hash: %x\n",&spt->hash_brown.hash);
+	//printf("less: %x\n",&spt->hash_brown.less);
 	return spt;
 }
 
@@ -64,19 +66,19 @@ bool spt_load_file(struct sup_page_entry *spte){
 	//void *addr = pagedir_get_page(thread_current()->pagedir, spte->upage);
 	uint8_t *frame = frame_alloc(PAL_USER,spte);
 	if(!frame){
-		printf("spt_load_file: can't alloc frame\n");
+		//printf("spt_load_file: can't alloc frame\n");
 		return false;
 	}
 	off_t isread = file_read_at(spte->file, frame, spte->read_bytes, spte->ofs);
 	if(isread != spte->read_bytes){
 		frame_free(frame);
-		printf("isread : %d is diff with read_bytes : %d\n",isread,spte->read_bytes);
+		//printf("isread : %d is diff with read_bytes : %d\n",isread,spte->read_bytes);
 		return false;
 	}
 	memset(frame + spte->read_bytes, 0, spte->zero_bytes);
 	if(!install_page(spte->upage, frame, spte->writable)){
 		frame_free(frame);
-		printf("spt_load_file: fail to install\n");
+		//printf("spt_load_file: fail to install\n");
 		return false;
 	}
 	spte->is_loaded = true;
@@ -150,14 +152,16 @@ bool spt_add_mmap(struct sup_page_table *spt, struct file *file, off_t ofs, void
 		return false;
 	}
 //	printf("end add_mmap\n");
-	return hash_insert(&spt->hash_brown,&spte->helem) == NULL;
+	bool isinsert = (hash_insert(&spt->hash_brown,&spte->helem) == NULL);
+	//printf("isinsert : %d\n",isinsert);
+	return isinsert;
 }
 
 bool spt_try_add_mmap(struct file *file, struct sup_page_entry *spte){
 //	printf("start try_add_mmap\n");
 	struct mmap_file *mfile = (struct mmap_file *)malloc(sizeof(struct mmap_file));
 	if(mfile == NULL){
-		printf("spt_try_add_mmap: fail to malloc mmap_file.\n");
+		//printf("spt_try_add_mmap: fail to malloc mmap_file.\n");
 		return false;
 	}
 	list_init(&mfile->spte_list);
@@ -170,7 +174,7 @@ bool spt_try_add_mmap(struct file *file, struct sup_page_entry *spte){
 
 bool grow_stack(void *upage){
 	if(PHYS_BASE - pg_round_down(upage) > MAX_STACK_SIZE){
-		printf("Grow stack: stack is full.\n");
+		//printf("Grow stack: stack is full.\n");
 		return false;
 	}
 	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));

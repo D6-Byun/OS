@@ -62,7 +62,7 @@ void is_valid_addr(void *addr,void *esp) {
 		isload = grow_stack(addr);
 	}
 	if(!isload){
-		printf("is_valid_addr: not loaded\n");
+		//printf("is_valid_addr: not loaded\n");
 		exit(-1);
 	}
 }
@@ -170,18 +170,18 @@ int mmap(int fd, void *addr){
 	uint32_t page_read_bytes;
 	uint32_t page_zero_bytes;
 	struct thread *cur = thread_current();
-	if(addr == NULL|| !is_user_vaddr(addr) ||pg_ofs(addr) != 0){
-		printf("improper addr\n");
+	if(fd < 0 || fd > 127|| addr == NULL|| !is_user_vaddr(addr) ||pg_ofs(addr) != 0){
+		//printf("improper addr\n");
 		return -1;
 	}
 	struct file *ofile = cur->files[fd];
 	if(ofile == NULL){
-		printf("improper fd\n");
+		//printf("improper fd\n");
 		return -1;
 	}
 	struct file *file = file_reopen(ofile);
 	if(file == NULL || file_length(ofile) == 0){
-		printf("improper file\n");
+		//printf("improper file\n");
 		return -1;	
 	}
 	thread_current()->mapid++;
@@ -191,7 +191,7 @@ int mmap(int fd, void *addr){
 		page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		page_zero_bytes = PGSIZE - page_read_bytes;
 		if(!spt_add_mmap(&cur->spt,file,ofs,addr,page_read_bytes,page_zero_bytes)){
-			printf("there is already spte\n");
+			//printf("there is already spte\n");
 			munmap(cur->mapid);
 			return -1;
 		}
@@ -203,7 +203,7 @@ int mmap(int fd, void *addr){
 }
 
 void munmap(int mapping){
-	printf("start munmapping\n");
+	//printf("start munmapping\n");
 	struct thread *cur = thread_current();
 	struct list_elem *next, *elem = list_begin(&cur->mmap_list);
 
@@ -211,7 +211,8 @@ void munmap(int mapping){
 		next = list_next(elem);
 		struct mmap_file *mfile = list_entry(elem,struct mmap_file, melem);
 		if(mfile->mapid == mapping ||mapping == CLOSE_ALL){
-			struct list_elem *spte_elem = list_begin(&mfile->spte_list);
+			do_munmap(mfile);
+			/*struct list_elem *spte_elem = list_begin(&mfile->spte_list);
 			struct list_elem *spte_next = list_next(spte_elem);
 			while(spte_elem != list_end(&mfile->spte_list)){
 				struct sup_page_entry *spte = list_entry(spte_elem, struct sup_page_entry, lelem);
@@ -230,11 +231,11 @@ void munmap(int mapping){
 				free(spte);	
 				spte_elem = spte_next;
 			}
-			free(mfile);
+			free(mfile);*/
 		}
 		elem = next;
 	}	
-	printf("end munmapping");
+	//printf("end munmapping");
 }
 
 /*void halt() {

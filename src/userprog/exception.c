@@ -154,7 +154,7 @@ page_fault (struct intr_frame *f)
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
   	if(fault_addr <= 0x08048000 || fault_addr == NULL || is_kernel_vaddr(fault_addr)){
-  		printf("page_fault_handle: is kernel access %x \n",fault_addr);
+  		//printf("page_fault_handle: is kernel access %x \n",fault_addr);
 		exit(-1);
   	}
 	uint32_t *esp = f->esp;
