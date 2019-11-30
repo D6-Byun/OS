@@ -629,7 +629,7 @@ setup_stack (void **esp, int argc, char *argv[])
   */
   //not sure
   //printf("end setup_stack \n");
-	bool success = grow_stack(((uint8_t *)PHYS_BASE) - PGSIZE);
+	success = grow_stack(((uint8_t *)PHYS_BASE) - PGSIZE);
 	if (success) {
 		*esp = PHYS_BASE;
 		//argv[i][...]
