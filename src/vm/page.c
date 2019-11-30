@@ -81,6 +81,7 @@ struct spt_entry * create_s_entry(uint8_t * upage, uint8_t *kpage, bool writable
 	new_spt_entry->offset = offset;
 	new_spt_entry->read_bytes = read_bytes;
 	new_spt_entry->zero_bytes = zero_bytes;
+	new_spt_entry->is_loaded = false;
 
 	//printf("successfully spt_entry created\n");
 
