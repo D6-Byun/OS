@@ -177,7 +177,7 @@ page_fault (struct intr_frame *f)
 	  addr_entry = find_spt_entry(fault_addr);
 	  if (addr_entry == NULL)
 	  {
-		  //printf("need to implement stack growth\n");
+		  printf("need to implement stack growth\n");
 		  exit(-1);
 		  //PANIC("stack growth needed! in page_fault\n");
 		  //stack growth

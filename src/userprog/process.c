@@ -177,13 +177,6 @@ process_exit (void)
 	  free_mmap(temp_mmap);
   }
   */
-  for (int i = 0; i < 128; i++)
-  {
-	  if (thread_current()->files[i] != NULL)
-	  {
-		  close(i);
-	  }
-  }
   
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
@@ -201,6 +194,15 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+  /*
+  for (int i = 0; i < 128; i++)
+  {
+	  if (thread_current()->files[i] != NULL)
+	  {
+		  close(i);
+	  }
+  }
+  */
 
   //free_frame_table();
 	sema_up(&(cur->sema_child));

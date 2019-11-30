@@ -87,9 +87,9 @@ void free_frame_table(void)
 
 void free_frame_entry(struct hash_elem *e, void *aux)
 {
-	printf("free frame_entry\n");
+	//printf("free frame_entry\n");
 	struct frame_entry * target_entry = hash_entry(e, struct frame_entry, helem);
-	printf("kpage addr : %x\n", target_entry->kpage);
+	//printf("kpage addr : %x\n", target_entry->kpage);
 	hash_delete(frame_table, &target_entry->helem);
 	palloc_free_page(target_entry->kpage);
 	free(target_entry);
