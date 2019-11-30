@@ -166,8 +166,6 @@ process_exit (void)
   uint32_t *pd;
   struct list_elem *e;
 
-  printf("now going to destroy spt\n");
-
   spt_destroy(cur->spt);
   cur->spt = NULL;
   /*
