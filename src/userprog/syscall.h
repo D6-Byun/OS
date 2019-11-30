@@ -3,4 +3,6 @@
 
 void syscall_init (void);
 
+void free_mmap(struct mmap_file *);
+
 #endif /* userprog/syscall.h */

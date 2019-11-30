@@ -19,6 +19,7 @@
 #include "threads/vaddr.h"
 #include "threads/malloc.h"
 #include "threads/thread.h"
+#include "userprog/syscall.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -163,9 +164,16 @@ process_exit (void)
 	struct thread *par;
   struct thread *cur = thread_current ();
   uint32_t *pd;
+  struct list_elem *e;
 
   spt_destroy(cur->spt);
   cur->spt = NULL;
+
+  for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
+  {
+	  struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
+	  free_mmap(temp_mmap);
+  }
 
   for (int i = 0; i < 128; i++)
   {
