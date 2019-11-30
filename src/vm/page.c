@@ -106,12 +106,14 @@ void spt_destroy(struct spt *spt)
 
 static void spt_entry_destroy(struct hash_elem *e, void *aux)
 {
+	printf("start spt_entry_destroy\n");
 	struct spt_entry * target_entry = hash_entry(e, struct spt_entry, helem);
+	printf("right target_entry\n");
 	if (target_entry->is_loaded)
 	{
 		//printf("need to change format of frame entry deletion\n");
-		struct frame_entry *taget_entry = search_frame_entry(taget_entry->kpage);
-		free_frame_entry(&taget_entry->helem, NULL);
+		struct frame_entry *taget_frame = search_frame_entry(taget_entry->kpage);
+		free_frame_entry(&taget_frame->helem, NULL);
 	}
 	//printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
