@@ -454,12 +454,15 @@ mapid_t mmap(int fd, void *addr)
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
 		printf("for start \n");
+		printf("e : %x\n", e);
+		/*
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 		if (temp_mmap == NULL)
 		{
 			printf("mmap_file is null\n");
 		}
 		printf(temp_mmap->mapid);
+		*/
 	}
 	
 	return mapid;
