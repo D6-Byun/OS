@@ -53,7 +53,6 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 		//printf("hash_delete failed in delete_spt_entry\n");
 		return false;
 	}
-	free(spt_e);
 	if (spt_e->is_loaded)
 	{
 		/*
@@ -61,6 +60,7 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 		free_frame_entry(&taget_entry->helem, NULL);
 		*/
 	}
+	free(spt_e);
 	//printf("successfully spt_entry deleted\n");
 	return true;
 }
