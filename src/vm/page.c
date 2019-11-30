@@ -117,7 +117,7 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 	if (target_entry->is_loaded)
 	{
 		//printf("need to change format of frame entry deletion\n");
-		//printf("connected with frame\n");
+		printf("connected with frame\n");
 		printf("kpage addr : %x\n", target_entry->kpage);
 
 		struct frame_entry *target_frame = search_frame_entry(target_entry->kpage);
@@ -127,7 +127,7 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 		free_frame_entry(&target_frame->helem, NULL);
 		target_entry->is_loaded = false;
 	}
-	hash_delete(&thread_current()->spt->hash_brown, &target_entry->helem);
+	//hash_delete(&thread_current()->spt->hash_brown, &target_entry->helem);
 	//printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
 }
