@@ -466,7 +466,12 @@ mapid_t mmap(int fd, void *addr)
 		//printf("mapid == %d\n",(temp_mmap->mapid));
 		
 	}
-	printf("mapid = %d", mapid);
+	printf("mapid = %d\n", mapid);
+	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
+	{
+		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
+		printf("mapid : %d\n", temp_mmap->mapid);
+	}
 	return mapid;
 
 }
