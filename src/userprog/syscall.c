@@ -523,15 +523,16 @@ void free_mmap(struct mmap_file * mmap_file)
 	}
 	printf("list size : %d\n",list_size(&mmap_file->spt_entry_list));
 
-	for (e = list_begin(&mmap_file->spt_entry_list); e != list_end(&mmap_file->spt_entry_list); e = list_next(e))
+	for (e = list_begin(&mmap_file->spt_entry_list); e != list_end(&mmap_file->spt_entry_list); )
 	{
+
 		printf("for loop start\n");
 		struct spt_entry *temp_entry = list_entry(e, struct spt_entry, mmap_elem);
 		if (temp_entry == NULL)
 		{
 			printf("it is null\n");
 		}
-		list_remove(e);
+		e = list_remove(e);
 		/*
 		if (temp_entry->is_loaded && temp_entry->dirty)
 		{
