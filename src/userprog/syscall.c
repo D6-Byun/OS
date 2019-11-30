@@ -382,7 +382,7 @@ mapid_t mmap(int fd, void *addr)
 	int file_size = file_length(target_file);
 	int page_count = (file_size / PGSIZE) + ((file_size % PGSIZE) == 0 ? 0 : 1);
 	struct mmap_file * mmap_file;
-	int8_t * upage;
+	int8_t * upage = (int8_t *) addr;
 	bool writable = true;
 	struct file* file = target_file;
 	off_t ofs = 0;
@@ -419,13 +419,13 @@ mapid_t mmap(int fd, void *addr)
 
 	while (file_size>ofs)
 	{
-		printf("upage : %x\n", addr);
+		printf("upage : %x\n", upage);
 		printf("file_size : %d\n", read_byte);
 		size_t page_read_bytes = read_byte < PGSIZE ? read_byte : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 		printf("page_read_bytes : %d\n", page_read_bytes);
 		printf("page_zero_bytes : %d\n", page_zero_bytes);
-		temp_entry = create_s_entry(addr, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
+		temp_entry = create_s_entry(upage, NULL, writable, file, ofs, page_read_bytes, page_zero_bytes);
 		if (temp_entry == NULL)
 		{
 			//printf("spt_entry create fail in load_segment\n");
@@ -443,19 +443,19 @@ mapid_t mmap(int fd, void *addr)
 		printf("spt_entry inserted in table in mmap\n");
 		list_push_back(&mmap_file->spt_entry_list, &temp_entry->mmap_elem);
 		printf("stp_entry inserted in mmap_list in mmap\n");
-		addr = addr + PGSIZE;
+		upage = upage + PGSIZE;
 		ofs += page_read_bytes;
 		read_byte -= page_read_bytes;
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
 	printf("mmap ended\n");
-	
+	/*
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 		printf(temp_mmap->mapid);
 	}
-	
+	*/
 	return mapid;
 
 }
