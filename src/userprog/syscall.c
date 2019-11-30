@@ -91,20 +91,20 @@ void check_valid_buffer(void* buffer, unsigned size, bool to_write)
 	{
 		//printf("checking %x addr in check_valid_buffer \n",temp_buffer);
 		temp_entry = is_valid_addr(temp_buffer);
-		/*
+		
 		if (temp_entry == NULL)
 		{
 			//printf("spt_entry doesn't exist in check_Valid_buffer\n");
 			exit(-1);
 		}
-		*/
-		/*
+		
+		
 		if (!temp_entry->writable)
 		{
 			//printf("buffer not writable in check_valid_buffer\n");
 			exit(-1);
 		}
-		*/
+		
 		//new_size = new_size - PGSIZE;
 		temp_buffer = temp_buffer + PGSIZE;
 	}
@@ -305,8 +305,8 @@ int filesize(int fd) {
 }
 int read(int fd, void *buffer, unsigned length) {
 	int i = 0;
-	//check_valid_buffer(buffer, length, true);
-	is_valid_addr(buffer);
+	check_valid_buffer(buffer, length, true);
+	//is_valid_addr(buffer);
 	lock_acquire(&lock_imsi2);
 	if (fd == 0) {
 		for (i = 0; i < length; i++) {
@@ -469,11 +469,13 @@ mapid_t mmap(int fd, void *addr)
 		
 	}
 	printf("mapid = %d\n", mapid);
+	/*
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 		printf("mapid : %d\n", temp_mmap->mapid);
 	}
+	*/
 	return mapid;
 
 }
