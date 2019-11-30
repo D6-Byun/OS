@@ -178,7 +178,7 @@ process_exit (void)
 	  free_mmap(temp_mmap);
   }
   */
-
+  printf("spt_destroy end\n");
   for (int i = 0; i < 128; i++)
   {
 	  if (thread_current()->files[i] != NULL)
@@ -186,6 +186,7 @@ process_exit (void)
 		  close(i);
 	  }
   }
+  printf("file close end\m");
   
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
