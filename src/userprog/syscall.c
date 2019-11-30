@@ -475,33 +475,33 @@ void munmap(mapid_t mapid)
 {
 	struct mmap_file * target_mmap = NULL;
 	struct list_elem *e;
-	//printf("munmap start\n");
+	printf("munmap start\n");
 	if (!list_empty(&thread_current()->mmap_list))
 	{
 		for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 		{
 			struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
-			//printf("mapid : %d\n", temp_mmap->mapid);
-			//printf("input mapid : %d\n", mapid);
+			printf("mapid : %d\n", temp_mmap->mapid);
+			printf("input mapid : %d\n", mapid);
 			if (temp_mmap->mapid == mapid)
 			{
 				target_mmap = temp_mmap;
-				//printf("1!\n");
+				printf("1!\n");
 			}
 		}
 		if (target_mmap == NULL)
 		{
-			//printf("target_mmap is null in munmap\n");
+			printf("target_mmap is null in munmap\n");
 			exit(-1);
 		}
 		free_mmap(target_mmap);
 	}
 	else
 	{
-		//printf("mmap_list is empty in munmap\n");
+		printf("mmap_list is empty in munmap\n");
 		exit(-1);
 	}
-	//printf("munmap finish\n");
+	printf("munmap finish\n");
 }
 
 /* delete spt_entry in spt_entry_list, in hash_brown, delete mmap_file in mmap_list, and file_close, and free mmap_file. */
