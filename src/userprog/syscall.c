@@ -208,7 +208,7 @@ syscall_handler (struct intr_frame *f)
 		case SYS_CLOSE:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 7);
-			//printf("CLOSE!\n");
+			printf("CLOSE!\n");
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
 		case SYS_MMAP:
