@@ -123,7 +123,7 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 		//printf("kpage addr : %x\n", target_entry->kpage);
 		/*
 		struct frame_entry *target_frame = search_frame_entry(target_entry->kpage);
-
+		
 		printf("found frame entry\n");
 		if (target_frame != NULL)
 		{
@@ -131,6 +131,7 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 			target_entry->is_loaded = false;
 		}
 		*/
+
 	}
 	//hash_delete(&thread_current()->spt->hash_brown, &target_entry->helem);
 	//printf("NANIIIIII - spt_entry_Destroy\n");

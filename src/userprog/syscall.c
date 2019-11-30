@@ -377,6 +377,7 @@ void close(int fd) {
 
 mapid_t mmap(int fd, void *addr)
 {
+	
 	struct file* saved_file = thread_current()->files[fd];
 	struct file* target_file = file_reopen(saved_file);
 	mapid_t mapid;
