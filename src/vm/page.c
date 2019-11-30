@@ -88,9 +88,9 @@ struct spt_entry * create_s_entry(uint8_t * upage, uint8_t *kpage, bool writable
 
 struct spt_entry * find_spt_entry(void *upage)
 {
-	struct spt_entry tem_entry;
-	tem_entry.upage = pg_round_down(upage);
-	struct hash_elem * target_elem = hash_find(&thread_current()->spt->hash_brown, &tem_entry.helem);
+	struct spt_entry* tem_entry = (struct spt_entry*)malloc(sizeof(struct spt_entry));
+	tem_entry->upage = pg_round_down(upage);
+	struct hash_elem * target_elem = hash_find(&thread_current()->spt->hash_brown, &tem_entry->helem);
 	if (target_elem == NULL)
 	{
 		//printf("hash_find failed in find_spt_entry\n");
