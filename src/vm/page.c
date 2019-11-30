@@ -112,8 +112,8 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 	if (target_entry->is_loaded)
 	{
 		//printf("need to change format of frame entry deletion\n");
-		struct frame_entry *taget_frame = search_frame_entry(taget_entry->kpage);
-		free_frame_entry(&taget_frame->helem, NULL);
+		struct frame_entry *target_frame = search_frame_entry(target_entry->kpage);
+		free_frame_entry(&target_frame->helem, NULL);
 	}
 	//printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
