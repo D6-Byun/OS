@@ -501,6 +501,7 @@ void munmap(mapid_t mapid)
 		printf("mmap_list is empty in munmap\n");
 		exit(-1);
 	}
+	printf("mmap finish\n");
 }
 
 /* delete spt_entry in spt_entry_list, in hash_brown, delete mmap_file in mmap_list, and file_close, and free mmap_file. */
