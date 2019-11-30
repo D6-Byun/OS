@@ -408,9 +408,11 @@ mapid_t mmap(int fd, void *addr)
 	mmap_file->mapid = mapid;
 	list_init(&mmap_file->spt_entry_list);
 
+
 	printf("list init ended in mmap\n");
 	printf("upage : %x\n", addr);
 	printf("file_size : %d\n", read_byte);
+	printf("mapid : %d", thread_current()->mmap_index);
 	printf("now go to while loop\n");
 
 
