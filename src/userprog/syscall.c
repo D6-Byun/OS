@@ -13,6 +13,7 @@
 #include "threads/synch.h"
 #include "vm/frame.h"
 #include "threads/malloc.h"
+#include <list.h>
 
 
 struct file 
