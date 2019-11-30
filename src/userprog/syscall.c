@@ -434,7 +434,7 @@ mapid_t mmap(int fd, void *addr)
 		read_byte -= page_read_bytes;
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
-	printf("list init ended in mmap\n");
+	printf("mmap ended\n");
 	return mapid;
 
 }
