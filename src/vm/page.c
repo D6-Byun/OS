@@ -46,6 +46,7 @@ bool insert_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 {
 	//uint8_t *upage_ptr = spt_e->upage;
+	printf("delete_spt_Entry ON\n");
 	struct hash_elem * delete_elem = hash_delete(spt, &spt_e->helem);
 	if (delete_elem == NULL)
 	{
@@ -55,8 +56,10 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 	free(spt_e);
 	if (spt_e->is_loaded)
 	{
+		/*
 		struct frame_entry *taget_entry = search_frame_entry(spt_e->kpage);
 		free_frame_entry(&taget_entry->helem, NULL);
+		*/
 	}
 	//printf("successfully spt_entry deleted\n");
 	return true;
