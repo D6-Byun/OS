@@ -105,7 +105,7 @@ void check_valid_buffer(void* buffer, unsigned size, bool to_write, void * esp)
 	while (temp_buffer < buffer + size)
 	{
 		//printf("checking %x addr in check_valid_buffer \n",temp_buffer);
-		temp_entry = is_valid_addr(temp_buffer, f->esp);
+		temp_entry = is_valid_addr(temp_buffer, esp);
 		
 		if (temp_entry == NULL)
 		{
@@ -237,7 +237,7 @@ syscall_handler (struct intr_frame *f)
 			is_valid_addr(f->esp + 8, f->esp);
 			is_valid_addr(f->esp + 11, f->esp);
 
-			is_valid_addr((void *)*(uint32_t *)(f->esp + 8), , f->esp);
+			is_valid_addr((void *)*(uint32_t *)(f->esp + 8), f->esp);
 			f->eax = mmap((int)*(uint32_t *)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8));
 			break;
 		case SYS_MUNMAP:
