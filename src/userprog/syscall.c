@@ -208,7 +208,7 @@ syscall_handler (struct intr_frame *f)
 		case SYS_CLOSE:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 7);
-			printf("CLOSE!\n");
+			//printf("CLOSE!\n");
 			close((int)*(uint32_t*)(f->esp + 4));
 			break;
 		case SYS_MMAP:
@@ -217,11 +217,12 @@ syscall_handler (struct intr_frame *f)
 			is_valid_addr(f->esp + 8);
 			is_valid_addr(f->esp + 11);
 			f->eax = mmap((int)*(uint32_t *)(f->esp + 4), (void *)*(uint32_t *)(f->esp + 8));
-
+			break;
 		case SYS_MUNMAP:
 			is_valid_addr(f->esp + 4);
 			is_valid_addr(f->esp + 7);
 			munmap((mapid_t)*(uint32_t *)(f->esp + 4));
+			break;
 
 	}
 }
