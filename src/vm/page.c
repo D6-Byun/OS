@@ -55,10 +55,10 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 	}
 	if (spt_e->is_loaded)
 	{
-		
+		/*
 		struct frame_entry *taget_entry = search_frame_entry(spt_e->kpage);
 		free_frame_entry(&taget_entry->helem, NULL);
-		
+		*/
 	}
 	free(spt_e);
 	//printf("successfully spt_entry deleted\n");
@@ -118,11 +118,11 @@ static void spt_entry_destroy(struct hash_elem *e, void *aux)
 		//printf("connected with frame\n");
 		//printf("kpage addr : %x\n", target_entry->kpage);
 
-		//struct frame_entry *target_frame = search_frame_entry(target_entry->kpage);
+		struct frame_entry *target_frame = search_frame_entry(target_entry->kpage);
 
 		//printf("found frame entry\n");
 
-		//free_frame_entry(&target_frame->helem, NULL);
+		free_frame_entry(&target_frame->helem, NULL);
 	}
 	//printf("NANIIIIII - spt_entry_Destroy\n");
 	free(target_entry);
