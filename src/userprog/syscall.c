@@ -387,6 +387,7 @@ mapid_t mmap(int fd, void *addr)
 	uint32_t read_byte = file_size;
 	//uint32_t zero_byte = ;
 	struct spt_entry* temp_entry;
+	struct list_elem* e;
 
 	if (saved_file == NULL)
 	{
@@ -435,6 +436,12 @@ mapid_t mmap(int fd, void *addr)
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
 	printf("mmap ended\n");
+
+	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
+	{
+		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
+		printf(temp_mmap->mapid);
+	}
 	return mapid;
 
 }
