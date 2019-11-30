@@ -449,13 +449,13 @@ mapid_t mmap(int fd, void *addr)
 	}
 	list_push_back(&thread_current()->mmap_list, &mmap_file->elem);
 	printf("mmap ended\n");
-	/*
+	
 	for (e = list_begin(&thread_current()->mmap_list); e != list_end(&thread_current()->mmap_list); e = list_next(e))
 	{
 		struct mmap_file * temp_mmap = list_entry(e, struct mmap_file, elem);
 		printf(temp_mmap->mapid);
 	}
-	*/
+	
 	return mapid;
 
 }
