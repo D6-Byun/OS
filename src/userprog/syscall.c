@@ -76,6 +76,7 @@ struct spt_entry * is_valid_addr(void *addr) {
 		//printf("entry not found in is_valid_addr\n");
 		return NULL;
 	}
+
 	*/
 }
 
