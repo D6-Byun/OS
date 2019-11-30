@@ -511,7 +511,12 @@ void free_mmap(struct mmap_file * mmap_file)
 	printf("start free_map\n");
 	for (e = list_begin(&mmap_file->spt_entry_list); e != list_end(&mmap_file->spt_entry_list); e = list_next(e))
 	{
+		printf("for loop start\n");
 		struct spt_entry *temp_entry = list_entry(e, struct spt_entry, mmap_elem);
+		if (temp_entry == NULL)
+		{
+			printf("it is null\n");
+		}
 		list_remove(e);
 		/*
 		if (temp_entry->is_loaded && temp_entry->dirty)
@@ -519,6 +524,7 @@ void free_mmap(struct mmap_file * mmap_file)
 			file_write_at(temp_entry->file, mmap_file->file, temp_entry->read_bytes, temp_entry->offset);
 		}
 		*/
+		printf("removed from list\n");
 		delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
 	}
 	printf("for loop end\n");
