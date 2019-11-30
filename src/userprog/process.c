@@ -102,7 +102,7 @@ start_process (void *file_name_)
 
 	cur->spt = spt_init(); /*create spt in current thread*/
 	list_init(&cur->mmap_list);
-	cur->mmap_index = 0;
+	cur->mmap_index = 3;
 	
   	//printf("start_process\n");
   /* Initialize interrupt frame and load executable. */
