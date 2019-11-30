@@ -466,7 +466,7 @@ mapid_t mmap(int fd, void *addr)
 		//printf("mapid == %d\n",(temp_mmap->mapid));
 		
 	}
-	
+	printf("mapid = %d", mapid);
 	return mapid;
 
 }
