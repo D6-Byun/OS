@@ -619,9 +619,11 @@ setup_stack (void **esp, int argc, char *argv[])
 	  //printf("spt insert fail in setup_stack\n");
 	  return false;
   }
+  /*
   new_frame->upage = new_spte->upage;
   install_page(new_spte->upage, new_frame->kpage, new_spte->writable);
   new_spte->is_loaded = true;
+  */
   //not sure
   //printf("end setup_stack \n");
   return success;
