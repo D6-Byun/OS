@@ -102,9 +102,9 @@ void free_frame_entry(struct hash_elem *e, void *aux)
 
 struct frame_entry * search_frame_entry(void *kpage) {
 	printf("search_Frame_entry\n");
+	printf("frame table : %x\n", frame_table);
 	struct frame_entry * tem_entry;
 	tem_entry->kpage = pg_round_down(kpage);
-	printf("frame table : %x\n", frame_table);
 	struct hash_elem * target_elem = hash_find(frame_table, &tem_entry->helem);
 	printf("target elem found successfully\n");
 	if (target_elem == NULL)
