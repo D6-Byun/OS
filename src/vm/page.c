@@ -55,10 +55,10 @@ bool delete_spt_entry(struct hash *spt, struct spt_entry *spt_e)
 	}
 	if (spt_e->is_loaded)
 	{
-		
+		/*
 		struct frame_entry *taget_entry = search_frame_entry(spt_e->kpage);
 		free_frame_entry(&taget_entry->helem, NULL);
-		
+		*/
 	}
 	spt_e->is_loaded = false;
 	free(spt_e);
