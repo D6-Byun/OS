@@ -169,6 +169,8 @@ process_exit (void)
   uint32_t *pd;
   struct list_elem *e;
 
+  printf("destroy start \n");
+
   spt_destroy(cur->spt);
   cur->spt = NULL;
   /*
@@ -178,7 +180,7 @@ process_exit (void)
 	  free_mmap(temp_mmap);
   }
   */
-  //printf("spt_destroy end\n");
+  printf("spt_destroy end\n");
   for (int i = 0; i < 128; i++)
   {
 	  if (thread_current()->files[i] != NULL)
