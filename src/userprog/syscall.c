@@ -62,6 +62,7 @@ void is_valid_addr(void *addr,void *esp) {
 		isload = grow_stack(addr);
 	}
 	if(!isload){
+		printf("is_valid_addr: not loaded\n");
 		exit(-1);
 	}
 }
@@ -170,14 +171,17 @@ int mmap(int fd, void *addr){
 	uint32_t page_zero_bytes;
 	struct thread *cur = thread_current();
 	if(addr == NULL|| !is_user_vaddr(addr) ||pg_ofs(addr) != 0){
+		printf("improper addr\n");
 		return -1;
 	}
 	struct file *ofile = cur->files[fd];
 	if(ofile == NULL){
+		printf("improper fd\n");
 		return -1;
 	}
 	struct file *file = file_reopen(ofile);
 	if(file == NULL || file_length(ofile) == 0){
+		printf("improper file\n");
 		return -1;	
 	}
 	thread_current()->mapid++;
@@ -187,6 +191,7 @@ int mmap(int fd, void *addr){
 		page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		page_zero_bytes = PGSIZE - page_read_bytes;
 		if(!spt_add_mmap(&cur->spt,file,ofs,addr,page_read_bytes,page_zero_bytes)){
+			printf("there is already spte\n");
 			munmap(cur->mapid);
 			return -1;
 		}
@@ -198,6 +203,7 @@ int mmap(int fd, void *addr){
 }
 
 void munmap(int mapping){
+	printf("start munmapping\n");
 	struct thread *cur = thread_current();
 	struct list_elem *next, *elem = list_begin(&cur->mmap_list);
 
@@ -205,22 +211,30 @@ void munmap(int mapping){
 		next = list_next(elem);
 		struct mmap_file *mfile = list_entry(elem,struct mmap_file, melem);
 		if(mfile->mapid == mapping ||mapping == CLOSE_ALL){
-			if(mfile->spte->is_loaded){
-				if(pagedir_is_dirty(cur->pagedir,mfile->spte->upage)){
-					file_write_at(mfile->spte->file, mfile->spte->upage, mfile->spte->read_bytes, mfile->spte->ofs);
+			struct list_elem *spte_elem = list_begin(&mfile->spte_list);
+			struct list_elem *spte_next = list_next(spte_elem);
+			while(spte_elem != list_end(&mfile->spte_list)){
+				struct sup_page_entry *spte = list_entry(spte_elem, struct sup_page_entry, lelem);
+				if(spte->is_loaded){
+					if(pagedir_is_dirty(cur->pagedir, spte->upage)){
+						file_write_at(spte->file, spte->upage, spte->read_bytes, spte->ofs);
+					}
+					frame_free(pagedir_get_page(cur->pagedir, spte->upage));
+					pagedir_clear_page(cur->pagedir, spte->upage);
 				}
-				frame_free(pagedir_get_page(cur->pagedir, mfile->spte->upage));
-				pagedir_clear_page(cur->pagedir, mfile->spte->upage);
+				hash_delete(&cur->spt->hash_brown,&spte->helem);
+				list_remove(&mfile->melem);
+				if(mfile->mapid != 0){
+					file_close(spte->file);
+				}
+				free(spte);	
+				spte_elem = spte_next;
 			}
-			hash_delete(&cur->spt->hash_brown,&mfile->spte->helem);
-			list_remove(&mfile->melem);
-			free(mfile->spte);
-			free(mfile);	
+			free(mfile);
 		}
-
 		elem = next;
 	}	
-
+	printf("end munmapping");
 }
 
 /*void halt() {

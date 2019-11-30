@@ -8,7 +8,8 @@
 struct mmap_file{
 	struct list_elem melem; //for mmap_list
 	int mapid; //mapping ID
-	struct sup_page_entry *spte; //Map to virtual address
+	struct list spte_list; //Map to virtual address
+	struct file *file;
 };
 
 

@@ -134,6 +134,7 @@ bool spt_add_entry(struct sup_page_table *spt, struct file *file, off_t ofs, voi
 }
 
 bool spt_add_mmap(struct sup_page_table *spt, struct file *file, off_t ofs, void *upage, uint32_t read_bytes, uint32_t zero_bytes){
+//	printf("start add_mmap\n");
 	struct sup_page_entry *spte = (struct sup_page_entry *)malloc(sizeof(struct sup_page_entry));
 	spte->file = file;
 	spte->ofs = ofs;
@@ -144,20 +145,24 @@ bool spt_add_mmap(struct sup_page_table *spt, struct file *file, off_t ofs, void
 	spte->writable = true;
 	spte->is_loaded = false;
 	spte->status = MMAP;
-	if(spt_try_add_mmap(spte) == false){
+	if(spt_try_add_mmap(file, spte) == false){
 		free(spte);
 		return false;
 	}
+//	printf("end add_mmap\n");
 	return hash_insert(&spt->hash_brown,&spte->helem) == NULL;
 }
 
-bool spt_try_add_mmap(struct sup_page_entry *spte){
+bool spt_try_add_mmap(struct file *file, struct sup_page_entry *spte){
+//	printf("start try_add_mmap\n");
 	struct mmap_file *mfile = (struct mmap_file *)malloc(sizeof(struct mmap_file));
 	if(mfile == NULL){
 		printf("spt_try_add_mmap: fail to malloc mmap_file.\n");
 		return false;
 	}
-	mfile->spte = spte;
+	list_init(&mfile->spte_list);
+	list_push_back(&mfile->spte_list,&spte->lelem);
+	mfile->file = file;
 	mfile->mapid = thread_current()->mapid;
 	list_push_back(&thread_current()->mmap_list, &mfile->melem);
 	return true;
