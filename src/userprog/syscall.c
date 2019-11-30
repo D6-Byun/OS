@@ -501,7 +501,7 @@ void munmap(mapid_t mapid)
 		printf("mmap_list is empty in munmap\n");
 		exit(-1);
 	}
-	printf("mmap finish\n");
+	printf("munmap finish\n");
 }
 
 /* delete spt_entry in spt_entry_list, in hash_brown, delete mmap_file in mmap_list, and file_close, and free mmap_file. */
@@ -519,7 +519,7 @@ void free_mmap(struct mmap_file * mmap_file)
 			file_write_at(temp_entry->file, mmap_file->file, temp_entry->read_bytes, temp_entry->offset);
 		}
 		*/
-		//delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
+		delete_spt_entry(&thread_current()->spt->hash_brown, temp_entry);
 	}
 	printf("for loop end\n");
 	list_remove(&mmap_file->elem);
