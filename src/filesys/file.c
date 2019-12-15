@@ -10,6 +10,7 @@ struct file
     off_t pos;                  /* Current position. */
     bool deny_write;            /* Has file_deny_write() been called? */
   };
+  
 
 /* Opens a file for the given INODE, of which it takes ownership,
    and returns the new file.  Returns a null pointer if an
